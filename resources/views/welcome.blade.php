@@ -311,70 +311,7 @@
 </div>
 
 
-{{-- <div class="modal fade" style="font-size: small !important;" tabindex="-1" id="disclaimerModal">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
 
-            <div class="modal-body modal-xl " style="text-align: justify !important;">
-                <div class="nk-modal">
-                   
-                    <h4 class="nk-modal-title">Legal Disclaimer </h4>
-                    <div class="nk-modal-text tandt">
-                        <li>
-                            The content provided on this Portal is for general informational purposes only and does not constitute legal, financial, or professional advice
-                        </li>
-                        <div>
-                            <br>
-                            <li>
-                                While FMDQ Securities Exchange Limited (“<b>FMDQ Exchange</b>”) endeavours to ensure the accuracy, completeness, and timeliness of the information presented, <span style="margin-left: 20px;"> FMDQ Exchange </span> <br>
-                                <ul style="padding-left: 20px;">
-                                    
-                                    <li style="list-style-type: '- ' !important; margin-left: 20px !important;">does not warrant or guarantee accuracy, completeness, or reliability of the information</li>
-                                    <li style="list-style-type: '- ' !important; margin-left: 20px !important;">shall not be held liable for any errors, omissions, or reliance placed on the information/materials available on this Portal</li>
-                                    <li style="list-style-type: '- ' !important; margin-left: 20px !important;">reserves the right to modify, update, or remove any content on this Portal at its discretion and without prior notice</li>
-                                    <li style="list-style-type: '- ' !important; margin-left: 20px !important;">disclaims all liability for any losses or damages, whether direct, indirect, or consequential, arising from the use of, or inability to use, the Portal or its content</li>
-                                </ul>
-
-                            </li>
-                            
-                            
-                        </div><br>
-                        <li>
-                                By accessing and using this Portal, you agree to these terms and assume full responsibility for your use of the information provided herein
-                            </li>
-                        <br>
-                        <li>
-                            By clicking “Accept” below, you acknowledge that you have read, understood, and agree to be bound by the above terms and conditions
-                        </li>
-                    </div>
-
-                </div>
-            </div>
-            <div class="modal-footer bg-lighter" style="padding: 0px 10px !important;">
-                <div class="nk-modal-action" style="margin: 0px !important;">
-                    <form method="POST" action="{{ route('disclaimer.accept') }}" id="disclaimerForm">
-                        @csrf
-                        <button type="submit" class=""
-                            style="border: none !important; outline: none !important;">
-                            <div class="button-container-sb">
-                                <div class="gradient-buttons">
-                                    <div class="gradient-button-content"
-                                        style="padding: 10px 16px !important; gap: 7px;">
-                                        <div>Accept</div>
-                                       
-                                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}"
-                                            alt="FMDQ Logo" />
-                                    </div>
-                                </div>
-                            </div>
-                        </button>
-
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> --}}
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
