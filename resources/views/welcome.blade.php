@@ -327,23 +327,7 @@
     });
 </script>
 @endsection
-{{-- <script>
-    $(window).load('load', function() {
-        // Preloader
-        $('.loader').fadeOut();
-        $('.loader-mask').delay(250).fadeOut('slow');
-    });
-</script>
-<script>
-    window.onload = function() {
-        // https://getbootstrap.com/docs/5.0/components/modal/#via-javascript
-        let myModal = new bootstrap.Modal(
-            document.getElementById("myModal"), {}
-        );
-        // https://getbootstrap.com/docs/5.0/components/modal/#show
-        myModal.show();
-    };
-</script> --}}
+
 
 
 </body>
