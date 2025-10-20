@@ -52,9 +52,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://adgtest.fmdqgroup.com/fmrr_dev_v2@/'),
+    'url' => env('APP_URL', 'https://adgtest.fmdqgroup.com/fmrr_deploy/'),
 
-    'asset_url' => env('ASSET_URL',  'https://adgtest.fmdqgroup.com/fmrr_dev_v2'),
+    'asset_url' => env('ASSET_URL',  'https://adgtest.fmdqgroup.com/fmrr_deploy'),
 
     /*
     |--------------------------------------------------------------------------
