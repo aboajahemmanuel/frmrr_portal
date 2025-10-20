@@ -1,0 +1,11 @@
+fatal: detected dubious ownership in repository at 'C:/wamp64/www/fmrr_deploy'
+'C:/wamp64/www/fmrr_deploy' is owned by:
+	FMDQGROUP/aboajah.emmanuel (S-1-5-21-3190504930-1769880860-3723419689-24341)
+but the current user is:
+	NT AUTHORITY/SYSTEM (S-1-5-18)
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory C:/wamp64/www/fmrr_deploy
+Application cache cleared!
+Configuration cache cleared!
+Configuration cached successfully!

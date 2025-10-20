@@ -52,9 +52,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost/fmrr_dev/fmrr_dev/'),
+    'url' => env('APP_URL', 'https://adgtest.fmdqgroup.com/fmrr_dev_v2@/'),
 
-    'asset_url' => env('ASSET_URL',  'http://localhost/fmrr_dev'),
+    'asset_url' => env('ASSET_URL',  'https://adgtest.fmdqgroup.com/fmrr_dev_v2'),
 
     /*
     |--------------------------------------------------------------------------
@@ -176,7 +176,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\SessionSettingServiceProvider::class,
 
     ],
 

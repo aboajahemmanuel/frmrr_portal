@@ -298,7 +298,7 @@
     </div>
     </a>
     
-    </div>
+    </div> 
     @endif
     <!-- <div class=""> -->
     @if ($userSubscription)
