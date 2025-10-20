@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Session Timeout Test</title>
+    <meta name="session-timeout-minutes" content="2">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Session Timeout Test</h1>
+        <p>This page simulates a 2-minute session timeout.</p>
+        <p id="status" class="bg-info text-white">Session is active. Warning will appear in <span id="warn-timer">96</span> seconds.</p>
+        
+        <div id="session-timeout-dialog" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Your session is about to expire!</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="countdown-message">Redirecting in <span id="countdown-display">24</span> seconds.</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-warning" id="countdown-bar" role="progressbar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="session-timeout-keepalive" type="button" class="btn btn-primary" data-bs-dismiss="modal">Stay Connected</button>
+                        <a href="/login" class="btn btn-danger">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            console.log('Document ready');
+            
+            // Get session timeout from meta tag
+            var timeoutMinutes = 2; // default to 2 minutes
+            var metaTag = document.head.querySelector('meta[name="session-timeout-minutes"]');
+            console.log('Meta tag found:', metaTag);
+            
+            if (metaTag && metaTag.content) {
+                timeoutMinutes = parseInt(metaTag.content) || 2;
+                console.log('Using timeout from meta tag:', timeoutMinutes);
+            }
+            
+            // Calculate warning and redirect times
+            var warnAfter = (timeoutMinutes * 60 * 1000) * 0.8; // Warn at 80% of timeout
+            var redirAfter = timeoutMinutes * 60 * 1000; // Full timeout
+            
+            console.log('Timeout minutes:', timeoutMinutes);
+            console.log('Warn after (ms):', warnAfter);
+            console.log('Redirect after (ms):', redirAfter);
+            
+            // Update display timers
+            $('#warn-timer').text(Math.floor(warnAfter / 1000));
+            
+            var warningTimer, redirectTimer;
+            
+            // Function to reset timers
+            var resetTimers = function() {
+                console.log('Resetting timers');
+                clearTimeout(warningTimer);
+                clearTimeout(redirectTimer);
+                
+                // Update status message
+                $('#status').removeClass('bg-warning bg-danger').addClass('bg-info').text('Session is active. Warning will appear in ' + Math.floor(warnAfter / 1000) + ' seconds.');
+                
+                warningTimer = setTimeout(showWarning, warnAfter);
+                redirectTimer = setTimeout(redirect, redirAfter);
+                console.log('New timers set');
+            };
+            
+            // Function to show warning
+            var showWarning = function() {
+                console.log('Showing session timeout warning');
+                
+                // Update status message
+                $('#status').removeClass('bg-info').addClass('bg-warning').text('Warning: Session will expire soon!');
+                
+                // Show the warning dialog
+                if ($('#session-timeout-dialog').length > 0) {
+                    console.log('Dialog exists, showing it');
+                    
+                    // Bootstrap 5
+                    var modalElement = document.getElementById('session-timeout-dialog');
+                    var modal = bootstrap.Modal.getInstance(modalElement);
+                    if (!modal) {
+                        modal = new bootstrap.Modal(modalElement, {
+                            backdrop: 'static',
+                            keyboard: false
+                        });
+                    }
+                    modal.show();
+                    
+                    // Start the countdown
+                    var countdownValue = Math.floor((redirAfter - warnAfter) / 1000);
+                    $('#countdown-display').text(countdownValue);
+                    
+                    var startTime = new Date().getTime();
+                    var endTime = startTime + (redirAfter - warnAfter);
+                    
+                    var updateCountdown = function() {
+                        var now = new Date().getTime();
+                        var remaining = Math.floor((endTime - now) / 1000);
+                        
+                        if (remaining >= 0) {
+                            $('#countdown-display').text(remaining);
+                            var percentage = (remaining / countdownValue) * 100;
+                            $('#countdown-bar').css('width', percentage + '%');
+                            
+                            // Update status message
+                            $('#status').removeClass('bg-info bg-warning').addClass('bg-danger').text('Session expires in ' + remaining + ' seconds!');
+                            
+                            setTimeout(updateCountdown, 1000);
+                        }
+                    };
+                    
+                    updateCountdown();
+                } else {
+                    console.log('Dialog does not exist!');
+                }
+            };
+            
+            // Function to redirect
+            var redirect = function() {
+                console.log('Redirecting due to session timeout');
+                $('#status').removeClass('bg-info bg-warning').addClass('bg-danger').text('Session expired! Redirecting...');
+                alert('Session timeout - would redirect to login page now');
+                // In a real application, you would redirect to the login page:
+                // window.location.href = "/login";
+            };
+            
+            // Set up event handlers
+            $(document).on('click', '#session-timeout-keepalive', function() {
+                console.log('User clicked Stay Connected');
+                var modalElement = document.getElementById('session-timeout-dialog');
+                var modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+                resetTimers();
+            });
+            
+            // Set up activity detection
+            var activityEvents = 'click keypress scroll wheel mousewheel mousemove touchmove';
+            $(document).on(activityEvents, function() {
+                console.log('User activity detected, resetting timers');
+                resetTimers();
+            });
+            
+            // Initialize timers
+            resetTimers();
+        });
+    </script>
+</body>
+</html>
