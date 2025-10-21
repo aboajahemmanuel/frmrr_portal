@@ -7,7 +7,7 @@
                 <img src="{{ asset('public/users/assets/FMDQ-Logo.png') }}" alt="FMDQlogo" />
             </div>
             <div class="app-name">
-                <p>FINANCIAL MARKETS RULES REPOSITORY</p>
+                <p>FINANCIAL MARKETS ccccccccccccccccccccccccRULES REPOSITORY</p>
             </div>
             <div class="tabs">
                 <div class="current">
