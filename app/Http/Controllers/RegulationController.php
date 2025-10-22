@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\DocumentApproval;
 use App\Models\Entity;
 use App\Models\Regulation;
+use App\Models\Subcategory;
 use App\Models\User;
 use App\Models\Year;
 use Carbon\Carbon;
@@ -67,7 +68,7 @@ class RegulationController extends Controller
      */
     public function create()
     {
-        $entities   = Entity::where('status', 1)->get();
+         $entities   = Entity::where('status', 1)->get();
         $categories = Category::where('status', 1)->get();
         $alpha      = DB::table('alpha')->get();
 
@@ -128,8 +129,13 @@ class RegulationController extends Controller
         $new_regulation->ceased           = $request['ceased'];
         $new_regulation->doc_preview      = $request['doc_preview'];
         $new_regulation->doc_preview_count = $request['doc_preview_count'];
-       // $new_regulation->relationship_status = $request['relationship_status'] ?? null;
+        
+        // Save related documents if provided
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $new_regulation->related_docs = implode(',', $request->related_docs);
+        }
 
+       
         $new_regulation->slug     = $slug;
         $new_regulation->group_id = $user->group_id;
 
@@ -176,6 +182,10 @@ class RegulationController extends Controller
         $regulation_approval->ceased           = $request['ceased'];
         $regulation_approval->doc_preview      = $request['doc_preview'];
         $regulation_approval->regulation_doc   = $db_file;
+        // Add related_docs to the approval record
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $regulation_approval->related_docs = implode(',', $request->related_docs);
+        }
         $regulation_approval->slug             = $slug;
         $regulation_approval->group_id         = $user->group_id;
 
@@ -257,6 +267,10 @@ class RegulationController extends Controller
         $regulation_approval->document_tag   = $request['document_tag'];
         $regulation_approval->doc_preview    = $request['doc_preview'];
         $regulation_approval->doc_preview_count = $request['doc_preview_count'];
+        // Add related_docs to the approval record
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $regulation_approval->related_docs = implode(',', $request->related_docs);
+        }
         $regulation_approval->ceased_date    = $request['ceased_date'];
         $regulation_approval->ceased         = $request['ceased'];
         $regulation_approval->slug           = $slug;
@@ -333,7 +347,14 @@ class RegulationController extends Controller
         $statua            = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statua);
 
-        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses'));
+        // Get related documents for the same category
+        $relatedDocuments = Regulation::where('category_id', $regulation->category_id)
+            ->where('admin_status', 1) // Only approved documents
+            ->where('id', '!=', $regulation->id) // Exclude current document
+            ->orderBy('title')
+            ->get();
+
+        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments'));
     }
 
     public function view_doc($id)
@@ -354,7 +375,10 @@ class RegulationController extends Controller
             })
             ->get();
 
-        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser'));
+        // Get related documents for display
+        $relatedDocuments = $regulation->relatedDocuments;
+
+        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'relatedDocuments'));
     }
 
     /**
@@ -389,6 +413,14 @@ class RegulationController extends Controller
         $regulation->ceased = $request->ceased;
         $regulation->doc_preview = $request->doc_preview;
         $regulation->doc_preview_count = $request->doc_preview_count;
+        
+        // Update related documents if provided
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $regulation->related_docs = implode(',', $request->related_docs);
+        } else {
+            $regulation->related_docs = null;
+        }
+        
         $regulation->slug = Str::slug($request->title);
         
         $regulation->save();
@@ -448,6 +480,7 @@ class RegulationController extends Controller
     public function redirectToUrl($selectedValue)
     {
 
+       
         $user = Auth::user();
         $role = 'Content_Owner_Authoriser';
 
@@ -457,11 +490,26 @@ class RegulationController extends Controller
 
         $entities   = Entity::where('status', 1)->get();
         $categories = Category::where('status', 1)->get();
+        $cate = Category::where('slug', $selectedValue)->first();
         $alpha      = DB::table('alpha')->get();
         $years      = DB::table('years')->get();
         $months     = DB::table('months')->get();
 
         $statuses = DB::table('doc_type')->get();
+
+        // Get related documents based on selected category
+        //  $relatedDocuments = collect();
+        // if ($selectedValue) {
+        //     $category = Category::where('slug', $selectedValue)->first();
+        //     if ($category) {
+              
+        //     }
+        // }
+
+         $relatedDocuments = Regulation::where('category_id', $cate->id)
+                    ->where('admin_status', 1) // Only approved documents
+                    ->orderBy('title')
+                    ->get();
 
          $statua            = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statua);
@@ -476,7 +524,8 @@ class RegulationController extends Controller
             'months'        => $months,
             'authoriser'    => $authoriser,
             'statuses'      => $statuses,
-            'formattedStatuses' => $formattedStatuses
+            'formattedStatuses' => $formattedStatuses,
+            'relatedDocuments' => $relatedDocuments
         ]);
     }
 
@@ -693,6 +742,25 @@ class RegulationController extends Controller
         return redirect()->back()->with('success', 'Document admin_status successfully updated.');
     }
 
+    public function getSubcategoriesByCategory($categoryId)
+    {
+        $subcategories = Subcategory::where('category_id', $categoryId)
+            ->where('status', 1)
+            ->get();
+            
+        return response()->json($subcategories);
+    }
+    
+    public function getRelatedDocumentsByCategory($categoryId)
+    {
+        $documents = Regulation::where('category_id', $categoryId)
+            ->where('admin_status', 1) // Only approved documents
+            ->orderBy('title')
+            ->get();
+            
+        return response()->json($documents);
+    }
+
     private function insertNotifyUsers($action, $title, $authorise_email)
     {
         try {
@@ -808,4 +876,5 @@ class RegulationController extends Controller
             Log::error('Failed to queue emails for authorisers', ['error' => $e->getMessage()]);
         }
     }
+    
 }

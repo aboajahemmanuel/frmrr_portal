@@ -441,11 +441,35 @@
                                                         </div>
                                                         
 
-                                                        <div class="col-6">
-                                                            <div class="form-group">
+                                                       <div class="col-md-6">
+  <div class="form-group">
+    <label class="form-label" for="related-documents-select">
+        Select Related Documents <span style="color: red;">*</span>
+    </label>
+    <div class="form-control-wrap">
+        <select 
+            required 
+            name="related_docs[]" 
+            id="related-documents-select"
+            class="form-select form-control select2"
+            multiple="multiple"
+            data-placeholder="Select one or more documents">
+            
+            @foreach ($relatedDocuments as $docs)
+                <option value="{{ $docs->id }}">{{ $docs->title }}</option>
+            @endforeach
+        </select>
+    </div>
+</div>
 
-                                                            </div>
-                                                        </div>
+<script>
+    $(document).ready(function() {
+        $('#related-documents-select').select2();
+    });
+    </script>
+</div>
+
+
 
 
 

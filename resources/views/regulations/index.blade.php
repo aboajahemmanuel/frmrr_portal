@@ -87,6 +87,7 @@
                                                 <th class="nk-tb-col">Status</th>
                                                 <th class="nk-tb-col">{{$formattedStatuses}}</th>
                                                 <th class="nk-tb-col">Date Created</th>
+                                                <th class="nk-tb-col">Related Docs</th>
                                                 <th class="nk-tb-col"></th>
                                                 <th class="nk-tb-col">Action</th>
                                             </tr>
@@ -150,6 +151,19 @@
 
 
                                                     </td>
+
+                                                    {{-- Related Documents Column --}}
+                                                    <td class="nk-tb-col">
+                                                        @if($regulation->related_docs)
+                                                            @php
+                                                                $relatedCount = count(explode(',', $regulation->related_docs));
+                                                            @endphp
+                                                            <span class="badge badge-primary">{{ $relatedCount }} related</span>
+                                                        @else
+                                                            <span class="badge badge-secondary">None</span>
+                                                        @endif
+                                                    </td>
+                                                    {{-- End Related Documents Column --}}
 
                                                     <td class="nk-tb-col">
                                                         @if ($regulation->admin_status == 2)
@@ -666,7 +680,36 @@
                                                                 </div>
                                                             </div>
 
-
+                                                            {{-- Related Documents Section --}}
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label">Related Documents</label>
+                                                                    <div class="form-control-wrap">
+                                                                        @if(!empty($regulation_pending->related_docs))
+                                                                            @php
+                                                                                $relatedIds = explode(',', $regulation_pending->related_docs);
+                                                                                $relatedDocs = \App\Models\Regulation::whereIn('id', $relatedIds)->get();
+                                                                            @endphp
+                                                                            @if($relatedDocs->count() > 0)
+                                                                                <ul class="list-unstyled">
+                                                                                    @foreach($relatedDocs as $relatedDoc)
+                                                                                        <li>
+                                                                                            <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank">
+                                                                                                {{ $relatedDoc->title }}
+                                                                                            </a>
+                                                                                        </li>
+                                                                                    @endforeach
+                                                                                </ul>
+                                                                            @else
+                                                                                <p class="text-muted">No related documents found.</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="text-muted">No related documents selected.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {{-- End Related Documents Section --}}
 
                                                             <div class="col-md-12">
 

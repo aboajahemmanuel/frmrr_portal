@@ -255,6 +255,10 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('update_doc/{id}', [RegulationController::class, 'update_doc'])->name('update_doc');
     Route::post('update_index/{id}', [RegulationController::class, 'updateIndexCsv'])->name('update_index');
     Route::post('/ceased/{id}', [RegulationController::class, 'statusceased'])->name('statusCeased');
+    
+    // AJAX routes for related documents feature
+    Route::get('get-subcategories/{categoryId}', [RegulationController::class, 'getSubcategoriesByCategory']);
+    Route::get('get-related-documents/{categoryId}', [RegulationController::class, 'getRelatedDocumentsByCategory']);
 
     // Transaction management
     Route::get('transactions', [TransactionController::class, 'index']);

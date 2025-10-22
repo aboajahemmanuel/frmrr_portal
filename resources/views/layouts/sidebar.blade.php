@@ -180,6 +180,15 @@
                          </a>
                      </li><!-- .nk-menu-item -->
 
+
+                      <!-- Disclaimer History Link -->
+                     <li class="nk-menu-item">
+                         <a href="{{ route('home') }}" target="blank_" class="nk-menu-link">
+                             <span class="nk-menu-icon" style="color: white"><em class="icon ni ni-file-docs"></em></span>
+                             <span class="nk-menu-text" style="color: white">View Frontend
+                         </a>
+                     </li><!-- .nk-menu-item -->
+
                  </ul>
 
                  <!-- .nk-menu -->

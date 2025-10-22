@@ -769,20 +769,50 @@
                                                         </div>
                                                     </div>
 
-
-                                                        <div class="col-12">
-                                                            <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
-                                                                <li>
-                                                                    <button class="btn btn-lg btn-primary btn-block"
-                                                                        id="editSubmitBtn-{{ $regulation->id }}"
-                                                                        type="submit">
-                                                                        <i class="fas fa-spinner fa-spin"
-                                                                            style="display:none;"></i>
-                                                                        <span class="btn-text">Update</span>
-                                                                    </button>
-                                                                </li>
-                                                            </ul>
+                                                    {{-- Related Documents Section --}}
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label class="form-label" for="related-documents-select">
+                                                                Select Related Documents
+                                                            </label>
+                                                            <div class="form-control-wrap">
+                                                                <select 
+                                                                    name="related_docs[]" 
+                                                                    id="related-documents-select"
+                                                                    class="form-select form-control select2"
+                                                                    multiple="multiple"
+                                                                    data-placeholder="Select one or more documents">
+                                                                    
+                                                                    @foreach ($relatedDocuments as $doc)
+                                                                        <option value="{{ $doc->id }}" 
+                                                                            {{ $regulation->relatedDocuments->contains('id', $doc->id) ? 'selected' : '' }}>
+                                                                            {{ $doc->title }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
                                                         </div>
+                                                    </div>
+
+                                                    <script>
+                                                        $(document).ready(function() {
+                                                            $('#related-documents-select').select2();
+                                                        });
+                                                    </script>
+                                                    {{-- End Related Documents Section --}}
+
+                                                    <div class="col-12">
+                                                        <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
+                                                            <li>
+                                                                <button class="btn btn-lg btn-primary btn-block"
+                                                                    id="editSubmitBtn-{{ $regulation->id }}"
+                                                                    type="submit">
+                                                                    <i class="fas fa-spinner fa-spin"
+                                                                        style="display:none;"></i>
+                                                                    <span class="btn-text">Update</span>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
                                                     </div>
                                                 </div><!-- .tab-pane -->
 

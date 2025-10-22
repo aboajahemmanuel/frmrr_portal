@@ -14,6 +14,8 @@
     <link href="{{ asset('public/admin/css/theme.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('public/admin/css/libs/fontawesome-icons.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('public/admin/css/libs/themify-icons.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Select2 CSS -->
+    
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
@@ -44,6 +46,12 @@
             <link rel="stylesheet" href="{{ asset('public/admin/css/editors/summernote.css') }}">
             <script src="{{ asset('public/admin/js/libs/editors/summernote.js') }}"></script>
             <script src="{{ asset('public/admin/js/editors.js') }}"></script>
+            
+            <!-- jQuery (needed for select2) -->
+            <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+            
+            <!-- Select2 JS -->
+            <script src="{{ asset('public/assets/libs/select2/js/select2.min.js') }}"></script>
 
       @include('layouts.sessioncheck')
 
@@ -64,8 +72,6 @@
                     this.classList.add('was-validated');
                 }, false);
             </script>
-
-            <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </body>
 
 </html>

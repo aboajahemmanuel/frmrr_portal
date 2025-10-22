@@ -177,6 +177,7 @@
                                             <th style="text-align: center;">Year</th>
                                             <th style="text-align: center;">Effective Date</th>
                                             <th style="text-align: center;">Entity</th>
+                                            <th style="text-align: center;">Related Docs</th>
                                             <th style="text-align: center;">Action</th>
                                         </tr>
                                     </thead>
@@ -206,6 +207,20 @@
                                                     {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                                 </td>
                                                 <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                                
+                                                {{-- Related Documents Column --}}
+                                                <td style="text-align: center">
+                                                    @if($result->related_docs)
+                                                        @php
+                                                            $relatedCount = count(explode(',', $result->related_docs));
+                                                        @endphp
+                                                        <span class="badge badge-primary">{{ $relatedCount }} related</span>
+                                                    @else
+                                                        <span class="badge badge-secondary">None</span>
+                                                    @endif
+                                                </td>
+                                                {{-- End Related Documents Column --}}
+                                                
                                                 <td class="tb-odr-action"
                                                     style="display: flex !important; align-items: center; justify-content: center">
                                                     <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">

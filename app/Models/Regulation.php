@@ -15,6 +15,7 @@ class Regulation extends Model
         'entity_id', 'category_id', 'subcategory_id', 'regulation_doc', 'regulation_doc2',
         'price', 'status', 'note', 'ceased', 'effective_date', 'issue_date',
         'document_version', 'ceased_date', 'group_id', 'doc_preview', 'doc_preview_count', 'admin_status',
+        'related_docs'
             ];
 
 
@@ -116,6 +117,17 @@ class Regulation extends Model
             ->where('id', '!=', $this->id)
             ->orderBy('document_version', 'desc')
             ->get();
+    }
+    
+    // Get related documents as collection
+    public function getRelatedDocumentsAttribute()
+    {
+        if (!$this->related_docs) {
+            return collect();
+        }
+        
+        $relatedIds = explode(',', $this->related_docs);
+        return Regulation::whereIn('id', $relatedIds)->get();
     }
     
     // Accessor to get formatted title with effective date

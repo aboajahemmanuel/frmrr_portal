@@ -591,6 +591,29 @@
                                                         </div>
                                                     </div>
 
+                                                    {{-- Related Documents Section --}}
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Related Documents</label>
+                                                            <div class="form-control-wrap">
+                                                                @if($relatedDocuments && $relatedDocuments->count() > 0)
+                                                                    <ul class="list-unstyled">
+                                                                        @foreach($relatedDocuments as $relatedDoc)
+                                                                            <li>
+                                                                                <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank">
+                                                                                    {{ $relatedDoc->title }}
+                                                                                </a>
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                @else
+                                                                    <p class="text-muted">No related documents found.</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {{-- End Related Documents Section --}}
+
                                                     <div class="col-md-6">
 
                                                         <div class="form-group">
