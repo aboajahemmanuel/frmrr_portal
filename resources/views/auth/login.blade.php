@@ -12,7 +12,7 @@
             <div class="tabs">
                 <div class="current">
                     <a href="{{ route('login') }}">
-                        <p class="current-active">Log in</p>
+                        <p class="current-active">Log in11</p>
                     </a>
                     <a href="{{ route('register') }}">
                         <p class="current-inactive">Sign up</p>
