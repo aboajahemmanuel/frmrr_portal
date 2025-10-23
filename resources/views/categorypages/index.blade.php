@@ -212,9 +212,13 @@
                                                 <td style="text-align: center">
                                                     @if($result->related_docs)
                                                         @php
-                                                            $relatedCount = count(explode(',', $result->related_docs));
+                                                            $relatedDocuments = $result->related_documents;
+                                                            $relatedCount = $relatedDocuments->count();
+                                                            // Debug: Check what data we have
+                                                            // echo "Related Docs IDs: " . $result->related_docs . "<br>";
+                                                            // echo "Related Documents Count: " . $relatedCount . "<br>";
                                                         @endphp
-                                                        <span class="badge badge-primary">{{ $relatedCount }} related</span>
+                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
                                                     @else
                                                         <span class="badge badge-secondary">None</span>
                                                     @endif
@@ -306,6 +310,67 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                                                            
+                                            <!-- Modal for Related Documents -->
+                                            <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
+                                                           
+                                                        </div>
+                                                        <div class="modal-body">
+                                                          
+                                                                               @php
+                                                            $relatedDocuments = $result->related_documents;
+                                                        @endphp
+                                                        @php
+                                                            $relatedDocuments = $result->related_documents;
+                                                        @endphp
+
+                                                            <div class="card w-100 border-0 shadow-sm">
+                                                                <div class="card-header bg-light">
+                                                                    <h5 class="mb-0 fw-bold">Related Documents</h5>
+                                                                </div>
+
+                                                                <div class="card-body p-0">
+                                                                    <div class="list-group w-100">
+                                                                        @foreach($relatedDocuments as $index => $relatedDoc)
+                                                                            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                                                                <div class="flex-grow-1">
+                                                                                    <strong>{{ $index + 1 }}.</strong>
+                                                                                    <span>{{ $relatedDoc->title }}</span>
+                                                                                </div>
+                                                                                <div class="d-flex gap-2">
+                                                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-book-read"></em>
+                                                                                    </a>
+                                                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-download"></em>
+                                                                                    </a>
+                                                                                    <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-save"></em>
+                                                                                    </a>
+                                                                                    <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
+                                                                                        @csrf
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+                                                               
+                                                               
+                                                        </div>
+                                                      
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                            <!-- End Modal for Related Documents -->
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -317,7 +382,7 @@
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
                                         <th style="text-align: center;">Entity</th>
-                            
+                                        <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;"><span
                                                 >Action</span></th>
 
@@ -349,6 +414,23 @@
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                          
+                                            {{-- Related Documents Column --}}
+                                            <td style="text-align: center">
+                                                @if($result->related_docs)
+                                                    @php
+                                                        $relatedDocuments = $result->related_documents;
+                                                        $relatedCount = $relatedDocuments->count();
+                                                        // Debug: Check what data we have
+                                                        // echo "Related Docs IDs: " . $result->related_docs . "<br>";
+                                                        // echo "Related Documents Count: " . $relatedCount . "<br>";
+                                                    @endphp
+                                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                @else
+                                                    <span class="badge badge-secondary">None</span>
+                                                @endif
+                                            </td>
+                                            {{-- End Related Documents Column --}}
                                           
                                             <td class="tb-odr-action"
                                                 style="display: flex !important; align-items: center; justify-content: center">
@@ -441,6 +523,82 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        <!-- Modal for Related Documents -->
+                                                        <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
+                                                           
+                                                        </div>
+                                                        <div class="modal-body">
+                                                          
+                                                                               @php
+                                                            $relatedDocuments = $result->related_documents;
+                                                        @endphp
+                                                        @php
+                                                            $relatedDocuments = $result->related_documents;
+                                                        @endphp
+
+                                                            <div class="card w-100 border-0 shadow-sm">
+                                                                <div class="card-header bg-light">
+                                                                    <h5 class="mb-0 fw-bold">Related Documents</h5>
+                                                                </div>
+
+                                                                <div class="card-body p-0">
+                                                                    <div class="list-group w-100">
+                                                                        @foreach($relatedDocuments as $index => $relatedDoc)
+                                                                            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                                                                <div class="flex-grow-1">
+                                                                                    <strong>{{ $index + 1 }}.</strong>
+                                                                                    <span>{{ $relatedDoc->title }}</span>
+                                                                                </div>
+                                                                                <div class="d-flex gap-2">
+                                                                                     @if ($isSubscribed)
+                                                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-book-read"></em>
+                                                                                    </a>
+                                                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-download"></em>
+                                                                                    </a>
+                                                                                    <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-save"></em>
+                                                                                    </a>
+                                                                                    <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
+                                                                                        @csrf
+                                                                                    </form>
+                                                                                   @else
+                                                                                    <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-book-read"></em>
+                                                                                    </a>
+                                                                                     <a href="{{ route('subscribe') }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-download"></em>
+                                                                                    </a>
+                                                                                    <a href="{{ route('subscribe') }}" id="submit" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                        <em class="icon ni ni-save"></em>
+                                                                                    </a>
+                                                                                    <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
+                                                                                        @csrf
+                                                                                    </form>
+                                                                                    @endif
+
+                                                                                </div>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+                                                               
+                                                               
+                                                        </div>
+                                                      
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <!-- End Modal for Related Documents -->
                                     @endforeach
                                 </tbody>
                             </table>
@@ -598,6 +756,32 @@
                             }
                         })({{ $result->id }});
                     @endforeach
+                });
+            </script>
+            
+            <script>
+                // Initialize modals for DataTables - only for elements with data-target attribute
+                $(document).on('click', '[data-toggle="modal"][data-target]', function(e) {
+                    var target = $(this).data('target');
+                    console.log('Modal target:', target);
+                    if ($(target).length > 0) {
+                        $(target).modal('show');
+                    } else {
+                        console.log('Modal not found:', target);
+                    }
+                });
+                
+                // Additional modal initialization for DataTables
+                $('#example').on('draw.dt', function() {
+                    $('[data-toggle="modal"][data-target]').off('click').on('click', function(e) {
+                        var target = $(this).data('target');
+                        console.log('Modal target (DataTable):', target);
+                        if ($(target).length > 0) {
+                            $(target).modal('show');
+                        } else {
+                            console.log('Modal not found (DataTable):', target);
+                        }
+                    });
                 });
             </script>
 
