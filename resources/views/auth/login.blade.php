@@ -7,7 +7,7 @@
                 <img src="{{ asset('public/users/assets/FMDQ-Logo.png') }}" alt="FMDQlogo" />
             </div>
             <div class="app-name">
-                <p>FINANCIAL MARKETS RULES REPOSITOR<p>go lang  mmmmmmmmmmmmmmmmmmmmmmmm
+                <p>FINANCIAL MARKETS RULES REPOSITOR<p>go lang  oooooooooooo
             </div>
             <div class="tabs">
                 <div class="current">
