@@ -32,7 +32,6 @@ class PaymentController extends Controller
      */
     public function redirectToGateway()
     {
-
         try {
             return Paystack::getAuthorizationUrl()->redirectNow();
         } catch (\Exception $e) {
@@ -66,12 +65,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('payment.failed')->with('error', 'Payment verification failed.');
         }
-
-       
     }
-
-
-
 
     public function documentpay(Request $request)
     {
@@ -177,7 +171,4 @@ class PaymentController extends Controller
                 ->with('error', 'Could not process payment success.');
         }
     }
-    
-
-   
 }
