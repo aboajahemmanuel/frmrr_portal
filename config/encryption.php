@@ -10,6 +10,6 @@ return [
     |
     */
 
-    'iv' => env('ENCRYPTION_IV'),
-    'key' => env('ENCRYPTION_KEY'),
+    'iv' => env('ENCRYPTION_IV', '1789123114561012'),
+    'key' => env('ENCRYPTION_KEY', 'AKY_45_EncryptToDecrypt_DHJA'),
 ];
