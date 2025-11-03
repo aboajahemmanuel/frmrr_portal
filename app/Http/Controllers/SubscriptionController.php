@@ -6,66 +6,73 @@ use Carbon\Carbon;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use App\Models\SubscriptionPlan;
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class SubscriptionController extends Controller
 {
+    protected $paymentService;
 
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
 
-
-
-
-
-
+    /**
+     * Process subscription payment
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function subscribe_payment(Request $request)
     {
-        //return $request;
-        $plan = SubscriptionPlan::findOrFail($request->plan_id);
-        $user = Auth::user();
+        try {
+            // Validate request
+            $request->validate([
+                'plan_id' => 'required|exists:subscription_plans,id'
+            ]);
 
+            $user = Auth::user();
+            if (!$user) {
+                throw new \Exception('User not authenticated');
+            }
 
-        $plan = SubscriptionPlan::findOrFail($request->plan_id);
-        $startDate = Carbon::now();
-        $endDate = $startDate->copy()->addDays($plan->duration);
+            $plan = SubscriptionPlan::findOrFail($request->plan_id);
 
-        $reference = (rand(100000000, 999999999) % 100000000);
-        $reference = "QPAY" . $reference;
+            // Create subscription record
+            $startDate = Carbon::now();
+            $endDate = $startDate->copy()->addDays($plan->duration);
 
-        $subscription = new Subscription();
-        $subscription->user_id = $user->id;
-        $subscription->subscription_plan_id = $plan->id;
-        $subscription->start_date = $startDate;
-        $subscription->end_date = $endDate;
-        $user->name;
-        $user->phone;
-        $plan->price;
-        $user->id;
+            $subscription = new Subscription();
+            $subscription->user_id = $user->id;
+            $subscription->subscription_plan_id = $plan->id;
+            $subscription->start_date = $startDate;
+            $subscription->end_date = $endDate;
+            $subscription->save();
 
+            // Prepare and encrypt payment parameters
+            $encryptedParams = $this->paymentService->preparePaymentParams(
+                $user->email,
+                $user->name,
+                $plan->price,
+                $user->phone,
+                '03014444' // Special service code for subscriptions
+            );
 
+            // Get payment URL and redirect
+            $redirectUrl = $this->paymentService->getPaymentRedirectUrl($encryptedParams);
+            
+            return redirect($redirectUrl);
 
-        $subscription->save();
-
-        function dzHideMe($dzRecord)
-        {
-            // Store the cipher method
-            $ciphering = 'AES-128-CTR';
-            // Use OpenSSl Encryption method
-            $iv_length = openssl_cipher_iv_length($ciphering);
-            $options = 0;
-            //Non-NULL Initialization Vector for encryption
-            $encryption_iv = '1789123114561012'; //User defined secret key 
-            $iv = substr(hash('sha256', $encryption_iv), 0, 16); // sha256 is hash_hmac_algo
-            //Store the encryption key
-            $encryption_key = 'AKY_45_EncryptToDecrypt_DHJA';  //User defined private key 
-            $key = hash('sha256', $encryption_key);
-            //Use openssl_encrypt() function to encrypt the data
-            $dzEncrypted = openssl_encrypt($dzRecord, $ciphering, $key, $options, $iv);
-            $dzEncrypted = base64_encode($dzEncrypted);
-
-            return $dzEncrypted;
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to process subscription payment: ' . $e->getMessage())
+                ->withInput();
         }
-
-        $PaymentParam = '{"em":"' . $user->email . '","fn":"' . $user->name . '","ln":"' . $user->name . '","am":"' . $plan->price . '","pn":"' . $user->phone . '","scode":"03014444"}';
-        return redirect("http://10.10.16.47/qpay/odrum/" . dzhideMe($PaymentParam));
     }
 }
