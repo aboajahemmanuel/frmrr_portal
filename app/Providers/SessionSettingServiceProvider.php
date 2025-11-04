@@ -33,6 +33,9 @@ class SessionSettingServiceProvider extends ServiceProvider
                 $timeout = SessionSetting::getCurrentTimeout();
                 Config::set('session.lifetime', $timeout);
                 
+                // Set session garbage collection probability to clean up expired sessions
+                Config::set('session.lottery', [2, 100]);
+                
                 // Also update the environment variable if needed
                 putenv("SESSION_LIFETIME={$timeout}");
                 $_ENV['SESSION_LIFETIME'] = $timeout;

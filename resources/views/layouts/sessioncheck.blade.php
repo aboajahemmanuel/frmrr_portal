@@ -30,7 +30,7 @@
     {{-- Session Timeout Script --}}
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-        let sessionLifetime = {{ config('session.lifetime') }} * 60 * 1000; // Laravel session lifetime
+        let sessionLifetime = {{ \App\Models\SessionSetting::getCurrentTimeout() }} * 60 * 1000; // Database session lifetime
         let warningTime = 1 * 60 * 1000; 
         let warningTimer, logoutTimer, countdownInterval;
 
@@ -40,7 +40,27 @@
             clearInterval(countdownInterval);
             const modal = bootstrap.Modal.getInstance(document.getElementById('sessionTimeoutModal'));
             if (modal) modal.hide();
-            startTimers();
+            
+            // Send heartbeat to server to refresh session
+            fetch('{{ route("session.refresh") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                credentials: 'same-origin'
+            }).then(response => {
+                if (response.ok) {
+                    startTimers();
+                } else {
+                    // If session refresh fails, redirect to login
+                    window.location.href = '{{ route("login") }}';
+                }
+            }).catch(error => {
+                console.error('Session refresh failed:', error);
+                // On error, still start timers to avoid breaking the UI
+                startTimers();
+            });
         }
 
         function startTimers() {
@@ -71,7 +91,31 @@
         }
 
         document.getElementById('continueSession').addEventListener('click', function () {
-            location.reload();
+            // Refresh the session on server and reset timers
+            fetch('{{ route("session.refresh") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                credentials: 'same-origin'
+            }).then(response => {
+                if (response.ok) {
+                    // Hide modal and reset timers
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('sessionTimeoutModal'));
+                    if (modal) modal.hide();
+                    clearTimeout(warningTimer);
+                    clearTimeout(logoutTimer);
+                    clearInterval(countdownInterval);
+                    startTimers();
+                } else {
+                    // If session refresh fails, redirect to login
+                    window.location.href = '{{ route("login") }}';
+                }
+            }).catch(error => {
+                console.error('Session refresh failed:', error);
+                window.location.href = '{{ route("login") }}';
+            });
         });
 
         ['keydown', 'click'].forEach(e => document.addEventListener(e, resetTimers));

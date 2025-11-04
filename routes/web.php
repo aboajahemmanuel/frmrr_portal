@@ -64,9 +64,35 @@ Route::post('/disclaimer/accept', [DisclaimerController::class, 'accept'])->name
 Route::get('/disclaimer/history', [DisclaimerController::class, 'history'])->name('disclaimer.history');
 
 // Test page for session timeout
-Route::get('/test-session-public', function() {
-    return view('test-session-public');
-});
+Route::get('/test-session', function () {
+    return view('test-session');
+})->name('test.session');
+
+// Session management test page
+Route::get('/test-session-management', function () {
+    return view('test-session-management');
+})->name('test.session.management')->middleware('auth');
+
+// Debug route to check database timeout value
+Route::get('/debug-session-timeout', function () {
+    $timeoutFromDB = \App\Models\SessionSetting::getCurrentTimeout();
+    $configTimeout = config('session.lifetime');
+    $rawData = \Illuminate\Support\Facades\DB::table('session_settings')->first();
+    
+    return response()->json([
+        'database_timeout' => $timeoutFromDB,
+        'config_timeout' => $configTimeout,
+        'table_exists' => \Illuminate\Support\Facades\Schema::hasTable('session_settings'),
+        'table_data' => \App\Models\SessionSetting::first(),
+        'raw_db_data' => $rawData,
+        'session_id' => session()->getId(),
+        'current_session_lifetime' => session()->getMaxInactiveInterval()
+    ]);
+})->middleware('auth');
+
+// Session management routes
+Route::post('/session/refresh', [App\Http\Controllers\SessionController::class, 'refresh'])->name('session.refresh');
+Route::get('/session/check', [App\Http\Controllers\SessionController::class, 'check'])->name('session.check');
 
 // Test timeout page
 Route::get('/test-timeout', function() {
@@ -98,6 +124,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::get('/document/download/{slug}/{payref}', [BrowseController::class, 'document_download'])->name('document_download');
 
     Route::get('/document/payment/success', [PaymentController::class, 'payment_success']);
+    Route::get('/payment/success', [PaymentController::class, 'payment_success']);
 
     Route::post('paystore', [PaymentController::class, 'paystore'])->name('paystore');
 
