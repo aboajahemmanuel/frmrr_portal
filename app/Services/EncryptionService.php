@@ -13,8 +13,8 @@ class EncryptionService
     {
         $this->ciphering = 'AES-128-CTR';
         $this->options = 0;
-        $this->encryptionIv = config('encryption.iv');
-        $this->encryptionKey = config('encryption.key');
+        $this->encryptionIv = env('ENCRYPTION_IV', '1789123114561012'); // User defined secret key
+        $this->encryptionKey = env('ENCRYPTION_KEY', 'AKY_45_EncryptToDecrypt_DHJA'); // User defined private key
     }
 
     public function encrypt($data)

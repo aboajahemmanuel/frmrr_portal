@@ -27,6 +27,21 @@ class PaymentService
         return $transaction;
     }
 
+    public function createSubscriptionPayment($user, $plan)
+    {
+        $paymentParam = json_encode([
+            'em' => $user->email,
+            'fn' => $user->name,
+            'ln' => $user->name,
+            'am' => $plan->price,
+            'pn' => $user->phone,
+            'scode' => '1101'
+        ]);
+
+        $encryptedParams = $this->encryptionService->encrypt($paymentParam);
+        return "http://10.10.16.47/qpay/odrum/" . $encryptedParams;
+    }
+
     public function generateReference()
     {
         $reference = (rand(100000000, 999999999) % 100000000);
