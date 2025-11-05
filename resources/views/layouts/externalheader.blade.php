@@ -23,7 +23,7 @@
                               </button>
                           </a>
                       </div>
-                  </form>
+                  </form> 
                   @if (Auth::check())
                   @if ($userSubscription || Auth::user()->usertype == 'internal')
                   <a href="{{ url('search') }}">

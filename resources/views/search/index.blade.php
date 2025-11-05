@@ -490,6 +490,7 @@
                                         <tr>
                                             <th style="text-align: center;">Title</th>
                                             <th style="text-align: center;">Effective Date</th>
+                                            <th style="text-align: center;">Year</th>
                                             <th style="text-align: center;">Category</th>
                                             <th style="text-align: center;">Sub Category</th>
                                             <th style="text-align: center;">Entity</th>
@@ -517,6 +518,8 @@
                                                 <td style="text-align: center">
                                                     {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                                 </td>
+
+                                                <td style="text-align: center">{{ $result->year->name }}</td>
 
                                                 <td style="text-align: center">
                                                     {{ $result->category->name }}

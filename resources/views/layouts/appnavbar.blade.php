@@ -40,9 +40,9 @@
             <a href="{{ route('newsalert') }}">
                 <li>News</li>
             </a>
-            <a href="{{ url('/search') }}">
+            {{-- <a href="{{ url('/search') }}">
                 <li>Search</li>
-            </a>
+            </a> --}}
             <a href="{{ route('feedback') }}">
                 <li>Feedback </li>
             </a>

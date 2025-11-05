@@ -369,7 +369,11 @@
                                                         $relatedDocuments = $result->related_documents;
                                                         $relatedCount = $relatedDocuments->count();
                                                     @endphp
-                                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                    @else
+                                                        <span class="badge badge-warning" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                    @endif
                                                 @else
                                                     <span class="badge badge-secondary">None</span>
                                                 @endif
@@ -498,9 +502,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach
@@ -529,6 +533,7 @@
                                     <tr>
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
+                                        <th style="text-align: center;">Year</th>
                                         <th style="text-align: center;">Entity</th>
                                         <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;"><span
@@ -557,6 +562,7 @@
                                             <td style="text-align: center">
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
+                                            <td style="text-align: center">{{ $result->year->name }}</td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                           
                                             <td style="text-align: center">
@@ -565,7 +571,11 @@
                                                         $relatedDocuments = $result->related_documents;
                                                         $relatedCount = $relatedDocuments->count();
                                                     @endphp
-                                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                    @else
+                                                        <span class="badge badge-warning" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                    @endif
                                                 @else
                                                     <span class="badge badge-secondary">None</span>
                                                 @endif
@@ -692,9 +702,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach

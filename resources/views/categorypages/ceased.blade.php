@@ -515,9 +515,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach
@@ -545,6 +545,7 @@
                                     <tr>
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
+                                        <th style="text-align: center;">Year</th>
                                         <th style="text-align: center !important;">Entity</th>
                                           <th style="text-align: center;">{{$formattedStatuses}}</th>
                                         <th style="text-align: center;">{{$formattedStatuses}} Date</th>
@@ -575,6 +576,7 @@
                                             <td style="text-align: center">
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
+                                            <td style="text-align: center">{{ $result->year->name }}</td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
 
                                               <td style="text-align: center">
@@ -723,9 +725,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach

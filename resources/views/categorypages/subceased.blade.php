@@ -498,9 +498,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach
@@ -536,7 +536,7 @@
                                          <th style="text-align: center;">{{$formattedStatuses}}</th>
                                         <th style="text-align: center;">{{$formattedStatuses}} Date</th>
                                         <th style="text-align: center;">Related Docs</th>
-                                        <th style="text-align: center;"><span style=" display:none">Entity</span></th>
+                                        <th style="text-align: center;">Year</th>
                                         <th style="text-align: center;"><span
                                                 style="margin: 0px -190px 0px 0px ">Action</span></th>
 
@@ -579,8 +579,7 @@
                                             </td>
                                             {{-- End Related Documents Column --}}
                                             
-                                            <td style="text-align: center;"><span
-                                                    style=" display:none">{{ $result->year->name }}</span></td>
+                                            <td style="text-align: center">{{ $result->year->name }}</td>
                                             <td class="tb-odr-action"
                                                 style="display: flex !important; align-items: center; justify-content: center">
                                                 <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
@@ -709,9 +708,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach
@@ -907,9 +906,9 @@
                                                                                     <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
                                                                                         @csrf
                                                                                     </form>
-                                                                                    <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
                                                                                         View
-                                                                                    </a>
+                                                                                    </a> --}}
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach

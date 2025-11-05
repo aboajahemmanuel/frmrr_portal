@@ -456,7 +456,7 @@
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
                                         <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;"><span style=" display:none">Entity</span></th>
+                                        <th style="text-align: center;">Year</th>
                                         <th style="text-align: center;"><span
                                                 >Action</span></th>
 
@@ -484,8 +484,7 @@
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td style="text-align: center;"><span
-                                                    style=" display:none">{{ $result->year->name }}</span></td>
+                                            <td style="text-align: center">{{ $result->year->name }}</td>
                                             <td class="tb-odr-action"
                                                 style="display: flex !important; align-items: center; justify-content: center">
                                                 <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
