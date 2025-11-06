@@ -50,7 +50,7 @@ class RegulationController extends Controller
             ->role($role)
             ->get();
 
-        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(20);
+        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(500);
 
         // $data = Regulation::orderBy('created_at', 'desc')->get();
 
@@ -214,7 +214,7 @@ class RegulationController extends Controller
     public function update_doc(Request $request, $id)
     {
 
-        $request;
+       // return $request;
         $validator = Validator::make($request->all(), [
             // 'pdf_file' => 'required|file|mimes:pdf',
             // 'csv_file' => 'required|file|mimes:csv,txt',
@@ -232,7 +232,7 @@ class RegulationController extends Controller
         $regulation_doc = $request->file('pdf_file');
 
         $admin_status      = 0;
-        $regulation_update = Regulation::find($id);
+         $regulation_update = Regulation::find($id);
         $slug              = Str::slug($request->title);
 
         $regulation_update->admin_status = $admin_status;
@@ -293,6 +293,8 @@ class RegulationController extends Controller
             $new_regulation_doc->save();
             $pending_regulation_doc->save();
         }
+
+      
 
         $action = $request['title'];
         $title  = 'Please be advised that a new Document (' . $action . ') has been updated and is awaiting your review and approval.';
@@ -593,6 +595,7 @@ class RegulationController extends Controller
             $update_admin_status->group_id         = $regulation_approval->group_id;
             $update_admin_status->regulation_doc   = $regulation_approval->regulation_doc;
             $update_admin_status->doc_preview      = $regulation_approval->doc_preview;
+            $update_admin_status->related_docs      = $regulation_approval->related_docs;
             $update_admin_status->doc_preview_count = $regulation_approval->doc_preview_count;
 
             $regulation_approval->status          = $request->status;

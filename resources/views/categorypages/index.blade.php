@@ -391,7 +391,7 @@
                                                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                             <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
                                                         @else
-                                                            <span class="badge badge-warning" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                            <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
                                                         @endif
                                                     @else
                                                         <span class="badge badge-secondary">None</span>
@@ -487,7 +487,7 @@
                                                                             
                                             <!-- Modal for Related Documents -->
                                             <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-dialog modal-xl" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
@@ -508,48 +508,100 @@
                                                                 </div>
 
                                                                 <div class="card-body p-0">
+                                                                    <!-- Header Row -->
+                                                                    <div class="d-flex bg-light border-bottom p-3 fw-bold text-center" style="font-size: 14px;">
+                                                                        <div style="width: 8%; min-width: 50px;">S/N</div>
+                                                                        <div style="width: 30%; min-width: 200px;">Title</div>
+                                                                        <div style="width: 10%; min-width: 80px;">Year</div>
+                                                                        <div style="width: 15%; min-width: 120px;">Effective Date</div>
+                                                                        <div style="width: 15%; min-width: 120px;">Issued Date</div>
+                                                                        <div style="width: 12%; min-width: 100px;">Status</div>
+                                                                        <div style="width: 10%; min-width: 120px;">Action</div>
+                                                                    </div>
+                                                                    
                                                                     <div class="list-group w-100">
                                                                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                                             @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
-                                                                                    <div class="flex-grow-1">
-                                                                                        <strong>{{ $index + 1 }}.</strong>
-                                                                                        <span>{{ $relatedDoc->title }}</span>
+                                                                                <div class="list-group-item border-0 border-bottom">
+                                                                                    <div class="d-flex align-items-center p-2" style="font-size: 14px;">
+                                                                                        <div style="width: 8%; min-width: 50px; text-align: center;">
+                                                                                            <strong>{{ $index + 1 }}</strong>
+                                                                                        </div>
+                                                                                        <div style="width: 30%; min-width: 200px;" class="text-truncate">
+                                                                                            {{ $relatedDoc->title }}
+                                                                                        </div>
+                                                                                        <div style="width: 10%; min-width: 80px; text-align: center;">
+                                                                                            {{ optional($relatedDoc->year)->name ?? 'N/A' }}
+                                                                                        </div>
+                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
+                                                                                            {{ $relatedDoc->effective_date ? \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') : 'N/A' }}
+                                                                                        </div>
+                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
+                                                                                            {{ $relatedDoc->issue_date ? \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
+                                                                                        </div>
+                                                                                        <div style="width: 12%; min-width: 100px; text-align: center;">
+                                                                                            <span class="badge badge-success">{{ $relatedDoc->ceased ?? 'Active' }}</span>
+                                                                                        </div>
+                                                                                        <div style="width: 10%; min-width: 120px; text-align: center;">
+                                                                                            <div class="d-flex gap-1 justify-content-center">
+                                                                                                <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                                    <em class="icon ni ni-book-read"></em>
+                                                                                                </a>
+                                                                                                <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                                    <em class="icon ni ni-download"></em>
+                                                                                                </a>
+                                                                                                <a href="#" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                                    <em class="icon ni ni-save"></em>
+                                                                                                </a>
+                                                                                                <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
+                                                                                                    @csrf
+                                                                                                </form>
+                                                                                            </div>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <div class="d-flex gap-2">
-                                                                                        <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                            <em class="icon ni ni-book-read"></em>
-                                                                                        </a>
-                                                                                        <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                            <em class="icon ni ni-download"></em>
-                                                                                        </a>
-                                                                                        <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                            <em class="icon ni ni-save"></em>
-                                                                                        </a>
-                                                                                        <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                            @csrf
-                                                                                        </form>
-                                                                                        {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
-                                                                                            View
-                                                                                        </a> --}}
-                                                                                    </div>
+                                                                                    
+                                                                                    {{-- Check if this related document has its own related documents --}}
+                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                        @include('partials.nested-related-documents', [
+                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                            'parentIndex' => $index + 1,
+                                                                                            'level' => 1
+                                                                                        ])
+                                                                                    @endif
                                                                                 </div>
                                                                             @endforeach
                                                                         @else
                                                                             @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
-                                                                                    <div class="flex-grow-1">
-                                                                                        <strong>{{ $index + 1 }}.</strong>
-                                                                                        <span class="text-muted">Restricted - Upgrade to view</span>
-                                                                                    </div>
-                                                                                    <div class="d-flex gap-2">
-                                                                                        <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                            Upgrade to Access
-                                                                                        </a>
+                                                                                <div class="list-group-item border-0 border-bottom">
+                                                                                    <div class="d-flex align-items-center p-2" style="font-size: 14px;">
+                                                                                        <div style="width: 8%; min-width: 50px; text-align: center;">
+                                                                                            <strong>{{ $index + 1 }}</strong>
+                                                                                        </div>
+                                                                                        <div style="width: 30%; min-width: 200px;" class="text-truncate">
+                                                                                            <span class="text-muted">Restricted - Upgrade to view</span>
+                                                                                        </div>
+                                                                                        <div style="width: 10%; min-width: 80px; text-align: center;">
+                                                                                            <span class="text-muted">-</span>
+                                                                                        </div>
+                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
+                                                                                            <span class="text-muted">-</span>
+                                                                                        </div>
+                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
+                                                                                            <span class="text-muted">-</span>
+                                                                                        </div>
+                                                                                        <div style="width: 12%; min-width: 100px; text-align: center;">
+                                                                                            <span class="text-muted">-</span>
+                                                                                        </div>
+                                                                                        <div style="width: 10%; min-width: 120px; text-align: center;">
+                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
+                                                                                                Upgrade
+                                                                                            </a>
+                                                                                        </div>
                                                                                     </div>
                                                                                 </div>
                                                                             @endforeach
-                                                                        @endif                                      </div>
+                                                                        @endif
+                                                                    </div>
                                                       
                                                     </div>
                                                 </div>
@@ -614,7 +666,7 @@
                                                     @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                         <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
                                                     @else
-                                                        <span class="badge badge-warning" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
                                                     @endif
                                                 @else
                                                     <span class="badge badge-secondary">None</span>
@@ -716,7 +768,7 @@
                                         
                                         <!-- Modal for Related Documents -->
                                                         <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-dialog modal-xl" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
@@ -740,42 +792,62 @@
                                                                     <div class="list-group w-100">
                                                                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                                             @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
-                                                                                    <div class="flex-grow-1">
-                                                                                        <strong>{{ $index + 1 }}.</strong>
-                                                                                        <span>{{ $relatedDoc->title }}</span>
+                                                                                <div class="list-group-item">
+                                                                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                                                                        <div class="flex-grow-1">
+                                                                                            <strong>{{ $index + 1 }}.</strong>
+                                                                                            <span>{{ $relatedDoc->title }}</span>
+                                                                                            <span>{{ $relatedDoc->title }}</span>
+                                                                                        </div>
+                                                                                        <div class="d-flex gap-2">
+                                                                                        <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                            <em class="icon ni ni-book-read"></em>
+                                                                                        </a>
+                                                                                        <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                            <em class="icon ni ni-download"></em>
+                                                                                        </a>
+                                                                                        <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                                            <em class="icon ni ni-save"></em>
+                                                                                        </a>
+                                                                                        <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
+                                                                                            @csrf
+                                                                                        </form>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <div class="d-flex gap-2">
-                                                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                        <em class="icon ni ni-book-read"></em>
-                                                                                    </a>
-                                                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                        <em class="icon ni ni-download"></em>
-                                                                                    </a>
-                                                                                    <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                        <em class="icon ni ni-save"></em>
-                                                                                    </a>
-                                                                                    <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                        @csrf
-                                                                                    </form>
-                                                                                    {{-- <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank" class="btn btn-sm btn-primary">
-                                                                                        View
-                                                                                    </a> --}}
-                                                                                    </div>
+                                                                                    
+                                                                                    {{-- Check if this related document has its own related documents --}}
+                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                        @include('partials.nested-related-documents', [
+                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                            'parentIndex' => $index + 1,
+                                                                                            'level' => 1
+                                                                                        ])
+                                                                                    @endif
                                                                                 </div>
                                                                             @endforeach
                                                                         @else
                                                                             @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
-                                                                                    <div class="flex-grow-1">
-                                                                                        <strong>{{ $index + 1 }}.</strong>
-                                                                                        <span class="text-muted">Restricted - Upgrade to view</span>
+                                                                                <div class="list-group-item">
+                                                                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                                                                        <div class="flex-grow-1">
+                                                                                            <strong>{{ $index + 1 }}.</strong>
+                                                                                            <span class="text-muted">Restricted - Upgrade to view</span>
+                                                                                        </div>
+                                                                                        <div class="d-flex gap-2">
+                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
+                                                                                                Upgrade to Access
+                                                                                            </a>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <div class="d-flex gap-2">
-                                                                                        <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                            Upgrade to Access
-                                                                                        </a>
-                                                                                    </div>
+                                                                                    
+                                                                                    {{-- Check if this related document has its own related documents --}}
+                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                        @include('partials.nested-related-documents', [
+                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                            'parentIndex' => $index + 1,
+                                                                                            'level' => 1
+                                                                                        ])
+                                                                                    @endif
                                                                                 </div>
                                                                             @endforeach
                                                                         @endif

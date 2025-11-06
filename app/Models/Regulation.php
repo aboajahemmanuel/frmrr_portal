@@ -119,7 +119,7 @@ class Regulation extends Model
             ->get();
     }
     
-    // Get related documents as collection
+    // Get related documents as collection with recursive nesting
     public function getRelatedDocumentsAttribute()
     {
         if (!$this->related_docs) {
@@ -127,7 +127,35 @@ class Regulation extends Model
         }
         
         $relatedIds = explode(',', $this->related_docs);
-        return Regulation::whereIn('id', $relatedIds)->get();
+        $relatedDocuments = Regulation::whereIn('id', $relatedIds)->get();
+        
+        // Recursively load nested related documents
+        $relatedDocuments->each(function ($doc) {
+            $doc->nested_related_documents = $this->loadNestedRelatedDocuments($doc, [$this->id]);
+        });
+        
+        return $relatedDocuments;
+    }
+    
+    // Recursive method to load nested related documents with circular reference prevention
+    private function loadNestedRelatedDocuments($document, $visitedIds = [])
+    {
+        if (!$document->related_docs || in_array($document->id, $visitedIds)) {
+            return collect();
+        }
+        
+        $visitedIds[] = $document->id;
+        $nestedIds = explode(',', $document->related_docs);
+        $nestedDocuments = Regulation::whereIn('id', $nestedIds)
+            ->whereNotIn('id', $visitedIds) // Prevent circular references
+            ->get();
+        
+        // Recursively load nested documents for each nested document
+        $nestedDocuments->each(function ($nestedDoc) use ($visitedIds) {
+            $nestedDoc->nested_related_documents = $this->loadNestedRelatedDocuments($nestedDoc, $visitedIds);
+        });
+        
+        return $nestedDocuments;
     }
     
     // Accessor to get formatted title with effective date

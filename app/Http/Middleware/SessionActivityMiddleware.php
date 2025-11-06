@@ -26,7 +26,7 @@ class SessionActivityMiddleware
             
             // Get timeout from database settings
             $timeoutMinutes = SessionSetting::getCurrentTimeout();
-            $regenerationInterval = max(300, ($timeoutMinutes * 60) / 4); // Regenerate every 1/4 of session timeout, minimum 5 minutes
+            $regenerationInterval = max(300, ($timeoutMinutes * 60) / 4); 
             
             // Regenerate session ID periodically for security
             $lastRegeneration = Session::get('last_regeneration', 0);

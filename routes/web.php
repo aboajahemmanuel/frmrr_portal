@@ -48,30 +48,12 @@ Route::get('/clear-cache', function () {
     return "Cache cleared successfully!";
 });
 
-// Move all unprotected routes to appropriate middleware groups
-// The welcome route should be protected by auth middleware
-// Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
-// Route::get('/newsalert', [WelcomeController::class, 'newsalert'])->name('newsalert');
-// Route::get('/feedback', [WelcomeController::class, 'feedback'])->name('feedback');
-// Route::get('/subscribe', [WelcomeController::class, 'subscribe'])->name('subscribe');
-
-// Route::post('/contactpost', [WelcomeController::class, 'feedback_post'])->name('contactpost');
-
-// Route::get('/alert/{id}', [WelcomeController::class, 'alert'])->name('alert');
 Route::get('/disclaimer', [DisclaimerController::class, 'show'])->name('disclaimer');
 Route::post('/disclaimer/accept', [DisclaimerController::class, 'accept'])->name('disclaimer.accept');
 Route::get('/disclaimer/history', [DisclaimerController::class, 'history'])->name('disclaimer.history');
 
-// Test page for session timeout
-Route::get('/test-session', function () {
-    return view('test-session');
-})->name('test.session');
 
-// Session management test page
-Route::get('/test-session-management', function () {
-    return view('test-session-management');
-})->name('test.session.management')->middleware('auth');
 
 // Debug route to check database timeout value
 Route::get('/debug-session-timeout', function () {
@@ -94,10 +76,7 @@ Route::get('/debug-session-timeout', function () {
 Route::post('/session/refresh', [App\Http\Controllers\SessionController::class, 'refresh'])->name('session.refresh');
 Route::get('/session/check', [App\Http\Controllers\SessionController::class, 'check'])->name('session.check');
 
-// Test timeout page
-Route::get('/test-timeout', function() {
-    return view('test-timeout');
-});
+
 
 
 
