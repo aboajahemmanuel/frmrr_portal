@@ -28,6 +28,7 @@ class PaymentController extends Controller
         $paymentStatus = $request->get('status');
         
         $userpayment = Subscription::where('user_id', $user_id)->orderBy('created_at', 'desc')->first();
+        $transaction = Transaction::where('user_id', $user_id)->orderBy('created_at', 'desc')->first();
         
         if (!$userpayment) {
             return Redirect::route('home')->with('error', 'No subscription found.');
@@ -36,14 +37,22 @@ class PaymentController extends Controller
         // Check if payment was successful
         if ($paymentStatus === 'successful' || $paymentStatus === '1' || $paymentStatus === 1) {
             $userpayment->status = 1; // Success
+            $transaction->status = 'success';
             $userpayment->save();
+            $transaction->save();
             
             return Redirect::route('success')->with('success', 'Payment was successful.');
         } else {
             $userpayment->status = 0; // Failed
+            $transaction->status = 'failed';
             $userpayment->save();
+            $transaction->save();
             
-            return Redirect::route('home')->with('error', 'Payment failed. Please try again.');
+            return Redirect::route('home')->with('sweetalert', [
+                'type' => 'error',
+                'title' => 'Payment Failed',
+                'message' => 'Payment failed. Please try again.'
+            ]);
         }
     }
 }

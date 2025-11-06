@@ -13,14 +13,14 @@ class PaymentService
         $this->encryptionService = $encryptionService;
     }
 
-    public function createTransaction($user_id, $regulation_id, $amount)
+    public function createTransaction($user, $plan)
     {
         $reference = $this->generateReference();
         
         $transaction = new Transaction();
-        $transaction->user_id = $user_id;
-        $transaction->regulation_id = $regulation_id;
-        $transaction->amount = $amount;
+        $transaction->user_id = $user->id;
+        $transaction->subscription_plan_id = $plan->id;
+        $transaction->amount = $plan->price;
         $transaction->reference = $reference;
         $transaction->save();
 

@@ -324,6 +324,17 @@
         });
         $('#disclaimerModal').modal('show');
         @endif
+
+        // Handle SweetAlert messages
+        @if(Session::has('sweetalert'))
+        @php $alert = Session::get('sweetalert'); @endphp
+        Swal.fire({
+            icon: '{{ $alert["type"] }}',
+            title: '{{ $alert["title"] }}',
+            text: '{{ $alert["message"] }}',
+            confirmButtonText: 'OK'
+        });
+        @endif
     });
 </script>
 @endsection

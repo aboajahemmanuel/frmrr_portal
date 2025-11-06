@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Subscription;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\SubscriptionPlan;
 use Illuminate\Support\Facades\Auth;
@@ -34,11 +35,15 @@ class SubscriptionController extends Controller
         $subscription->end_date = $endDate;
         $subscription->save();
 
+        // Create transaction record
+        $transaction = $paymentService->createTransaction($user, $plan);
+
         // Generate payment URL using PaymentService
         $paymentUrl = $paymentService->createSubscriptionPayment($user, $plan);
         
         return redirect($paymentUrl);
     }
+
 }
 
 

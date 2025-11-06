@@ -103,7 +103,11 @@
                                                             <span class="badge badge-primary">Success</span>
                                                         @endif
                                                         @if ($transaction->status == '')
-                                                            <span class="badge badge-danger">Pending</span>
+                                                            <span class="badge badge-warning">Pending</span>
+                                                        @endif
+
+                                                        @if ($transaction->status == 'failed')
+                                                            <span class="badge badge-danger">Failed</span>
                                                         @endif
 
                                                     </td>
