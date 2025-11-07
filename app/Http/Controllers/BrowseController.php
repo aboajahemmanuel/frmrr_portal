@@ -22,7 +22,7 @@ class BrowseController extends Controller
     public function index($slug)
     {
 
-      $data     = Category::where('status', 1)->get();
+         $data     = Category::where('status', 1)->get();
         $category = Category::where('slug', $slug)->first();
 
         $news_alert = News::all();
@@ -49,9 +49,8 @@ class BrowseController extends Controller
           $reg = Regulation::where('status', 1)
             ->where('category_id', $category->id)
             ->whereNull('ceased')
-        //->orderByRaw('LOWER(title) asc')
-       // ->orderBy('title', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
 
          $regulations_ceased = Regulation::where('status', 1)
             ->whereNotNull('ceased')

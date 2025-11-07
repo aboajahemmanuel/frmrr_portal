@@ -1,8 +1,6 @@
 @extends('layouts.externalcategory')
 
 @section('content')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 
 <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
 
@@ -130,62 +128,62 @@
     var years = @json($years);
 
     $(document).ready(function () {
-        var table = $('#example').DataTable({
-            columnDefs: [
-                {
-                    targets: 0, // Title column
-                    render: function (data, type, row) {
-                        if (type === 'filter' || type === 'sort') {
-                            return $('<div>').html(data).text(); // Strips HTML for filtering/sorting
-                        }
-                        return data; // Keep HTML for display
-                    }
-                }
-            ],
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            order: [[0, 'asc']], // Default sort by title
-            responsive: true,
-            language: {
-                search: "Search documents:",
-                lengthMenu: "Show _MENU_ documents per page",
-                info: "Showing _START_ to _END_ of _TOTAL_ documents",
-                infoFiltered: "(filtered from _MAX_ total documents)"
-            }
-        });
+        // Custom table management without DataTables
+        const table = document.getElementById('example');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
+        const thead = table.querySelector('thead');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const totalRows = rows.length;
+        
+        let currentFilters = {
+            alphabet: '',
+            year: '',
+            search: ''
+        };
+        
+        let sortColumn = 0;
+        let sortDirection = 'asc';
 
         // Detect table structure and get column indices
-        var headers = [];
-        $('#example thead th').each(function(index) {
-            headers.push($(this).text().trim());
+        const headers = [];
+        thead.querySelectorAll('th').forEach((th, index) => {
+            headers.push(th.textContent.trim());
         });
         
-        var titleColIndex = 0; // Title is always first
-        var yearColIndex = headers.indexOf('Year');
-        var entityColIndex = headers.indexOf('Entity');
+        const titleColIndex = 0; // Title is always first
+        const yearColIndex = headers.indexOf('Year');
+        const entityColIndex = headers.indexOf('Entity');
 
         // Create enhanced filter container
-        var filterHtml = '<div class="filter-container">';
+        let filterHtml = '<div class="filter-container">';
+        
+        // Search input
+        filterHtml += '<div class="filter-group">';
+        filterHtml += '<label for="table-search">Search documents:</label>';
+        filterHtml += '<input type="text" id="table-search" class="filter-select" placeholder="Search..." style="min-width: 200px;">';
+        filterHtml += '</div>';
         
         // Alphabet filter dropdown
         filterHtml += '<div class="filter-group">';
         filterHtml += '<label for="alphabet-filter">Filter by First Letter:</label>';
         filterHtml += '<select id="alphabet-filter" class="filter-select">';
         filterHtml += '<option value="">All Letters</option>';
-        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        alphabet.forEach(function (letter) {
-            filterHtml += '<option value="' + letter + '">' + letter + '</option>';
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        alphabet.forEach(letter => {
+            filterHtml += `<option value="${letter}">${letter}</option>`;
         });
         filterHtml += '</select>';
         filterHtml += '</div>';
 
-        // Year filter dropdown (always show since both tables have year)
+        // Year filter dropdown
         filterHtml += '<div class="filter-group">';
         filterHtml += '<label for="year-filter">Filter by Year:</label>';
         filterHtml += '<select id="year-filter" class="filter-select">';
         filterHtml += '<option value="">All Years</option>';
-        years.forEach(function (year) {
-            filterHtml += '<option value="' + year + '">' + year + '</option>';
+        years.forEach(year => {
+            filterHtml += `<option value="${year}">${year}</option>`;
         });
         filterHtml += '</select>';
         filterHtml += '</div>';
@@ -197,98 +195,173 @@
         // Add search info container
         filterHtml += '<div id="search-info" class="search-info" style="display: none;"></div>';
 
-        $('#example_wrapper').prepend(filterHtml);
+        // Insert filter container before table
+        $(table).before(filterHtml);
 
-        // No need to populate entity filter since we removed it
+        // Filter and display rows
+        function filterAndDisplayRows() {
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                let visible = true;
+                const cells = row.querySelectorAll('td');
+                
+                // Get text content from cells
+                const titleText = cells[titleColIndex]?.textContent.trim() || '';
+                const yearText = cells[yearColIndex >= 0 ? yearColIndex : 2]?.textContent.trim() || '';
+                
+                // Search filter (searches in all text content)
+                if (currentFilters.search) {
+                    const searchTerm = currentFilters.search.toLowerCase();
+                    const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                    visible = visible && rowText.includes(searchTerm);
+                }
+                
+                // Alphabet filter
+                if (visible && currentFilters.alphabet) {
+                    const firstLetter = titleText.charAt(0).toUpperCase();
+                    visible = visible && (firstLetter === currentFilters.alphabet);
+                }
+                
+                // Year filter
+                if (visible && currentFilters.year) {
+                    visible = visible && yearText.includes(currentFilters.year);
+                }
+                
+                // Show/hide row
+                row.style.display = visible ? '' : 'none';
+                if (visible) visibleCount++;
+            });
+            
+            updateSearchInfo(visibleCount);
+        }
 
-        // Custom search function for first letter and year filtering
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var selectedLetter = $('#alphabet-filter').val();
-                var selectedYear = $('#year-filter').val();
-                
-                // If no filters are selected, show all rows
-                if (!selectedLetter && !selectedYear) {
-                    return true;
-                }
-                
-                var match = true;
-                
-                // Check alphabet filter
-                if (selectedLetter) {
-                    var titleText = $('<div>').html(data[titleColIndex]).text().trim();
-                    var firstLetter = titleText.charAt(0).toUpperCase();
-                    if (firstLetter !== selectedLetter.toUpperCase()) {
-                        match = false;
-                    }
-                }
-                
-                // Check year filter - find year column dynamically
-                if (match && selectedYear) {
-                    var currentYearColIndex = yearColIndex;
-                    // For non-subscribed users, year is at index 2
-                    if (currentYearColIndex === -1) {
-                        currentYearColIndex = 2;
-                    }
-                    
-                    var yearText = $('<div>').html(data[currentYearColIndex]).text().trim();
-                    if (yearText !== selectedYear) {
-                        match = false;
-                    }
-                }
-                
-                return match;
-            }
-        );
+        // Search functionality
+        document.getElementById('table-search').addEventListener('keyup', function(e) {
+            currentFilters.search = e.target.value;
+            filterAndDisplayRows();
+        });
 
         // Alphabet filter functionality
-        $('#alphabet-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
+        document.getElementById('alphabet-filter').addEventListener('change', function(e) {
+            currentFilters.alphabet = e.target.value;
+            filterAndDisplayRows();
         });
 
         // Year filter functionality
-        $('#year-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
+        document.getElementById('year-filter').addEventListener('change', function(e) {
+            currentFilters.year = e.target.value;
+            filterAndDisplayRows();
         });
 
         // Clear all filters
-        $('#clear-filters').on('click', function () {
-            $('#alphabet-filter').val('');
-            $('#year-filter').val('');
-            table.draw();
-            $('#search-info').hide();
+        document.getElementById('clear-filters').addEventListener('click', function() {
+            document.getElementById('table-search').value = '';
+            document.getElementById('alphabet-filter').value = '';
+            document.getElementById('year-filter').value = '';
+            
+            currentFilters = {
+                alphabet: '',
+                year: '',
+                search: ''
+            };
+            
+            filterAndDisplayRows();
         });
 
         // Update search info
-        function updateSearchInfo() {
-            var info = table.page.info();
-            var activeFilters = [];
+        function updateSearchInfo(visibleCount) {
+            const activeFilters = [];
             
-            if ($('#alphabet-filter').val()) {
-                activeFilters.push('Letter: ' + $('#alphabet-filter').val());
+            if (currentFilters.search) {
+                activeFilters.push('Search: ' + currentFilters.search);
             }
-            if ($('#year-filter').val()) {
-                activeFilters.push('Year: ' + $('#year-filter').val());
+            if (currentFilters.alphabet) {
+                activeFilters.push('Letter: ' + currentFilters.alphabet);
+            }
+            if (currentFilters.year) {
+                activeFilters.push('Year: ' + currentFilters.year);
             }
             
+            const searchInfo = document.getElementById('search-info');
             if (activeFilters.length > 0) {
-                var infoText = 'Active filters: ' + activeFilters.join(', ') + 
-                              ' | Showing ' + info.recordsDisplay + ' of ' + info.recordsTotal + ' documents';
-                $('#search-info').text(infoText).show();
+                const infoText = 'Active filters: ' + activeFilters.join(', ') + 
+                              ' | Showing ' + visibleCount + ' of ' + totalRows + ' documents';
+                searchInfo.textContent = infoText;
+                searchInfo.style.display = 'block';
             } else {
-                $('#search-info').hide();
+                searchInfo.style.display = 'none';
             }
         }
-
-        // Update info on table draw
-        table.on('draw', function () {
-            updateSearchInfo();
+        
+        // Add sort functionality to table headers
+        thead.querySelectorAll('th').forEach((th, index) => {
+            th.style.cursor = 'pointer';
+            th.style.userSelect = 'none';
+            
+            // Add sort indicator
+            const sortIndicator = document.createElement('span');
+            sortIndicator.innerHTML = ' ↕';
+            sortIndicator.style.opacity = '0.3';
+            th.appendChild(sortIndicator);
+            
+            th.addEventListener('click', function() {
+                // Toggle sort direction
+                if (sortColumn === index) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortColumn = index;
+                    sortDirection = 'asc';
+                }
+                
+                // Update all sort indicators
+                thead.querySelectorAll('th span').forEach((span, i) => {
+                    if (i === index) {
+                        span.innerHTML = sortDirection === 'asc' ? ' ▲' : ' ▼';
+                        span.style.opacity = '1';
+                    } else {
+                        span.innerHTML = ' ↕';
+                        span.style.opacity = '0.3';
+                    }
+                });
+                
+                // Sort rows
+                sortTable(index);
+            });
         });
+        
+        // Sort table function
+        function sortTable(columnIndex) {
+            const sortedRows = rows.slice().sort((a, b) => {
+                const aText = a.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+                const bText = b.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+                
+                // Try numeric comparison first
+                const aNum = parseFloat(aText);
+                const bNum = parseFloat(bText);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+                
+                // String comparison
+                if (sortDirection === 'asc') {
+                    return aText.localeCompare(bText);
+                } else {
+                    return bText.localeCompare(aText);
+                }
+            });
+            
+            // Re-append rows in sorted order
+            sortedRows.forEach(row => tbody.appendChild(row));
+            
+            // Re-apply filters after sorting
+            filterAndDisplayRows();
+        }
 
-        // Enhanced search functionality
-        $('.dataTables_filter input').attr('placeholder', 'Search by title, entity, or any field...');
+        // Initialize display
+        filterAndDisplayRows();
+        console.log('Table filters initialized successfully');
 
         // Handle restricted docs click for unpaid users
         $(document).on('click', '.restricted-docs', function(e) {
@@ -612,6 +685,16 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                
+                                <!-- Pagination Links -->
+                                @if($reg->hasPages())
+                                <div class="mt-4 d-flex justify-content-center">
+                                    <nav aria-label="Regulations pagination">
+                                        {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                                    </nav>
+                                </div>
+                                @endif
+                                
                             @else
                                <table id="example" class="datatable-init responsive table table-striped"
                                 style="width:100%">
@@ -867,9 +950,16 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                      
-                  
-                           
+                            
+                            <!-- Pagination Links -->
+                            @if($reg->hasPages())
+                            <div class="mt-4 d-flex justify-content-center">
+                                <nav aria-label="Regulations pagination">
+                                    {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                                </nav>
+                            </div>
+                            @endif
+                            
                             @endif
                         @else
                             <!-- Content for non-authenticated users -->
