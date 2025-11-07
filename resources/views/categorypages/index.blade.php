@@ -458,8 +458,8 @@
                                                 <td style="text-align: center">
                                                     @if($result->related_docs)
                                                         @php
-                                                            // Count related docs from the string to avoid loading the collection
-                                                            $relatedCount = count(array_filter(explode(',', $result->related_docs)));
+                                                            $relatedDocuments = $result->related_documents;
+                                                            $relatedCount = $relatedDocuments->count();
                                                         @endphp
                                                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                             <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
@@ -568,8 +568,10 @@
                                                         </div>
                                                         <div class="modal-body">
                                                           
+                                                                               @php
+                                                            $relatedDocuments = $result->related_documents;
+                                                        @endphp
                                                         @php
-                                                            // Use eager-loaded related documents
                                                             $relatedDocuments = $result->related_documents;
                                                         @endphp
 
@@ -857,8 +859,10 @@
                                                         </div>
                                                         <div class="modal-body">
                                                           
+                                                                               @php
+                                                            $relatedDocuments = $result->related_documents;
+                                                        @endphp
                                                         @php
-                                                            // Use eager-loaded related documents
                                                             $relatedDocuments = $result->related_documents;
                                                         @endphp
 
@@ -970,29 +974,16 @@
 
 
             <script>
-                // Optimize: Only load PDF when modal is opened, not on page load
                 document.addEventListener('DOMContentLoaded', function() {
-                    var pdfjsLib = window['pdfjs-dist/build/pdf'];
-                    pdfjsLib.GlobalWorkerOptions.workerSrc =
-                        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-                    
-                    // Track loaded PDFs to avoid reloading
-                    var loadedPdfs = {};
-                    
-                    // Add event listener to all PDF modals
                     @foreach ($reg as $result)
-                        $('#pdfModal-{{ $result->id }}').on('shown.bs.modal', function() {
-                            var id = {{ $result->id }};
-                            
-                            // Only load if not already loaded
-                            if (loadedPdfs[id]) return;
-                            loadedPdfs[id] = true;
-                            
+                        (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
-                            var pageCount = {{ $result->page_count ?? 1 }};
-                            var previewCount = {{ $result->doc_preview_count ?? 2 }};
+                            var pageCount = {{ $result->page_count }};
+                            var previewCount = {{ $result->doc_preview_count ?? 2 }}; // Default to 2 pages if not set
+                            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+                            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
-                            
                             pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
                                 // Clear existing content
                                 var viewer = document.getElementById('pdf-viewer-' + id);
@@ -1118,7 +1109,7 @@
                                     });
                                 });
                             }
-                        });
+                        })({{ $result->id }});
                     @endforeach
                 });
             </script>

@@ -39,76 +39,14 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        // Eager load standard relationships to prevent N+1 queries
-        $reg = Regulation::with([
-            'year:id,name', 
-            'entity:id,name', 
-            'category:id,name', 
-            'subcategory:id,name'
-        ])
-        ->select('regulations.id', 'regulations.title', 'regulations.document_version', 'regulations.issue_date',
-                'regulations.year_id', 'regulations.effective_date', 'regulations.entity_id', 'regulations.related_docs',
-                'regulations.regulation_doc', 'regulations.doc_preview', 'regulations.doc_preview_count',
-                'regulations.category_id', 'regulations.subcategory_id', 'regulations.created_at')
-        ->where('status', 1)
-        ->where('category_id', $category->id)
-        ->whereNull('ceased')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10); // Increase pagination to reduce page loads
-        
-        // Manually eager load related documents to avoid N+1 queries
-        // Collect all related document IDs from the current page
-        $allRelatedIds = [];
-        foreach ($reg as $regulation) {
-            if ($regulation->related_docs) {
-                $ids = array_filter(array_map('trim', explode(',', $regulation->related_docs)));
-                $allRelatedIds = array_merge($allRelatedIds, $ids);
-            }
-        }
-        
-        // Load all related documents in one query if there are any
-        if (!empty($allRelatedIds)) {
-            $relatedDocuments = Regulation::whereIn('id', array_unique($allRelatedIds))
-                ->with(['year:id,name', 'entity:id,name'])
-                ->select('id', 'title', 'regulation_doc', 'year_id', 'entity_id', 'effective_date', 
-                        'issue_date', 'ceased', 'related_docs')
-                ->get()
-                ->keyBy('id');
-            
-            // Attach related documents to each regulation
-            foreach ($reg as $regulation) {
-                if ($regulation->related_docs) {
-                    $ids = array_filter(array_map('trim', explode(',', $regulation->related_docs)));
-                    $regulation->setRelation('related_documents', 
-                        $relatedDocuments->only($ids)->values()
-                    );
-                    
-                    // Load nested related documents for each related document (one level deep only)
-                    foreach ($regulation->related_documents as $relatedDoc) {
-                        if ($relatedDoc->related_docs) {
-                            $nestedIds = array_filter(array_map('trim', explode(',', $relatedDoc->related_docs)));
-                            // Limit to 20 nested docs and only if already loaded
-                            $nestedIds = array_slice($nestedIds, 0, 20);
-                            $relatedDoc->setRelation('nested_related_documents',
-                                $relatedDocuments->only($nestedIds)->values()
-                            );
-                        } else {
-                            $relatedDoc->setRelation('nested_related_documents', collect());
-                        }
-                    }
-                } else {
-                    $regulation->setRelation('related_documents', collect());
-                }
-            }
-        } else {
-            // No related documents, set empty collections
-            foreach ($reg as $regulation) {
-                $regulation->setRelation('related_documents', collect());
-            }
-        }
+              $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
+            ->where('category_id', $category->id)
+            ->whereNull('ceased')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        // Optimize ceased documents query with specific columns only
-        $regulations_ceased = Regulation::with(['year:id,name', 'entity:id,name'])
+          $regulations_ceased = Regulation::with(['year', 'entity'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
             ->where('status', 1)
             ->whereNotNull('ceased')

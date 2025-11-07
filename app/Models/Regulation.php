@@ -121,59 +121,43 @@ class Regulation extends Model
             ->get();
     }
     
-    // Relationship for eager loading related documents
-    public function related_documents()
-    {
-        if (!$this->related_docs) {
-            return collect();
-        }
-        
-        $relatedIds = array_filter(array_map('trim', explode(',', $this->related_docs)));
-        
-        return $this->newQuery()
-            ->whereIn('id', $relatedIds)
-            ->get();
-    }
-    
-    // Get related documents as collection - optimized to use eager-loaded data
+    // Get related documents as collection with recursive nesting
     public function getRelatedDocumentsAttribute()
     {
-        // Check if relationship is already loaded (eager loaded)
-        if ($this->relationLoaded('related_documents')) {
-            return $this->getRelation('related_documents');
-        }
-        
         if (!$this->related_docs) {
             return collect();
         }
         
-        // Fallback: load if not eager loaded (shouldn't happen if controller is optimized)
-        $relatedIds = array_filter(array_map('trim', explode(',', $this->related_docs)));
-        return Regulation::whereIn('id', $relatedIds)
-            ->select('id', 'title', 'regulation_doc', 'year_id', 'entity_id', 'effective_date', 'issue_date', 'ceased', 'related_docs')
-            ->with(['year:id,name', 'entity:id,name'])
-            ->get();
+        $relatedIds = explode(',', $this->related_docs);
+        $relatedDocuments = Regulation::whereIn('id', $relatedIds)->get();
+        
+        // Recursively load nested related documents
+        $relatedDocuments->each(function ($doc) {
+            $doc->nested_related_documents = $this->loadNestedRelatedDocuments($doc, [$this->id]);
+        });
+        
+        return $relatedDocuments;
     }
     
-    // Relationship for nested related documents (one level deep)
-    public function getNestedRelatedDocumentsAttribute()
+    // Recursive method to load nested related documents with circular reference prevention
+    private function loadNestedRelatedDocuments($document, $visitedIds = [])
     {
-        // Check if relationship is already loaded
-        if ($this->relationLoaded('nested_related_documents')) {
-            return $this->getRelation('nested_related_documents');
-        }
-        
-        if (!$this->related_docs) {
+        if (!$document->related_docs || in_array($document->id, $visitedIds)) {
             return collect();
         }
         
-        // Load nested documents (limit to prevent recursion issues)
-        $relatedIds = array_filter(array_map('trim', explode(',', $this->related_docs)));
-        return Regulation::whereIn('id', $relatedIds)
-            ->select('id', 'title', 'regulation_doc', 'year_id', 'entity_id', 'effective_date', 'issue_date', 'ceased')
-            ->with(['year:id,name', 'entity:id,name'])
-            ->limit(20) // Prevent excessive loading
+        $visitedIds[] = $document->id;
+        $nestedIds = explode(',', $document->related_docs);
+        $nestedDocuments = Regulation::whereIn('id', $nestedIds)
+            ->whereNotIn('id', $visitedIds) // Prevent circular references
             ->get();
+        
+        // Recursively load nested documents for each nested document
+        $nestedDocuments->each(function ($nestedDoc) use ($visitedIds) {
+            $nestedDoc->nested_related_documents = $this->loadNestedRelatedDocuments($nestedDoc, $visitedIds);
+        });
+        
+        return $nestedDocuments;
     }
     
     // Accessor to get formatted title with effective date
