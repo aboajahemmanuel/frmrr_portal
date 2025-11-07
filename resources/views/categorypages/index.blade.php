@@ -1,6 +1,8 @@
 @extends('layouts.externalcategory')
 
 @section('content')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 
 <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
 
@@ -25,351 +27,165 @@
 
 
 
-    .filter-container {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 20px;
-        align-items: center;
-        flex-wrap: wrap;
-        clear: both;
-        width: 100%;
-    }
-    
-    .dataTables_wrapper .dataTables_filter {
-        float: none !important;
-        text-align: left;
-        margin-bottom: 15px;
-    }
-    
-    .dataTables_wrapper .dataTables_length {
-        float: none !important;
+    .alphabet-filter,
+    .year-filter {
         margin-bottom: 10px;
     }
 
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+    .alphabet-filter a,
+    .year-filter a {
+        margin: 0 4px;
+        text-decoration: none;
+        color: #007bff;
     }
 
-    .filter-group label {
+    .alphabet-filter a.active,
+    .year-filter a.active {
+        font-weight: bold;
+        color: #000;
+    }
+
+    /*  */
+    
+    /* Related Documents Styling */
+    .related-docs-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 12px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .related-docs-badge:hover {
+        background-color: #0056b3;
+    }
+    
+    .related-docs-badge.no-docs {
+        background-color: #6c757d;
+        cursor: default;
+    }
+    
+    .related-doc-item {
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s;
+    }
+    
+    .related-doc-item:last-child {
+        border-bottom: none;
+    }
+    
+    .related-doc-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .related-doc-title {
         font-weight: 600;
         color: #333;
-        font-size: 14px;
+        margin-bottom: 5px;
     }
-
-    .filter-select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background-color: #fff;
-        font-size: 14px;
-        min-width: 120px;
-        cursor: pointer;
+    
+    .related-doc-meta {
+        font-size: 12px;
+        color: #666;
     }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    
+    .related-doc-meta span {
+        margin-right: 15px;
     }
-
-    .clear-filters-btn {
-        padding: 8px 16px;
-        background-color: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        align-self: flex-end;
+    
+    .related-docs-modal .modal-body {
+        max-height: 500px;
+        overflow-y: auto;
     }
-
-    .clear-filters-btn:hover {
-        background-color: #5a6268;
-    }
-
-    .search-info {
+    
+    .nested-related-docs {
+        margin-left: 25px;
+        padding-left: 15px;
+        border-left: 2px solid #007bff;
         margin-top: 10px;
+    }
+    
+    .nested-doc-item {
         padding: 10px;
         background-color: #f8f9fa;
         border-radius: 4px;
+        margin-bottom: 8px;
+    }
+    
+    .nested-doc-title {
+        font-weight: 500;
+        color: #555;
         font-size: 14px;
-        color: #495057;
-    }
-
-    /* Custom styles for PDF preview */
-    .pdf-page {
-        border: 1px solid #ddd;
-        margin-bottom: 10px;
-        width: 100%;
+        margin-bottom: 4px;
     }
     
-    .blurred {
-        filter: blur(5px);
-        opacity: 0.7;
-    }
-    
-    .partial-page {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .partial-page .content-mask {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 50%;
-        background: linear-gradient(transparent 0%, white 100%);
+    .nested-badge {
+        display: inline-block;
+        background-color: #17a2b8;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-size: 11px;
+        margin-left: 8px;
     }
 </style>
 <script>
     var years = @json($years);
 
     $(document).ready(function () {
-        // Custom table management without DataTables
-        const table = document.getElementById('example');
-        if (!table) return;
-        
-        const tbody = table.querySelector('tbody');
-        const thead = table.querySelector('thead');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-        const totalRows = rows.length;
-        
-        let currentFilters = {
-            alphabet: '',
-            year: '',
-            search: ''
-        };
-        
-        let sortColumn = 0;
-        let sortDirection = 'asc';
-
-        // Detect table structure and get column indices
-        const headers = [];
-        thead.querySelectorAll('th').forEach((th, index) => {
-            headers.push(th.textContent.trim());
-        });
-        
-        const titleColIndex = 0; // Title is always first
-        const yearColIndex = headers.indexOf('Year');
-        const entityColIndex = headers.indexOf('Entity');
-
-        // Create enhanced filter container
-        let filterHtml = '<div class="filter-container">';
-        
-        // Search input
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="table-search">Search documents:</label>';
-        filterHtml += '<input type="text" id="table-search" class="filter-select" placeholder="Search..." style="min-width: 200px;">';
-        filterHtml += '</div>';
-        
-        // Alphabet filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="alphabet-filter">Filter by First Letter:</label>';
-        filterHtml += '<select id="alphabet-filter" class="filter-select">';
-        filterHtml += '<option value="">All Letters</option>';
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        alphabet.forEach(letter => {
-            filterHtml += `<option value="${letter}">${letter}</option>`;
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Year filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="year-filter">Filter by Year:</label>';
-        filterHtml += '<select id="year-filter" class="filter-select">';
-        filterHtml += '<option value="">All Years</option>';
-        years.forEach(year => {
-            filterHtml += `<option value="${year}">${year}</option>`;
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Clear filters button
-        filterHtml += '<button class="clear-filters-btn" id="clear-filters">Clear All Filters</button>';
-        filterHtml += '</div>';
-
-        // Add search info container
-        filterHtml += '<div id="search-info" class="search-info" style="display: none;"></div>';
-
-        // Insert filter container before table
-        $(table).before(filterHtml);
-
-        // Filter and display rows
-        function filterAndDisplayRows() {
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                let visible = true;
-                const cells = row.querySelectorAll('td');
-                
-                // Get text content from cells
-                const titleText = cells[titleColIndex]?.textContent.trim() || '';
-                const yearText = cells[yearColIndex >= 0 ? yearColIndex : 2]?.textContent.trim() || '';
-                
-                // Search filter (searches in all text content)
-                if (currentFilters.search) {
-                    const searchTerm = currentFilters.search.toLowerCase();
-                    const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-                    visible = visible && rowText.includes(searchTerm);
-                }
-                
-                // Alphabet filter
-                if (visible && currentFilters.alphabet) {
-                    const firstLetter = titleText.charAt(0).toUpperCase();
-                    visible = visible && (firstLetter === currentFilters.alphabet);
-                }
-                
-                // Year filter
-                if (visible && currentFilters.year) {
-                    visible = visible && yearText.includes(currentFilters.year);
-                }
-                
-                // Show/hide row
-                row.style.display = visible ? '' : 'none';
-                if (visible) visibleCount++;
-            });
-            
-            updateSearchInfo(visibleCount);
-        }
-
-        // Search functionality
-        document.getElementById('table-search').addEventListener('keyup', function(e) {
-            currentFilters.search = e.target.value;
-            filterAndDisplayRows();
-        });
-
-        // Alphabet filter functionality
-        document.getElementById('alphabet-filter').addEventListener('change', function(e) {
-            currentFilters.alphabet = e.target.value;
-            filterAndDisplayRows();
-        });
-
-        // Year filter functionality
-        document.getElementById('year-filter').addEventListener('change', function(e) {
-            currentFilters.year = e.target.value;
-            filterAndDisplayRows();
-        });
-
-        // Clear all filters
-        document.getElementById('clear-filters').addEventListener('click', function() {
-            document.getElementById('table-search').value = '';
-            document.getElementById('alphabet-filter').value = '';
-            document.getElementById('year-filter').value = '';
-            
-            currentFilters = {
-                alphabet: '',
-                year: '',
-                search: ''
-            };
-            
-            filterAndDisplayRows();
-        });
-
-        // Update search info
-        function updateSearchInfo(visibleCount) {
-            const activeFilters = [];
-            
-            if (currentFilters.search) {
-                activeFilters.push('Search: ' + currentFilters.search);
-            }
-            if (currentFilters.alphabet) {
-                activeFilters.push('Letter: ' + currentFilters.alphabet);
-            }
-            if (currentFilters.year) {
-                activeFilters.push('Year: ' + currentFilters.year);
-            }
-            
-            const searchInfo = document.getElementById('search-info');
-            if (activeFilters.length > 0) {
-                const infoText = 'Active filters: ' + activeFilters.join(', ') + 
-                              ' | Showing ' + visibleCount + ' of ' + totalRows + ' documents';
-                searchInfo.textContent = infoText;
-                searchInfo.style.display = 'block';
-            } else {
-                searchInfo.style.display = 'none';
-            }
-        }
-        
-        // Add sort functionality to table headers
-        thead.querySelectorAll('th').forEach((th, index) => {
-            th.style.cursor = 'pointer';
-            th.style.userSelect = 'none';
-            
-            // Add sort indicator
-            const sortIndicator = document.createElement('span');
-            sortIndicator.innerHTML = ' ↕';
-            sortIndicator.style.opacity = '0.3';
-            th.appendChild(sortIndicator);
-            
-            th.addEventListener('click', function() {
-                // Toggle sort direction
-                if (sortColumn === index) {
-                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                } else {
-                    sortColumn = index;
-                    sortDirection = 'asc';
-                }
-                
-                // Update all sort indicators
-                thead.querySelectorAll('th span').forEach((span, i) => {
-                    if (i === index) {
-                        span.innerHTML = sortDirection === 'asc' ? ' ▲' : ' ▼';
-                        span.style.opacity = '1';
-                    } else {
-                        span.innerHTML = ' ↕';
-                        span.style.opacity = '0.3';
+        var table = $('#example').DataTable({
+         columnDefs: [
+                {
+                    targets: 0, // Title column
+                    render: function (data, type, row) {
+                        if (type === 'filter' || type === 'sort') {
+                            return $('<div>').html(data).text(); // Strips HTML for filtering/sorting
+                        }
+                        return data; // Keep HTML for display
                     }
-                });
-                
-                // Sort rows
-                sortTable(index);
-            });
+                }
+            ]
         });
-        
-        // Sort table function
-        function sortTable(columnIndex) {
-            const sortedRows = rows.slice().sort((a, b) => {
-                const aText = a.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
-                const bText = b.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
-                
-                // Try numeric comparison first
-                const aNum = parseFloat(aText);
-                const bNum = parseFloat(bText);
-                
-                if (!isNaN(aNum) && !isNaN(bNum)) {
-                    return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
-                }
-                
-                // String comparison
-                if (sortDirection === 'asc') {
-                    return aText.localeCompare(bText);
-                } else {
-                    return bText.localeCompare(aText);
-                }
-            });
-            
-            // Re-append rows in sorted order
-            sortedRows.forEach(row => tbody.appendChild(row));
-            
-            // Re-apply filters after sorting
-            filterAndDisplayRows();
-        }
 
-        // Initialize display
-        filterAndDisplayRows();
-        console.log('Table filters initialized successfully');
+        // Year Filter
+        var yearHtml = '<div class="year-filter">';
+        yearHtml += '<a href="#" class="active" data-year="all">All</a>';
+        years.forEach(function (year) {
+            yearHtml += '<a href="#" data-year="' + year + '">' + year + '</a>';
+        });
+        yearHtml += '</div>';
+        $('#example_wrapper').prepend(yearHtml);
 
-        // Handle restricted docs click for unpaid users
-        $(document).on('click', '.restricted-docs', function(e) {
+        $('.year-filter a').on('click', function (e) {
             e.preventDefault();
-            var redirectUrl = $(this).data('redirect');
-            if (redirectUrl) {
-                window.open(redirectUrl, '_blank');
-            }
+            var year = $(this).data('year');
+            $('.year-filter a').removeClass('active');
+            $(this).addClass('active');
+
+            table.column(3).search(year === 'all' ? '' : year).draw();
+        });
+
+        // Alphabet Filter
+        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        var alphabetHtml = '<div class="alphabet-filter">';
+        alphabetHtml += '<a href="#" class="active" data-letter="all">All</a>';
+        alphabet.forEach(function (letter) {
+            alphabetHtml += '<a href="#" data-letter="' + letter + '">' + letter + '</a>';
+        });
+        alphabetHtml += '</div>';
+        $('#example_wrapper').prepend(alphabetHtml);
+
+        $('.alphabet-filter a').on('click', function (e) {
+            e.preventDefault();
+            var letter = $(this).data('letter');
+            $('.alphabet-filter a').removeClass('active');
+            $(this).addClass('active');
+
+            table.column(0).search(letter === 'all' ? '' : '^' + letter, true, false).draw();
         });
     });
 </script>
@@ -432,14 +248,14 @@
                                             <tr>
                                                   <td>
                                 
+                                    {{ $result->title }}
                                     @if ($result->doc_preview == 1)
                                      <a href="#" data-toggle="modal"
                                                             data-target="#pdfModal-{{ $result->id }}">
-                                                            {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
+                                                            {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
 
                                                         </a>
-                                    @else
-                                        {{ $result->formatted_title }}
+                                        
                                     @endif
                                 
                             </td>
@@ -453,25 +269,19 @@
                                                     {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                                 </td>
                                                 <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                                
-                                                {{-- Related Documents Column --}}
                                                 <td style="text-align: center">
-                                                    @if($result->related_docs)
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                            $relatedCount = $relatedDocuments->count();
-                                                        @endphp
-                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                            <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                        @else
-                                                            <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                        @endif
+                                                    @php
+                                                        $relatedDocs = $result->relatedDocuments;
+                                                        $relatedCount = $relatedDocs->count();
+                                                    @endphp
+                                                    @if($relatedCount > 0)
+                                                        <a href="#" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}" class="related-docs-badge">
+                                                            <em class="icon ni ni-link-alt"></em> {{ $relatedCount }}
+                                                        </a>
                                                     @else
-                                                        <span class="badge badge-secondary">None</span>
+                                                        <span class="related-docs-badge no-docs">0</span>
                                                     @endif
                                                 </td>
-                                                {{-- End Related Documents Column --}}
-                                                
                                                 <td class="tb-odr-action"
                                                     style="display: flex !important; align-items: center; justify-content: center">
                                                     <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
@@ -547,7 +357,10 @@
 
                                                         <div class="modal-body">
                                                             <div id="pdf-viewer-{{ $result->id }}">
-                                                                <!-- Canvas elements will be dynamically added based on page count -->
+                                                                <canvas id="canvas-page1-{{ $result->id }}"
+                                                                    class="pdf-page"></canvas>
+                                                                <canvas id="canvas-page2-{{ $result->id }}"
+                                                                    class="pdf-page"></canvas>
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
@@ -557,33 +370,109 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                                                            
+
                                             <!-- Modal for Related Documents -->
-       
-                                        </div>
-                                        <!-- End Modal for Related Documents -->
-                                            <!-- End Modal for Related Documents -->
+                                            <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1"
+                                                role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}"
+                                                aria-hidden="true">
+                                                <div class="modal-dialog modal-lg" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">
+                                                                Related Documents - {{ $result->title }}
+                                                            </h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            @php
+                                                                $relatedDocs = $result->relatedDocuments;
+                                                            @endphp
+                                                            @if($relatedDocs->count() > 0)
+                                                                @foreach($relatedDocs as $relatedDoc)
+                                                                    <div class="related-doc-item">
+                                                                        <div class="related-doc-title">
+                                                                            {{ $relatedDoc->title }}
+                                                                            @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                <span class="nested-badge">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
+                                                                            @endif
+                                                                        </div>
+                                                                        <div class="related-doc-meta">
+                                                                            @if($relatedDoc->document_version)
+                                                                                <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
+                                                                            @endif
+                                                                            @if($relatedDoc->effective_date)
+                                                                                <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                            @endif
+                                                                            @if($relatedDoc->entity)
+                                                                                <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
+                                                                            @endif
+                                                                        </div>
+                                                                        <div style="margin-top: 8px;">
+                                                                            @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                                                                <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                    <em class="icon ni ni-book-read"></em> View
+                                                                                </a>
+                                                                                <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-primary">
+                                                                                    <em class="icon ni ni-download"></em> Download
+                                                                                </a>
+                                                                            @endif
+                                                                        </div>
+                                                                        
+                                                                        @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                            <div class="nested-related-docs">
+                                                                                <small><strong>Nested Related Documents:</strong></small>
+                                                                                @foreach($relatedDoc->nested_related_documents as $nestedDoc)
+                                                                                    <div class="nested-doc-item">
+                                                                                        <div class="nested-doc-title">
+                                                                                            <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
+                                                                                        </div>
+                                                                                        <div class="related-doc-meta">
+                                                                                            @if($nestedDoc->document_version)
+                                                                                                <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                                                                                            @endif
+                                                                                            @if($nestedDoc->effective_date)
+                                                                                                <span><strong>Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                                                                            <div style="margin-top: 5px;">
+                                                                                                <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary">
+                                                                                                    <em class="icon ni ni-book-read"></em> View
+                                                                                                </a>
+                                                                                                <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary">
+                                                                                                    <em class="icon ni ni-download"></em> Download
+                                                                                                </a>
+                                                                                            </div>
+                                                                                        @endif
+                                                                                    </div>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                @endforeach
+                                                            @else
+                                                                <p class="text-center text-muted">No related documents found.</p>
+                                                            @endif
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @endforeach
                                     </tbody>
                                 </table>
-                                
-                                <!-- Pagination Links -->
-                                @if($reg->hasPages())
-                                <div class="mt-4 d-flex justify-content-center">
-                                    <nav aria-label="Regulations pagination">
-                                        {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
-                                    </nav>
-                                </div>
-                                @endif
-                                
-                            @else
-                               <table id="example" class="datatable-init responsive table table-striped"
+                            @endif
+                        @else
+                            <table id="example" class="datatable-init responsive table table-striped"
                                 style="width:100%">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Year</th>
                                         <th style="text-align: center;">Entity</th>
                                         <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;"><span
@@ -598,14 +487,14 @@
                                                                     
                                   <td>
                                 
+                                    {{ $result->title }}
                                     @if ($result->doc_preview == 1)
                                      <a href="#" data-toggle="modal"
                                                             data-target="#pdfModal-{{ $result->id }}">
-                                                            {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
+                                                            {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
 
                                                         </a>
-                                    @else
-                                        {{ $result->formatted_title }}
+                                        
                                     @endif
                                 
                             </td>
@@ -616,31 +505,26 @@
                                                
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
-                                            <td style="text-align: center">{{ $result->year->name }}</td>
-
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                          
-                                            {{-- Related Documents Column --}}
                                             <td style="text-align: center">
-                                                @if($result->related_docs)
-                                                    @php
-                                                        $relatedDocuments = $result->related_documents;
-                                                        $relatedCount = $relatedDocuments->count();
-                                                    @endphp
-                                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                    @else
-                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                    @endif
+                                                @php
+                                                    $relatedDocs = $result->relatedDocuments;
+                                                    $relatedCount = $relatedDocs->count();
+                                                @endphp
+                                                @if($relatedCount > 0)
+                                                    <a href="#" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}" class="related-docs-badge">
+                                                        <em class="icon ni ni-link-alt"></em> {{ $relatedCount }}
+                                                    </a>
                                                 @else
-                                                    <span class="badge badge-secondary">None</span>
+                                                    <span class="related-docs-badge no-docs">0</span>
                                                 @endif
                                             </td>
-                                           
                                           
                                             <td class="tb-odr-action"
                                                 style="display: flex !important; align-items: center; justify-content: center">
                                                 <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
+
+
 
 
 
@@ -719,7 +603,10 @@
                                                     </div>
                                                     <div class="modal-body">
                                                         <div id="pdf-viewer-{{ $result->id }}">
-                                                            <!-- Canvas elements will be dynamically added based on page count -->
+                                                            <canvas id="canvas-page1-{{ $result->id }}"
+                                                                class="pdf-page"></canvas>
+                                                            <canvas id="canvas-page2-{{ $result->id }}"
+                                                                class="pdf-page"></canvas>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -729,124 +616,114 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Modal for Related Documents -->
-                                                        <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-xl" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
-                                                           
-                                                        </div>
-                                                        <div class="modal-body">
-                                                          
-                                                                               @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
+                                        <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1"
+                                            role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}"
+                                            aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">
+                                                            Related Documents - {{ $result->title }}
+                                                        </h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
                                                         @php
-                                                            $relatedDocuments = $result->related_documents;
+                                                            $relatedDocs = $result->relatedDocuments;
                                                         @endphp
-
-                                                            <div class="card w-100 border-0 shadow-sm">
-                                                                <div class="card-header bg-light">
-                                                                    <h5 class="mb-0 fw-bold">Related Documents</h5>
-                                                                </div>
-
-                                                                <div class="card-body p-0">
-                                                                    <div class="list-group w-100">
-                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item">
-                                                                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                                                                        <div class="flex-grow-1">
-                                                                                            <strong>{{ $index + 1 }}.</strong>
-                                                                                            <span>{{ $relatedDoc->title }}</span>
-                                                                                            <span>{{ $relatedDoc->title }}</span>
-                                                                                        </div>
-                                                                                        <div class="d-flex gap-2">
-                                                                                        <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                            <em class="icon ni ni-book-read"></em>
-                                                                                        </a>
-                                                                                        <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                            <em class="icon ni ni-download"></em>
-                                                                                        </a>
-                                                                                        <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                            <em class="icon ni ni-save"></em>
-                                                                                        </a>
-                                                                                        <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                            @csrf
-                                                                                        </form>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @else
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item">
-                                                                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                                                                        <div class="flex-grow-1">
-                                                                                            <strong>{{ $index + 1 }}.</strong>
-                                                                                            <span class="text-muted">Restricted - Upgrade to view</span>
-                                                                                        </div>
-                                                                                        <div class="d-flex gap-2">
-                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                                Upgrade to Access
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
+                                                        @if($relatedDocs->count() > 0)
+                                                            @foreach($relatedDocs as $relatedDoc)
+                                                                <div class="related-doc-item">
+                                                                    <div class="related-doc-title">
+                                                                        {{ $relatedDoc->title }}
+                                                                        @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                            <span class="nested-badge">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
                                                                         @endif
                                                                     </div>
+                                                                    <div class="related-doc-meta">
+                                                                        @if($relatedDoc->document_version)
+                                                                            <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
+                                                                        @endif
+                                                                        @if($relatedDoc->effective_date)
+                                                                            <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                        @endif
+                                                                        @if($relatedDoc->entity)
+                                                                            <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
+                                                                        @endif
+                                                                    </div>
+                                                                    @if($isSubscribed)
+                                                                        <div style="margin-top: 8px;">
+                                                                            <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                                <em class="icon ni ni-book-read"></em> View
+                                                                            </a>
+                                                                            <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-primary">
+                                                                                <em class="icon ni ni-download"></em> Download
+                                                                            </a>
+                                                                        </div>
+                                                                    @else
+                                                                        <div style="margin-top: 8px;">
+                                                                            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary">
+                                                                                <em class="icon ni ni-lock"></em> Login to Access
+                                                                            </a>
+                                                                        </div>
+                                                                    @endif
+                                                                    
+                                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                        <div class="nested-related-docs">
+                                                                            <small><strong>Nested Related Documents:</strong></small>
+                                                                            @foreach($relatedDoc->nested_related_documents as $nestedDoc)
+                                                                                <div class="nested-doc-item">
+                                                                                    <div class="nested-doc-title">
+                                                                                        <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
+                                                                                    </div>
+                                                                                    <div class="related-doc-meta">
+                                                                                        @if($nestedDoc->document_version)
+                                                                                            <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                                                                                        @endif
+                                                                                        @if($nestedDoc->effective_date)
+                                                                                            <span><strong>Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                                        @endif
+                                                                                    </div>
+                                                                                    @if($isSubscribed)
+                                                                                        <div style="margin-top: 5px;">
+                                                                                            <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary">
+                                                                                                <em class="icon ni ni-book-read"></em> View
+                                                                                            </a>
+                                                                                            <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary">
+                                                                                                <em class="icon ni ni-download"></em> Download
+                                                                                            </a>
+                                                                                        </div>
+                                                                                    @else
+                                                                                        <div style="margin-top: 5px;">
+                                                                                            <a href="{{ route('login') }}" class="btn btn-xs btn-outline-secondary">
+                                                                                                <em class="icon ni ni-lock"></em> Login
+                                                                                            </a>
+                                                                                        </div>
+                                                                                    @endif
+                                                                                </div>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    @endif
                                                                 </div>
-                                                            </div>
-
-
-                                                               
-                                                               
-                                                        </div>
-                                                      
+                                                            @endforeach
+                                                        @else
+                                                            <p class="text-center text-muted">No related documents found.</p>
+                                                        @endif
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        <!-- End Modal for Related Documents -->
+                                        </div>
                                     @endforeach
                                 </tbody>
                             </table>
-                            
-                            <!-- Pagination Links -->
-                            @if($reg->hasPages())
-                            <div class="mt-4 d-flex justify-content-center">
-                                <nav aria-label="Regulations pagination">
-                                    {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
-                                </nav>
-                            </div>
-                            @endif
-                            
-                            @endif
-                        @else
-                            <!-- Content for non-authenticated users -->
-                            <div class="alert alert-info">
-                                <p>Please <a href="{{ route('login') }}">login</a> to view the regulations.</p>
-                            </div>
+
                         @endif
                     </div>
                 </div>
@@ -859,165 +736,36 @@
                     @foreach ($reg as $result)
                         (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
-                            var pageCount = {{ $result->page_count }};
-                            var previewCount = {{ $result->doc_preview_count ?? 2 }}; // Default to 2 pages if not set
                             var pdfjsLib = window['pdfjs-dist/build/pdf'];
                             pdfjsLib.GlobalWorkerOptions.workerSrc =
                                 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
                             pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
-                                // Clear existing content
-                                var viewer = document.getElementById('pdf-viewer-' + id);
-                                viewer.innerHTML = '';
-                                
-                                // Check if doc_preview_count is set and use it to determine how many pages to show
-                                if (previewCount > 0) {
-                                    // Show pages based on doc_preview_count
-                                    var pagesToShow = Math.min(previewCount, pageCount, 5); // Limit to 5 pages max for performance
-                                    
-                                    for (var i = 1; i <= pagesToShow; i++) {
-                                        if (i === pagesToShow && pageCount > previewCount) {
-                                            // For the last page when we're limiting preview, show partial with blur
-                                            renderPartialPage(pdfDoc, i, viewer, 0.5);
-                                        } else {
-                                            // Show full page
-                                            renderFullPage(pdfDoc, i, viewer, false);
-                                        }
-                                    }
-                                    
-                                    // Blur additional pages if document has more pages than preview count
-                                    if (pageCount > previewCount) {
-                                        for (var i = previewCount + 1; i <= Math.min(pageCount, 5); i++) {
-                                            renderFullPage(pdfDoc, i, viewer, true);
-                                        }
-                                    }
-                                } else {
-                                    // Fallback to original logic if doc_preview_count is 0 or not set
-                                    if (pageCount === 1) {
-                                        // 1-page docs: Show first 3 lines or 50% with blur
-                                        renderPartialPage(pdfDoc, 1, viewer, 0.5); // 50% of page with blur
-                                    } else if (pageCount === 2) {
-                                        // 2-page docs: Show 1 full page with second page blurred
-                                        renderFullPage(pdfDoc, 1, viewer, false); // First page full
-                                        renderFullPage(pdfDoc, 2, viewer, true);  // Second page blurred
-                                    } else if (pageCount >= 3) {
-                                        // 3+ page docs: Show first 1.5 pages with remainder blurred
-                                        renderFullPage(pdfDoc, 1, viewer, false);    // First page full
-                                        renderPartialPage(pdfDoc, 2, viewer, 0.5);   // 50% of second page with blur
-                                        // Blur the rest of the pages
-                                        for (var i = 3; i <= Math.min(pageCount, 5); i++) { // Limit to first 5 pages for performance
-                                            renderFullPage(pdfDoc, i, viewer, true);
-                                        }
-                                    } else {
-                                        // Fallback: show first 2 pages if page count is unknown
-                                        renderFullPage(pdfDoc, 1, viewer, false);
-                                        renderFullPage(pdfDoc, 2, viewer, false);
-                                    }
+                                function renderPage(pageNum, canvasId) {
+                                    pdfDoc.getPage(pageNum).then(function(page) {
+                                        var viewport = page.getViewport({
+                                            scale: 1.5
+                                        });
+                                        var canvas = document.getElementById(canvasId);
+                                        var context = canvas.getContext('2d');
+                                        canvas.height = viewport.height;
+                                        canvas.width = viewport.width;
+
+                                        var renderContext = {
+                                            canvasContext: context,
+                                            viewport: viewport
+                                        };
+                                        page.render(renderContext);
+                                    });
                                 }
+
+                                renderPage(1, 'canvas-page1-' + id);
+                                renderPage(2, 'canvas-page2-' + id);
                             }).catch(function(error) {
                                 console.error('Error loading PDF:', error);
-                                // Fallback: show error message
-                                var viewer = document.getElementById('pdf-viewer-' + id);
-                                viewer.innerHTML = '<p>Error loading PDF preview. Please try again later.</p>';
                             });
-                            
-                            // Function to render a full page
-                            function renderFullPage(pdfDoc, pageNum, viewer, blurred) {
-                                if (pageNum > pdfDoc.numPages) return;
-                                
-                                pdfDoc.getPage(pageNum).then(function(page) {
-                                    var viewport = page.getViewport({ scale: 1.5 });
-                                    var canvas = document.createElement('canvas');
-                                    canvas.className = 'pdf-page';
-                                    if (blurred) {
-                                        canvas.className += ' blurred';
-                                    }
-                                    canvas.id = 'canvas-page' + pageNum + '-' + id;
-                                    var context = canvas.getContext('2d');
-                                    canvas.height = viewport.height;
-                                    canvas.width = viewport.width;
-
-                                    var renderContext = {
-                                        canvasContext: context,
-                                        viewport: viewport
-                                    };
-                                    
-                                    viewer.appendChild(canvas);
-                                    page.render(renderContext);
-                                });
-                            }
-                            
-                            // Function to render a partial page (with blur effect)
-                            function renderPartialPage(pdfDoc, pageNum, viewer, visibleRatio) {
-                                if (pageNum > pdfDoc.numPages) return;
-                                
-                                pdfDoc.getPage(pageNum).then(function(page) {
-                                    var viewport = page.getViewport({ scale: 1.5 });
-                                    var canvas = document.createElement('canvas');
-                                    canvas.className = 'pdf-page partial-page';
-                                    canvas.id = 'canvas-page' + pageNum + '-' + id;
-                                    var context = canvas.getContext('2d');
-                                    canvas.height = viewport.height;
-                                    canvas.width = viewport.width;
-
-                                    var renderContext = {
-                                        canvasContext: context,
-                                        viewport: viewport
-                                    };
-                                    
-                                    viewer.appendChild(canvas);
-                                    page.render(renderContext).promise.then(function() {
-                                        // Apply blur effect to the hidden portion
-                                        if (visibleRatio < 1) {
-                                            var ctx = canvas.getContext('2d');
-                                            var height = canvas.height;
-                                            var hiddenStart = height * visibleRatio;
-                                            
-                                            // Apply blur to the hidden portion
-                                            ctx.filter = 'blur(5px)';
-                                            ctx.globalAlpha = 0.7;
-                                            ctx.fillRect(0, hiddenStart, canvas.width, height - hiddenStart);
-                                            
-                                            // Add gradient mask for smoother transition
-                                            var gradient = ctx.createLinearGradient(0, hiddenStart - 50, 0, hiddenStart);
-                                            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-                                            gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
-                                            ctx.filter = 'none';
-                                            ctx.globalAlpha = 1;
-                                            ctx.fillStyle = gradient;
-                                            ctx.fillRect(0, hiddenStart - 50, canvas.width, 50);
-                                        }
-                                    });
-                                });
-                            }
                         })({{ $result->id }});
                     @endforeach
-                });
-            </script>
-            
-            <script>
-                // Initialize modals for DataTables - only for elements with data-target attribute
-                $(document).on('click', '[data-toggle="modal"][data-target]', function(e) {
-                    var target = $(this).data('target');
-                    console.log('Modal target:', target);
-                    if ($(target).length > 0) {
-                        $(target).modal('show');
-                    } else {
-                        console.log('Modal not found:', target);
-                    }
-                });
-                
-                // Additional modal initialization for DataTables
-                $('#example').on('draw.dt', function() {
-                    $('[data-toggle="modal"][data-target]').off('click').on('click', function(e) {
-                        var target = $(this).data('target');
-                        console.log('Modal target (DataTable):', target);
-                        if ($(target).length > 0) {
-                            $(target).modal('show');
-                        } else {
-                            console.log('Modal not found (DataTable):', target);
-                        }
-                    });
                 });
             </script>
 
