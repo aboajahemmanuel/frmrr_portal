@@ -119,164 +119,14 @@
     $(document).ready(function() {
         var years = @json($years);
         
-        // Initialize custom table filter
+        // Initialize custom table filter with pagination disabled
         initCustomTableFilter('example', {
             years: years,
             showAlphabetFilter: true,
-            showEntityFilter: false
+            showEntityFilter: false,
+            paging: false,
+            info: false
         });
-        
-        /*
-        var table = $('#example').DataTable({
-            columnDefs: [
-                {
-                    targets: 0, // Title column
-                    render: function (data, type, row) {
-                        if (type === 'filter' || type === 'sort') {
-                            return $('<div>').html(data).text(); // Strips HTML for filtering/sorting
-                        }
-                        return data; // Keep HTML for display
-                    }
-                }
-            ],
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            order: [[0, 'asc']], // Default sort by title
-            responsive: true,
-            language: {
-                search: "Search documents:",
-                lengthMenu: "Show _MENU_ documents per page",
-                info: "Showing _START_ to _END_ of _TOTAL_ documents",
-                infoFiltered: "(filtered from _MAX_ total documents)"
-            }
-        });
-
-        // Detect table structure and get column indices
-        var headers = [];
-        $('#example thead th').each(function(index) {
-            headers.push($(this).text().trim());
-        });
-        
-        var titleColIndex = 0; // Title is always first
-        var yearColIndex = headers.indexOf('Year');
-
-        // Create enhanced filter container
-        var filterHtml = '<div class="filter-container">';
-        
-        // Alphabet filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="alphabet-filter">Filter by First Letter:</label>';
-        filterHtml += '<select id="alphabet-filter" class="filter-select">';
-        filterHtml += '<option value="">All Letters</option>';
-        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        alphabet.forEach(function (letter) {
-            filterHtml += '<option value="' + letter + '">' + letter + '</option>';
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Year filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="year-filter">Filter by Year:</label>';
-        filterHtml += '<select id="year-filter" class="filter-select">';
-        filterHtml += '<option value="">All Years</option>';
-        years.forEach(function (year) {
-            filterHtml += '<option value="' + year + '">' + year + '</option>';
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Clear filters button
-        filterHtml += '<button class="clear-filters-btn" id="clear-filters">Clear All Filters</button>';
-        filterHtml += '</div>';
-
-        // Add search info container
-        filterHtml += '<div id="search-info" class="search-info" style="display: none;"></div>';
-
-        $('#example_wrapper').prepend(filterHtml);
-
-        // Custom search function for first letter and year filtering
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var selectedLetter = $('#alphabet-filter').val();
-                var selectedYear = $('#year-filter').val();
-                
-                // If no filters are selected, show all rows
-                if (!selectedLetter && !selectedYear) {
-                    return true;
-                }
-                
-                var match = true;
-                
-                // Check alphabet filter
-                if (selectedLetter) {
-                    var titleText = $('<div>').html(data[titleColIndex]).text().trim();
-                    var firstLetter = titleText.charAt(0).toUpperCase();
-                    if (firstLetter !== selectedLetter.toUpperCase()) {
-                        match = false;
-                    }
-                }
-                
-                // Check year filter - find year column dynamically
-                if (match && selectedYear) {
-                    var currentYearColIndex = yearColIndex;
-                    // For tables without explicit year column, try index 3
-                    if (currentYearColIndex === -1) {
-                        currentYearColIndex = 3;
-                    }
-                    
-                    var yearText = $('<div>').html(data[currentYearColIndex]).text().trim();
-                    if (yearText !== selectedYear) {
-                        match = false;
-                    }
-                }
-                
-                return match;
-            }
-        );
-
-        // Alphabet filter functionality
-        $('#alphabet-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
-        });
-
-        // Year filter functionality
-        $('#year-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
-        });
-
-        // Clear all filters
-        $('#clear-filters').on('click', function () {
-            $('#alphabet-filter').val('');
-            $('#year-filter').val('');
-            table.draw();
-            $('#search-info').hide();
-        });
-
-        // Update search info
-        function updateSearchInfo() {
-            var info = table.page.info();
-            var activeFilters = [];
-            
-            if ($('#alphabet-filter').val()) {
-                activeFilters.push('Letter: ' + $('#alphabet-filter').val());
-            }
-            if ($('#year-filter').val()) {
-                activeFilters.push('Year: ' + $('#year-filter').val());
-            }
-            
-            if (activeFilters.length > 0) {
-                var infoText = 'Active filters: ' + activeFilters.join(', ') + 
-                              ' | Showing ' + info.recordsDisplay + ' of ' + info.recordsTotal + ' documents';
-                $('#search-info').text(infoText).show();
-            } else {
-                $('#search-info').hide();
-            }
-        }
-
-        */
     });
 </script>
     <section class="gd-main-container">
@@ -784,6 +634,20 @@
                                 </tbody>
                             </table>
                     @endif
+                    
+                    {{-- Pagination Info --}}
+                    <div class="row mt-3">
+                        <div class="col-sm-12 col-md-5">
+                            <div class="dataTables_info" role="status" aria-live="polite">
+                                Showing {{ $reg->firstItem() ?? 0 }} to {{ $reg->lastItem() ?? 0 }} of {{ $reg->total() }} entries
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-md-7">
+                            <div class="dataTables_paginate paging_simple_numbers">
+                                {{ $reg->links() }}
+                            </div>
+                        </div>
+                    </div>
                       
                     @endif
                 </div>

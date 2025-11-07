@@ -44,7 +44,7 @@ class BrowseController extends Controller
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(5);
 
           $regulations_ceased = Regulation::with(['year', 'entity'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
@@ -170,14 +170,16 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where('subcategory_id', $subcategory->id)
             ->whereNull('ceased')
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
 
         $subcat_ceased = Regulation::with(['year', 'entity'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'subcategory_id')
             ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('subcategory_id', $subcategory->id)
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);

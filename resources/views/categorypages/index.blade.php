@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
+<script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
 
 
 
@@ -25,27 +26,78 @@
         /* Ensure the text wraps */
     }
 
-
-
-    .alphabet-filter,
-    .year-filter {
+    .filter-container {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+        clear: both;
+        width: 100%;
+    }
+    
+    .dataTables_wrapper .dataTables_filter {
+        float: none !important;
+        text-align: left;
+        margin-bottom: 15px;
+    }
+    
+    .dataTables_wrapper .dataTables_length {
+        float: none !important;
         margin-bottom: 10px;
     }
 
-    .alphabet-filter a,
-    .year-filter a {
-        margin: 0 4px;
-        text-decoration: none;
-        color: #007bff;
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
     }
 
-    .alphabet-filter a.active,
-    .year-filter a.active {
-        font-weight: bold;
-        color: #000;
+    .filter-group label {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
     }
 
-    /*  */
+    .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #fff;
+        font-size: 14px;
+        min-width: 120px;
+        cursor: pointer;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .clear-filters-btn {
+        padding: 8px 16px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        align-self: flex-end;
+    }
+
+    .clear-filters-btn:hover {
+        background-color: #5a6268;
+    }
+
+    .search-info {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #495057;
+    }
     
     /* Related Documents Styling */
     .related-docs-badge {
@@ -134,58 +186,16 @@
     }
 </style>
 <script>
-    var years = @json($years);
-
-    $(document).ready(function () {
-        var table = $('#example').DataTable({
-         columnDefs: [
-                {
-                    targets: 0, // Title column
-                    render: function (data, type, row) {
-                        if (type === 'filter' || type === 'sort') {
-                            return $('<div>').html(data).text(); // Strips HTML for filtering/sorting
-                        }
-                        return data; // Keep HTML for display
-                    }
-                }
-            ]
-        });
-
-        // Year Filter
-        var yearHtml = '<div class="year-filter">';
-        yearHtml += '<a href="#" class="active" data-year="all">All</a>';
-        years.forEach(function (year) {
-            yearHtml += '<a href="#" data-year="' + year + '">' + year + '</a>';
-        });
-        yearHtml += '</div>';
-        $('#example_wrapper').prepend(yearHtml);
-
-        $('.year-filter a').on('click', function (e) {
-            e.preventDefault();
-            var year = $(this).data('year');
-            $('.year-filter a').removeClass('active');
-            $(this).addClass('active');
-
-            table.column(3).search(year === 'all' ? '' : year).draw();
-        });
-
-        // Alphabet Filter
-        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        var alphabetHtml = '<div class="alphabet-filter">';
-        alphabetHtml += '<a href="#" class="active" data-letter="all">All</a>';
-        alphabet.forEach(function (letter) {
-            alphabetHtml += '<a href="#" data-letter="' + letter + '">' + letter + '</a>';
-        });
-        alphabetHtml += '</div>';
-        $('#example_wrapper').prepend(alphabetHtml);
-
-        $('.alphabet-filter a').on('click', function (e) {
-            e.preventDefault();
-            var letter = $(this).data('letter');
-            $('.alphabet-filter a').removeClass('active');
-            $(this).addClass('active');
-
-            table.column(0).search(letter === 'all' ? '' : '^' + letter, true, false).draw();
+    $(document).ready(function() {
+        var years = @json($years);
+        
+        // Initialize custom table filter with pagination disabled
+        initCustomTableFilter('example', {
+            years: years,
+            showAlphabetFilter: true,
+            showEntityFilter: false,
+            paging: false,
+            info: false
         });
     });
 </script>
@@ -422,7 +432,7 @@
                                                                         
                                                                         @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                                             <div class="nested-related-docs">
-                                                                                <small><strong>Nested Related Documents:</strong></small>
+                                                                                <small><strong>Related Documents:</strong></small>
                                                                                 @foreach($relatedDoc->nested_related_documents as $nestedDoc)
                                                                                     <div class="nested-doc-item">
                                                                                         <div class="nested-doc-title">
@@ -432,9 +442,17 @@
                                                                                             @if($nestedDoc->document_version)
                                                                                                 <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                                                                             @endif
-                                                                                            @if($nestedDoc->effective_date)
-                                                                                                <span><strong>Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
-                                                                                            @endif
+                                                                                            @if($nestedDoc->ceased)
+                                                                                            <span><strong>Status:</strong> {{ $nestedDoc->ceased  }}</span>
+                                                                                        @endif
+
+                                                                                        @if($nestedDoc->effective_date)
+                                                                                            <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                                        @endif
+
+                                                                                        @if($nestedDoc->issue_date)
+                                                                                        <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                                    @endif
                                                                                         </div>
                                                                                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                                                             <div style="margin-top: 5px;">
@@ -465,6 +483,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                
+                                {{-- Pagination Info --}}
+                               
                             @endif
                         @else
                             <table id="example" class="datatable-init responsive table table-striped"
@@ -674,7 +695,7 @@
                                                                     
                                                                     @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                                         <div class="nested-related-docs">
-                                                                            <small><strong>Nested Related Documents:</strong></small>
+                                                                            <small><strong>Related Documents:</strong></small>
                                                                             @foreach($relatedDoc->nested_related_documents as $nestedDoc)
                                                                                 <div class="nested-doc-item">
                                                                                     <div class="nested-doc-title">
@@ -685,6 +706,10 @@
                                                                                             <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                                                                         @endif
                                                                                         @if($nestedDoc->effective_date)
+                                                                                            <span><strong>Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                                        @endif
+
+                                                                                         @if($nestedDoc->effective_date)
                                                                                             <span><strong>Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
                                                                                         @endif
                                                                                     </div>
@@ -725,6 +750,15 @@
                             </table>
 
                         @endif
+                        @if($reg->hasPages())
+                        <div class="mt-4 d-flex justify-content-center">
+                            <nav aria-label="Regulations pagination">
+                                {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                            </nav>
+                        </div>
+                        @endif
+                        {{-- Pagination Info --}}
+                       
                     </div>
                 </div>
             </div>
