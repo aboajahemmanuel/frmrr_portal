@@ -2,6 +2,9 @@
 
 @section('content')
 
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+
 
 
 
@@ -75,8 +78,118 @@
                             <div class="card card-preview">
 
                                 <div class="card-inner">
+                                    <!-- Filter Section -->
+                                    <div class="filter-container mb-4">
+                                        <div class="row g-3 align-items-end">
+                                            <!-- Search Box -->
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">Search Documents</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" class="form-control" id="globalSearch" 
+                                                               placeholder="Search by title, category...">
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist table-striped"
+                                            <!-- Category Filter -->
+                                            <div class="col-md-2" style="display: none;">
+                                                <div class="form-group">
+                                                    <label class="form-label">Category</label>
+                                                    <select class="form-select form-control" id="categoryFilter">
+                                                        <option value="">All Categories</option>
+                                                        @foreach($categories as $category)
+                                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Status Filter -->
+                                            <div class="col-md-2" style="display: none;">
+                                                <div class="form-group">
+                                                    <label class="form-label">Approval Status</label>
+                                                    <select class="form-select form-control" id="statusFilter">
+                                                        <option value="">All Status</option>
+                                                        <option value="0">Awaiting Approval</option>
+                                                        <option value="1">Approved</option>
+                                                        <option value="2">Rejected</option>
+                                                        <option value="3">Awaiting Delete</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Ceased Status Filter -->
+                                            <div class="col-md-2" style="display: none;">
+                                                <div class="form-group">
+                                                    <label class="form-label">Document Status</label>
+                                                    <select class="form-select form-control" id="ceasedFilter">
+                                                        <option value="">All Documents</option>
+                                                        <option value="Ceased">Ceased</option>
+                                                        <option value="Repealed">Repealed</option>
+                                                        <option value="Amended">Amended</option>
+                                                        <option value="Active">Active</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Year Filter -->
+                                            <div class="col-md-2" style="display: none;">
+                                                <div class="form-group">
+                                                    <label class="form-label">Year</label>
+                                                    <select class="form-select form-control" id="yearFilter">
+                                                        <option value="">All Years</option>
+                                                        @for($year = date('Y'); $year >= 2000; $year--)
+                                                            <option value="{{ $year }}">{{ $year }}</option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Action Buttons -->
+                                            <div class="col-md-1" style="display: none;">
+                                                <div class="form-group">
+                                                    <button type="button" class="btn btn-dim btn-outline-primary" id="clearFilters" 
+                                                            title="Clear all filters">
+                                                        <em class="icon ni ni-reload"></em>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Active Filters Display -->
+                                        <div class="row mt-2" id="activeFiltersRow" style="display: none;">
+                                            <div class="col-12">
+                                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                                    <span class="text-muted">Active Filters:</span>
+                                                    <div id="activeFilters" class="d-flex flex-wrap gap-2"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Export and Info Section -->
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <div class="dataTables_info" id="resultsInfo">
+                                                    Showing {{ $data->firstItem() ?? 0 }} to {{ $data->lastItem() ?? 0 }} of {{ $data->total() }} entries
+                                                    <span id="filteredInfo" style="display: none;"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 text-end" style="display: none;">
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" id="exportCSV">
+                                                        <em class="icon ni ni-file-text"></em> Export CSV
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-success" id="exportExcel">
+                                                        <em class="icon ni ni-file-xls"></em> Export Excel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Filter Section -->
+
+                                    <table class="nk-tb-list nk-tb-ulist table-striped" id="regulationsTable"
                                         data-auto-responsive="false" data-paging="false" data-info="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
@@ -824,5 +937,408 @@
 
 
 
+
+        <style>
+            /* Modern Filter Styling */
+            .filter-container {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid #e5e9f2;
+            }
+
+            .filter-container .form-label {
+                font-weight: 600;
+                font-size: 0.875rem;
+                color: #364a63;
+                margin-bottom: 0.5rem;
+            }
+
+            .filter-container .form-control,
+            .filter-container .form-select {
+                border: 1px solid #dbdfea;
+                border-radius: 4px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+                transition: all 0.3s ease;
+            }
+
+            .filter-container .form-control:focus,
+            .filter-container .form-select:focus {
+                border-color: #6576ff;
+                box-shadow: 0 0 0 3px rgba(101, 118, 255, 0.1);
+            }
+
+            #clearFilters {
+                width: 100%;
+                padding: 0.5rem;
+            }
+
+            /* Active Filter Chips */
+            .filter-chip {
+                display: inline-flex;
+                align-items: center;
+                background: #6576ff;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 16px;
+                font-size: 0.75rem;
+                margin-right: 8px;
+                margin-bottom: 8px;
+            }
+
+            .filter-chip .remove-filter {
+                margin-left: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                opacity: 0.8;
+            }
+
+            .filter-chip .remove-filter:hover {
+                opacity: 1;
+            }
+
+            /* Table Row Highlight on Hover */
+            .nk-tb-item:hover {
+                background-color: #f5f6fa !important;
+                transition: background-color 0.2s ease;
+            }
+
+            /* Export Buttons */
+            .btn-group .btn {
+                font-size: 0.875rem;
+            }
+
+            /* Results Info */
+            .dataTables_info {
+                font-size: 0.875rem;
+                color: #526484;
+                padding: 0.5rem 0;
+            }
+
+            #filteredInfo {
+                color: #6576ff;
+                font-weight: 600;
+                margin-left: 8px;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .filter-container .col-md-3,
+                .filter-container .col-md-2,
+                .filter-container .col-md-1 {
+                    width: 100%;
+                    margin-bottom: 1rem;
+                }
+
+                .btn-group {
+                    width: 100%;
+                }
+
+                .btn-group .btn {
+                    width: 50%;
+                }
+            }
+        </style>
+
+        <script>
+            console.log('Filter script loaded');
+            
+            // Use window.onload to ensure everything is ready
+            window.addEventListener('load', function() {
+                console.log('Window loaded, initializing filters');
+                
+                // Get all table rows (excluding header)
+                const table = document.getElementById('regulationsTable');
+                if (!table) {
+                    console.error('Table not found!');
+                    return;
+                }
+                console.log('Table found:', table);
+                
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr.nk-tb-item'));
+                const totalRows = rows.length;
+                console.log('Total rows found:', totalRows);
+                
+                // Check if all filter elements exist
+                const searchInput = document.getElementById('globalSearch');
+                const categoryFilter = document.getElementById('categoryFilter');
+                const statusFilter = document.getElementById('statusFilter');
+                const ceasedFilter = document.getElementById('ceasedFilter');
+                const yearFilter = document.getElementById('yearFilter');
+                const clearBtn = document.getElementById('clearFilters');
+                
+                console.log('Filter elements:', {
+                    searchInput: !!searchInput,
+                    categoryFilter: !!categoryFilter,
+                    statusFilter: !!statusFilter,
+                    ceasedFilter: !!ceasedFilter,
+                    yearFilter: !!yearFilter,
+                    clearBtn: !!clearBtn
+                });
+                
+                if (!searchInput || !categoryFilter || !statusFilter || !ceasedFilter || !yearFilter || !clearBtn) {
+                    console.error('Some filter elements are missing!');
+                    return;
+                }
+                
+                let currentFilters = {
+                    search: '',
+                    category: '',
+                    status: '',
+                    ceased: '',
+                    year: ''
+                };
+
+                // Filter rows based on current filters
+                function filterRows() {
+                    let visibleCount = 0;
+                    
+                    rows.forEach(row => {
+                        let visible = true;
+                        const cells = row.querySelectorAll('td');
+                        
+                        // Global search filter (search in title and category)
+                        if (currentFilters.search) {
+                            const title = cells[1]?.textContent.toLowerCase() || '';
+                            const category = cells[2]?.textContent.toLowerCase() || '';
+                            const searchTerm = currentFilters.search.toLowerCase();
+                            visible = visible && (title.includes(searchTerm) || category.includes(searchTerm));
+                        }
+                        
+                        // Category filter
+                        if (currentFilters.category) {
+                            const categoryName = document.querySelector(`#categoryFilter option[value="${currentFilters.category}"]`)?.textContent;
+                            const cellCategory = cells[2]?.textContent.trim() || '';
+                            visible = visible && (cellCategory === categoryName);
+                        }
+                        
+                        // Status filter
+                        if (currentFilters.status) {
+                            const statusCell = cells[3]?.textContent.trim() || '';
+                            let statusMatch = false;
+                            if (currentFilters.status === '0') statusMatch = statusCell.includes('Awaiting Approval');
+                            else if (currentFilters.status === '1') statusMatch = statusCell.includes('Approved') && !statusCell.includes('Awaiting');
+                            else if (currentFilters.status === '2') statusMatch = statusCell.includes('Rejected');
+                            else if (currentFilters.status === '3') statusMatch = statusCell.includes('Awaiting approval for delete');
+                            visible = visible && statusMatch;
+                        }
+                        
+                        // Ceased status filter
+                        if (currentFilters.ceased) {
+                            const ceasedCell = cells[4]?.textContent.trim() || '';
+                            visible = visible && ceasedCell.includes(currentFilters.ceased);
+                        }
+                        
+                        // Year filter
+                        if (currentFilters.year) {
+                            const dateCell = cells[5]?.textContent.trim() || '';
+                            visible = visible && dateCell.includes(currentFilters.year);
+                        }
+                        
+                        // Show/hide row
+                        row.style.display = visible ? '' : 'none';
+                        if (visible) visibleCount++;
+                    });
+                    
+                    updateResultsInfo(visibleCount);
+                }
+
+                // Global search functionality
+                searchInput.addEventListener('keyup', function(e) {
+                    console.log('Search triggered:', e.target.value);
+                    currentFilters.search = e.target.value;
+                    filterRows();
+                    updateFilterDisplay();
+                });
+                console.log('Search filter attached');
+
+                // Category filter
+                document.getElementById('categoryFilter').addEventListener('change', function(e) {
+                    currentFilters.category = e.target.value;
+                    filterRows();
+                    updateFilterDisplay();
+                });
+
+                // Status filter
+                document.getElementById('statusFilter').addEventListener('change', function(e) {
+                    currentFilters.status = e.target.value;
+                    filterRows();
+                    updateFilterDisplay();
+                });
+
+                // Ceased status filter
+                document.getElementById('ceasedFilter').addEventListener('change', function(e) {
+                    currentFilters.ceased = e.target.value;
+                    filterRows();
+                    updateFilterDisplay();
+                });
+
+                // Year filter
+                document.getElementById('yearFilter').addEventListener('change', function(e) {
+                    currentFilters.year = e.target.value;
+                    filterRows();
+                    updateFilterDisplay();
+                });
+
+                // Clear all filters
+                document.getElementById('clearFilters').addEventListener('click', function() {
+                    document.getElementById('globalSearch').value = '';
+                    document.getElementById('categoryFilter').value = '';
+                    document.getElementById('statusFilter').value = '';
+                    document.getElementById('ceasedFilter').value = '';
+                    document.getElementById('yearFilter').value = '';
+                    
+                    currentFilters = {
+                        search: '',
+                        category: '',
+                        status: '',
+                        ceased: '',
+                        year: ''
+                    };
+                    
+                    filterRows();
+                    updateFilterDisplay();
+                });
+
+                // Update active filter display
+                function updateFilterDisplay() {
+                    const activeFiltersArray = [];
+                    let filtersHtml = '';
+
+                    // Check each filter
+                    if (currentFilters.search) {
+                        activeFiltersArray.push({type: 'search', label: 'Search: ' + currentFilters.search});
+                    }
+
+                    if (currentFilters.category) {
+                        const categoryText = document.querySelector(`#categoryFilter option[value="${currentFilters.category}"]`)?.textContent;
+                        activeFiltersArray.push({type: 'category', label: 'Category: ' + categoryText});
+                    }
+
+                    if (currentFilters.status) {
+                        const statusText = document.querySelector(`#statusFilter option[value="${currentFilters.status}"]`)?.textContent;
+                        activeFiltersArray.push({type: 'status', label: 'Status: ' + statusText});
+                    }
+
+                    if (currentFilters.ceased) {
+                        activeFiltersArray.push({type: 'ceased', label: 'Document Status: ' + currentFilters.ceased});
+                    }
+
+                    if (currentFilters.year) {
+                        activeFiltersArray.push({type: 'year', label: 'Year: ' + currentFilters.year});
+                    }
+
+                    // Display active filters
+                    if (activeFiltersArray.length > 0) {
+                        activeFiltersArray.forEach(function(filter) {
+                            filtersHtml += '<span class="filter-chip">' + filter.label + 
+                                          ' <span class="remove-filter" data-type="' + filter.type + '">×</span></span>';
+                        });
+                        document.getElementById('activeFilters').innerHTML = filtersHtml;
+                        document.getElementById('activeFiltersRow').style.display = 'block';
+                    } else {
+                        document.getElementById('activeFiltersRow').style.display = 'none';
+                    }
+                }
+
+                // Remove individual filter
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('remove-filter')) {
+                        const filterType = e.target.getAttribute('data-type');
+                        
+                        if (filterType === 'search') {
+                            document.getElementById('globalSearch').value = '';
+                            currentFilters.search = '';
+                        } else if (filterType === 'category') {
+                            document.getElementById('categoryFilter').value = '';
+                            currentFilters.category = '';
+                        } else if (filterType === 'status') {
+                            document.getElementById('statusFilter').value = '';
+                            currentFilters.status = '';
+                        } else if (filterType === 'ceased') {
+                            document.getElementById('ceasedFilter').value = '';
+                            currentFilters.ceased = '';
+                        } else if (filterType === 'year') {
+                            document.getElementById('yearFilter').value = '';
+                            currentFilters.year = '';
+                        }
+                        
+                        filterRows();
+                        updateFilterDisplay();
+                    }
+                });
+
+                // Update results info
+                function updateResultsInfo(visibleCount) {
+                    const filteredInfo = document.getElementById('filteredInfo');
+                    
+                    if (visibleCount < totalRows) {
+                        filteredInfo.innerHTML = '(filtered from ' + totalRows + ' total entries)';
+                        filteredInfo.style.display = 'inline';
+                    } else {
+                        filteredInfo.style.display = 'none';
+                    }
+                }
+
+                // Export to CSV
+                document.getElementById('exportCSV').addEventListener('click', function() {
+                    exportTableToCSV('regulations_export.csv');
+                });
+
+                // Export to Excel (CSV format with .xls extension)
+                document.getElementById('exportExcel').addEventListener('click', function() {
+                    exportTableToCSV('regulations_export.xls');
+                });
+
+                // Export function
+                function exportTableToCSV(filename) {
+                    const csv = [];
+                    const visibleRows = rows.filter(row => row.style.display !== 'none');
+                    
+                    // Headers
+                    const headers = [];
+                    const headerCells = table.querySelectorAll('thead th');
+                    headerCells.forEach((cell, index) => {
+                        if (index < 7) { // Exclude action columns
+                            headers.push(cell.textContent.trim());
+                        }
+                    });
+                    csv.push(headers.join(','));
+                    
+                    // Data rows
+                    visibleRows.forEach(row => {
+                        const rowData = [];
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach((cell, index) => {
+                            if (index < 7) { // Exclude action columns
+                                const cellText = cell.textContent.trim().replace(/\n/g, ' ').replace(/,/g, ';');
+                                rowData.push('"' + cellText + '"');
+                            }
+                        });
+                        csv.push(rowData.join(','));
+                    });
+                    
+                    // Download
+                    const csvContent = csv.join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', filename);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+
+                // Initialize filter display
+                updateFilterDisplay();
+                filterRows();
+            });
+        </script>
 
         @endsection
