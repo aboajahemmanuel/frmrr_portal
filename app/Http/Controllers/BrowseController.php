@@ -45,6 +45,11 @@ class BrowseController extends Controller
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
             ->paginate(5);
+            
+        // Load page count for each regulation
+        $reg->each(function($regulation) {
+            $regulation->page_count = $regulation->page_count;
+        });
 
           $regulations_ceased = Regulation::with(['year', 'entity'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
@@ -99,6 +104,11 @@ class BrowseController extends Controller
             ->where('category_id', $category->id)
             ->whereNotNull('ceased')
             ->get();
+            
+        // Load page count for each regulation
+        $reg->each(function($regulation) {
+            $regulation->page_count = $regulation->page_count;
+        });
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
@@ -172,6 +182,11 @@ class BrowseController extends Controller
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
             ->paginate(50);
+            
+        // Load page count for each regulation
+        $reg->each(function($regulation) {
+            $regulation->page_count = $regulation->page_count;
+        });
 
         $subcat_ceased = Regulation::with(['year', 'entity'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'subcategory_id')

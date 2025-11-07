@@ -557,8 +557,7 @@
                 @foreach ($reg as $result)
                     (function(id) {
                         var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
-                        var pageCount = {{ $result->page_count }};
-                        var previewCount = {{ $result->doc_preview_count ?? 2 }}; // Default to 2 pages if not set
+                        var pageCount = {{ $result->page_count ?? 0 }};
                         var pdfjsLib = window['pdfjs-dist/build/pdf'];
                         pdfjsLib.GlobalWorkerOptions.workerSrc =
                             'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
@@ -566,57 +565,41 @@
                         pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
                             // Clear existing content
                             var viewer = document.getElementById('pdf-viewer-' + id);
+                            if (!viewer) return;
                             viewer.innerHTML = '';
                             
-                            // Check if doc_preview_count is set and use it to determine how many pages to show
-                            if (previewCount > 0) {
-                                // Show pages based on doc_preview_count
-                                var pagesToShow = Math.min(previewCount, pageCount, 5); // Limit to 5 pages max for performance
-                                
-                                for (var i = 1; i <= pagesToShow; i++) {
-                                    if (i === pagesToShow && pageCount > previewCount) {
-                                        // For the last page when we're limiting preview, show partial with blur
-                                        renderPartialPage(pdfDoc, i, viewer, 0.5);
-                                    } else {
-                                        // Show full page
-                                        renderFullPage(pdfDoc, i, viewer, false);
-                                    }
-                                }
-                                
-                                // Blur additional pages if document has more pages than preview count
-                                if (pageCount > previewCount) {
-                                    for (var i = previewCount + 1; i <= Math.min(pageCount, 5); i++) {
-                                        renderFullPage(pdfDoc, i, viewer, true);
-                                    }
+                            // Use actual page count from PDF if backend didn't provide it
+                            var actualPageCount = pageCount > 0 ? pageCount : pdfDoc.numPages;
+                            
+                            // Implement page-based blur logic
+                            if (actualPageCount === 1) {
+                                // 1-page docs: Show first 50% with rest blurred
+                                renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                            } else if (actualPageCount === 2) {
+                                // 2-page docs: Show 1 full page, blur entire second page
+                                renderFullPage(pdfDoc, 1, viewer, false);
+                                renderFullPage(pdfDoc, 2, viewer, true);
+                            } else if (actualPageCount >= 3) {
+                                // 3+ page docs: Show first 1.5 pages, blur remaining
+                                renderFullPage(pdfDoc, 1, viewer, false);
+                                renderPartialPage(pdfDoc, 2, viewer, 0.5);
+                                // Blur remaining pages (limit to 5 for performance)
+                                for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                    renderFullPage(pdfDoc, i, viewer, true);
                                 }
                             } else {
-                                // Fallback to original logic if doc_preview_count is 0 or not set
-                                if (pageCount === 1) {
-                                    // 1-page docs: Show first 3 lines or 50% with blur
-                                    renderPartialPage(pdfDoc, 1, viewer, 0.5); // 50% of page with blur
-                                } else if (pageCount === 2) {
-                                    // 2-page docs: Show 1 full page with second page blurred
-                                    renderFullPage(pdfDoc, 1, viewer, false); // First page full
-                                    renderFullPage(pdfDoc, 2, viewer, true);  // Second page blurred
-                                } else if (pageCount >= 3) {
-                                    // 3+ page docs: Show first 1.5 pages with remainder blurred
-                                    renderFullPage(pdfDoc, 1, viewer, false);    // First page full
-                                    renderPartialPage(pdfDoc, 2, viewer, 0.5);   // 50% of second page with blur
-                                    // Blur the rest of the pages
-                                    for (var i = 3; i <= Math.min(pageCount, 5); i++) { // Limit to first 5 pages for performance
-                                        renderFullPage(pdfDoc, i, viewer, true);
-                                    }
-                                } else {
-                                    // Fallback: show first 2 pages if page count is unknown
-                                    renderFullPage(pdfDoc, 1, viewer, false);
+                                // Fallback: show first 2 pages
+                                renderFullPage(pdfDoc, 1, viewer, false);
+                                if (pdfDoc.numPages >= 2) {
                                     renderFullPage(pdfDoc, 2, viewer, false);
                                 }
                             }
                         }).catch(function(error) {
                             console.error('Error loading PDF:', error);
-                            // Fallback: show error message
                             var viewer = document.getElementById('pdf-viewer-' + id);
-                            viewer.innerHTML = '<p>Error loading PDF preview. Please try again later.</p>';
+                            if (viewer) {
+                                viewer.innerHTML = '<p class="text-center text-muted">Error loading PDF preview.</p>';
+                            }
                         });
                         
                         // Function to render a full page
@@ -645,7 +628,7 @@
                             });
                         }
                         
-                        // Function to render a partial page (with blur effect)
+                        // Function to render a partial page with blur effect
                         function renderPartialPage(pdfDoc, pageNum, viewer, visibleRatio) {
                             if (pageNum > pdfDoc.numPages) return;
                             
@@ -674,6 +657,7 @@
                                         // Apply blur to the hidden portion
                                         ctx.filter = 'blur(5px)';
                                         ctx.globalAlpha = 0.7;
+                                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
                                         ctx.fillRect(0, hiddenStart, canvas.width, height - hiddenStart);
                                         
                                         // Add gradient mask for smoother transition

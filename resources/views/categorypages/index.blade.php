@@ -184,6 +184,22 @@
         font-size: 11px;
         margin-left: 8px;
     }
+    
+    /* PDF Preview Blur Effects */
+    .pdf-page {
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .pdf-page.blurred {
+        filter: blur(8px);
+        opacity: 0.5;
+    }
+    
+    .pdf-page.partial-page {
+        position: relative;
+    }
 </style>
 <script>
     $(document).ready(function() {
@@ -364,13 +380,15 @@
                                                 aria-hidden="true">
                                                 <div class="modal-dialog modal-lg" role="document">
                                                     <div class="modal-content">
-
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">Document Preview</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
                                                         <div class="modal-body">
                                                             <div id="pdf-viewer-{{ $result->id }}">
-                                                                <canvas id="canvas-page1-{{ $result->id }}"
-                                                                    class="pdf-page"></canvas>
-                                                                <canvas id="canvas-page2-{{ $result->id }}"
-                                                                    class="pdf-page"></canvas>
+                                                                <!-- Canvas elements will be dynamically added based on page count -->
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
@@ -770,34 +788,121 @@
                     @foreach ($reg as $result)
                         (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
+                            var pageCount = {{ $result->page_count ?? 0 }};
                             var pdfjsLib = window['pdfjs-dist/build/pdf'];
                             pdfjsLib.GlobalWorkerOptions.workerSrc =
                                 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
                             pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
-                                function renderPage(pageNum, canvasId) {
-                                    pdfDoc.getPage(pageNum).then(function(page) {
-                                        var viewport = page.getViewport({
-                                            scale: 1.5
-                                        });
-                                        var canvas = document.getElementById(canvasId);
-                                        var context = canvas.getContext('2d');
-                                        canvas.height = viewport.height;
-                                        canvas.width = viewport.width;
-
-                                        var renderContext = {
-                                            canvasContext: context,
-                                            viewport: viewport
-                                        };
-                                        page.render(renderContext);
-                                    });
+                                // Clear existing content
+                                var viewer = document.getElementById('pdf-viewer-' + id);
+                                if (!viewer) return;
+                                viewer.innerHTML = '';
+                                
+                                // Use actual page count from PDF if backend didn't provide it
+                                var actualPageCount = pageCount > 0 ? pageCount : pdfDoc.numPages;
+                                
+                                // Implement page-based blur logic
+                                if (actualPageCount === 1) {
+                                    // 1-page docs: Show first 50% with rest blurred
+                                    renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                                } else if (actualPageCount === 2) {
+                                    // 2-page docs: Show 1 full page, blur entire second page
+                                    renderFullPage(pdfDoc, 1, viewer, false);
+                                    renderFullPage(pdfDoc, 2, viewer, true);
+                                } else if (actualPageCount >= 3) {
+                                    // 3+ page docs: Show first 1.5 pages, blur remaining
+                                    renderFullPage(pdfDoc, 1, viewer, false);
+                                    renderPartialPage(pdfDoc, 2, viewer, 0.5);
+                                    // Blur remaining pages (limit to 5 for performance)
+                                    for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                        renderFullPage(pdfDoc, i, viewer, true);
+                                    }
+                                } else {
+                                    // Fallback: show first 2 pages
+                                    renderFullPage(pdfDoc, 1, viewer, false);
+                                    if (pdfDoc.numPages >= 2) {
+                                        renderFullPage(pdfDoc, 2, viewer, false);
+                                    }
                                 }
-
-                                renderPage(1, 'canvas-page1-' + id);
-                                renderPage(2, 'canvas-page2-' + id);
                             }).catch(function(error) {
                                 console.error('Error loading PDF:', error);
+                                var viewer = document.getElementById('pdf-viewer-' + id);
+                                if (viewer) {
+                                    viewer.innerHTML = '<p class="text-center text-muted">Error loading PDF preview.</p>';
+                                }
                             });
+                            
+                            // Function to render a full page
+                            function renderFullPage(pdfDoc, pageNum, viewer, blurred) {
+                                if (pageNum > pdfDoc.numPages) return;
+                                
+                                pdfDoc.getPage(pageNum).then(function(page) {
+                                    var viewport = page.getViewport({ scale: 1.5 });
+                                    var canvas = document.createElement('canvas');
+                                    canvas.className = 'pdf-page';
+                                    if (blurred) {
+                                        canvas.className += ' blurred';
+                                    }
+                                    canvas.id = 'canvas-page' + pageNum + '-' + id;
+                                    var context = canvas.getContext('2d');
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+
+                                    var renderContext = {
+                                        canvasContext: context,
+                                        viewport: viewport
+                                    };
+                                    
+                                    viewer.appendChild(canvas);
+                                    page.render(renderContext);
+                                });
+                            }
+                            
+                            // Function to render a partial page with blur effect
+                            function renderPartialPage(pdfDoc, pageNum, viewer, visibleRatio) {
+                                if (pageNum > pdfDoc.numPages) return;
+                                
+                                pdfDoc.getPage(pageNum).then(function(page) {
+                                    var viewport = page.getViewport({ scale: 1.5 });
+                                    var canvas = document.createElement('canvas');
+                                    canvas.className = 'pdf-page partial-page';
+                                    canvas.id = 'canvas-page' + pageNum + '-' + id;
+                                    var context = canvas.getContext('2d');
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+
+                                    var renderContext = {
+                                        canvasContext: context,
+                                        viewport: viewport
+                                    };
+                                    
+                                    viewer.appendChild(canvas);
+                                    page.render(renderContext).promise.then(function() {
+                                        // Apply blur effect to the hidden portion
+                                        if (visibleRatio < 1) {
+                                            var ctx = canvas.getContext('2d');
+                                            var height = canvas.height;
+                                            var hiddenStart = height * visibleRatio;
+                                            
+                                            // Apply blur to the hidden portion
+                                            ctx.filter = 'blur(5px)';
+                                            ctx.globalAlpha = 0.7;
+                                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                                            ctx.fillRect(0, hiddenStart, canvas.width, height - hiddenStart);
+                                            
+                                            // Add gradient mask for smoother transition
+                                            var gradient = ctx.createLinearGradient(0, hiddenStart - 50, 0, hiddenStart);
+                                            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                                            gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                                            ctx.filter = 'none';
+                                            ctx.globalAlpha = 1;
+                                            ctx.fillStyle = gradient;
+                                            ctx.fillRect(0, hiddenStart - 50, canvas.width, 50);
+                                        }
+                                    });
+                                });
+                            }
                         })({{ $result->id }});
                     @endforeach
                 });
