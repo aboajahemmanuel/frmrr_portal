@@ -458,8 +458,8 @@
                                                 <td style="text-align: center">
                                                     @if($result->related_docs)
                                                         @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                            $relatedCount = $relatedDocuments->count();
+                                                            // Only count related docs, don't load them (prevents recursive queries)
+                                                            $relatedCount = count(explode(',', $result->related_docs));
                                                         @endphp
                                                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                             <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
@@ -567,13 +567,18 @@
                                                            
                                                         </div>
                                                         <div class="modal-body">
-                                                          
-                                                                               @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
+                                                            @php
+                                                                // Optimized: Load related docs without recursive accessor
+                                                                if ($result->related_docs) {
+                                                                    $relatedIds = explode(',', $result->related_docs);
+                                                                    $relatedDocuments = \App\Models\Regulation::whereIn('id', $relatedIds)
+                                                                        ->select('id', 'title', 'document_version', 'year_id', 'entity_id', 'regulation_doc')
+                                                                        ->with(['year:id,name', 'entity:id,name'])
+                                                                        ->get();
+                                                                } else {
+                                                                    $relatedDocuments = collect();
+                                                                }
+                                                            @endphp
 
                                                             <div class="card w-100 border-0 shadow-sm">
                                                                 <div class="card-header bg-light">
@@ -743,8 +748,8 @@
                                             <td style="text-align: center">
                                                 @if($result->related_docs)
                                                     @php
-                                                        $relatedDocuments = $result->related_documents;
-                                                        $relatedCount = $relatedDocuments->count();
+                                                        // Only count related docs, don't load them (prevents recursive queries)
+                                                        $relatedCount = count(explode(',', $result->related_docs));
                                                     @endphp
                                                     @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                         <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
@@ -858,13 +863,18 @@
                                                            
                                                         </div>
                                                         <div class="modal-body">
-                                                          
-                                                                               @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
+                                                            @php
+                                                                // Optimized: Load related docs without recursive accessor
+                                                                if ($result->related_docs) {
+                                                                    $relatedIds = explode(',', $result->related_docs);
+                                                                    $relatedDocuments = \App\Models\Regulation::whereIn('id', $relatedIds)
+                                                                        ->select('id', 'title', 'document_version', 'year_id', 'entity_id', 'regulation_doc')
+                                                                        ->with(['year:id,name', 'entity:id,name'])
+                                                                        ->get();
+                                                                } else {
+                                                                    $relatedDocuments = collect();
+                                                                }
+                                                            @endphp
 
                                                             <div class="card w-100 border-0 shadow-sm">
                                                                 <div class="card-header bg-light">
