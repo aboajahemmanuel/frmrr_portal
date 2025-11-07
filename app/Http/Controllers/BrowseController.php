@@ -50,7 +50,7 @@ class BrowseController extends Controller
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate(20);
 
          $regulations_ceased = Regulation::where('status', 1)
             ->whereNotNull('ceased')
