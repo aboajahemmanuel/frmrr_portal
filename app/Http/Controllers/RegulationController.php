@@ -50,9 +50,7 @@ class RegulationController extends Controller
             ->role($role)
             ->get();
 
-        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(500);
-
-        // $data = Regulation::orderBy('created_at', 'desc')->get();
+        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(50);
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);

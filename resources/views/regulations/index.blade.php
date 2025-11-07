@@ -77,7 +77,7 @@
                                 <div class="card-inner">
 
                                     <table class="datatable-init nk-tb-list nk-tb-ulist table-striped"
-                                        data-auto-responsive="false">
+                                        data-auto-responsive="false" data-paging="false" data-info="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th class="nk-tb-col">S/N</th>
@@ -95,7 +95,7 @@
                                         <tbody>
                                             @foreach ($data as $regulation)
                                                 <tr class="nk-tb-item">
-                                                    <td class="nk-tb-col"> {{ $loop->iteration }}</td>
+                                                    <td class="nk-tb-col"> {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
                                                     <td class="nk-tb-col"> {{ $regulation->title }}</td>
 
                                                     <td class="nk-tb-col">{{ optional($regulation->category)->name }}</td>
@@ -737,6 +737,15 @@
 
                             </tbody>
                             </table>
+                            
+                            <!-- Pagination Links -->
+                            @if($data->hasPages())
+                            <div class="mt-4 d-flex justify-content-center">
+                                <nav aria-label="Deployment pagination">
+                                    {{ $data->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                                </nav>
+                            </div>
+                            @endif
                         </div>
                     </div><!-- .card-preview -->
                 </div><!-- .nk-block -->
