@@ -46,13 +46,16 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-          $reg = Regulation::where('status', 1)
+          $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-         $regulations_ceased = Regulation::where('status', 1)
+         $regulations_ceased = Regulation::with(['year', 'entity'])
+            ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
+            ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('category_id', $category->id)
             ->get();
@@ -97,7 +100,8 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        $reg = Regulation::where('status', 1)
+        $reg = Regulation::with(['year', 'entity', 'category'])
+            ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNotNull('ceased')
             ->get();
@@ -132,7 +136,8 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        $reg = Regulation::where('status', 1)
+        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('subcategory_id', $subcategory->id)
             ->get();
@@ -167,12 +172,15 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        $reg = Regulation::where('status', 1)
+        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
             ->where('subcategory_id', $subcategory->id)
             ->whereNull('ceased')
             ->get();
 
-        $subcat_ceased = Regulation::where('status', 1)
+        $subcat_ceased = Regulation::with(['year', 'entity'])
+            ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'subcategory_id')
+            ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('subcategory_id', $subcategory->id)
             ->get();
@@ -194,13 +202,15 @@ class BrowseController extends Controller
           $data       = Category::where('status', 1)->get();
         $news_alert = News::all();
 
-        $search = Regulation::where('title', 'like', '%' . $title . '%')
+        $search = Regulation::with(['year', 'entity', 'category'])
+            ->where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->get();
 
-        $search_ceased = Regulation::where('title', 'like', '%' . $title . '%')
+        $search_ceased = Regulation::with(['year', 'entity'])
+            ->where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNotNull('ceased')
@@ -232,10 +242,11 @@ class BrowseController extends Controller
         $data       = Category::where('status', 1)->get();
         $news_alert = News::all();
 
-        $search = Regulation::where('title', 'like', '%' . $title . '%')
+        $search = Regulation::with(['year', 'entity', 'category'])
+            ->where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->where('category_id', $category->id)
-                ->whereNotNull('ceased')
+            ->whereNotNull('ceased')
             ->get();
 
         $total    = $search->count();
