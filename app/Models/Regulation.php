@@ -25,6 +25,8 @@ class Regulation extends Model
     }
 
 
+    
+
     public function entity()
     {
         return $this->belongsTo(Entity::class);
