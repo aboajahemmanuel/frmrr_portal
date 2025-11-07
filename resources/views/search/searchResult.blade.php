@@ -1,15 +1,11 @@
 @extends('layouts.headerexternal')
 
 @section('content')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-
     <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
+    <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
     <style>
         .pdf-page {
             border: 1px solid #ddd;
@@ -56,63 +52,12 @@
     </style>
     <script>
         $(document).ready(function() {
-            var table = $('#example').DataTable({
-                "order": [
-                    [0, "asc"]
-                ] // Sort by the first column (Issuer Name) in ascending order
+            // Initialize custom table filter
+            initCustomTableFilter('example', {
+                years: [],
+                showAlphabetFilter: true,
+                showEntityFilter: false
             });
-
-            // Create year filter
-            var years = [...new Set($('#example tbody tr td:nth-child(4)').map(function() {
-                return $(this).text();
-            }).get())].sort();
-            var yearHtml = '<div class="year-filter">';
-            yearHtml += '<a href="#" class="active" data-year="all">All</a>';
-            years.forEach(function(year) {
-                yearHtml += '<a href="#" data-year="' + year + '">' + year + '</a>';
-            });
-            yearHtml += '</div>';
-            $('#example_wrapper').prepend(yearHtml);
-
-            // Add event listener for year filter
-            $('.year-filter a').on('click', function(e) {
-                e.preventDefault();
-                var year = $(this).data('year');
-                $('.year-filter a').removeClass('active');
-                $(this).addClass('active');
-
-                if (year === 'all') {
-                    table.column(3).search('').draw();
-                } else {
-                    table.column(3).search(year).draw();
-                }
-            });
-
-
-            // Create alphabet filter
-            var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-            var alphabetHtml = '<div class="alphabet-filter">';
-            alphabetHtml += '<a href="#" class="active" data-letter="all">All</a>';
-            alphabet.forEach(function(letter) {
-                alphabetHtml += '<a href="#" data-letter="' + letter + '">' + letter + '</a>';
-            });
-            alphabetHtml += '</div>';
-            $('#example_wrapper').prepend(alphabetHtml);
-
-            // Add event listener for alphabet filter
-            $('.alphabet-filter a').on('click', function(e) {
-                e.preventDefault();
-                var letter = $(this).data('letter');
-                $('.alphabet-filter a').removeClass('active');
-                $(this).addClass('active');
-
-                if (letter === 'all') {
-                    table.column(0).search('').draw();
-                } else {
-                    table.column(0).search('^' + letter, true, false, true).draw();
-                }
-            });
-
         });
     </script>
 

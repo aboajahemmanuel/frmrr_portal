@@ -1,16 +1,11 @@
 @extends('layouts.externalcategory')
 
 @section('content')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-
     <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
     <style>
         .break-text {
             max-width: 200px;
@@ -121,12 +116,17 @@
         }
     </style>
     <script>
-   
-     var years = @json($years);
-
-
-
     $(document).ready(function() {
+        var years = @json($years);
+        
+        // Initialize custom table filter
+        initCustomTableFilter('example', {
+            years: years,
+            showAlphabetFilter: true,
+            showEntityFilter: false
+        });
+        
+        /*
         var table = $('#example').DataTable({
             columnDefs: [
                 {
@@ -276,13 +276,7 @@
             }
         }
 
-        // Update info on table draw
-        table.on('draw', function () {
-            updateSearchInfo();
-        });
-
-        // Enhanced search functionality
-        $('.dataTables_filter input').attr('placeholder', 'Search by title, entity, or any field...');
+        */
     });
 </script>
     <section class="gd-main-container">
