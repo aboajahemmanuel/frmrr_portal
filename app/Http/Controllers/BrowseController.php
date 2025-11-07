@@ -46,19 +46,20 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-           $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            return  $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(1);
 
-         $regulations_ceased = Regulation::with(['year', 'entity'])
+          $regulations_ceased = Regulation::with(['year', 'entity'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
             ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('category_id', $category->id)
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
