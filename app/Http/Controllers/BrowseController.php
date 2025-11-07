@@ -27,13 +27,6 @@ class BrowseController extends Controller
 
         $news_alert = News::all();
 
-        $alpha = DB::table('regulations')
-            ->join('alpha', 'regulations.alpha_id', '=', 'alpha.id')
-            ->select('alpha.id', 'alpha.name')
-            ->where('category_id', '=', $category->id)
-            ->where('regulations.status', 1)
-            ->groupBy('alpha.id', 'alpha.name')
-            ->get();
 
         $years = Year::pluck('name'); 
 
@@ -64,7 +57,7 @@ class BrowseController extends Controller
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
 
-        return view('categorypages.index', compact('data', 'news_alert', 'alpha', 'years', 'category', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses'));
+        return view('categorypages.index', compact('data', 'news_alert', 'years', 'category', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses'));
     }
 
     public function ceasedDoc($slug)
