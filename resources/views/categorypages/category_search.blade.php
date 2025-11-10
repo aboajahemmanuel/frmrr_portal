@@ -111,6 +111,30 @@
             showEntityFilter: false
         });
         
+        // Add ceased button to filter container (before Clear Filters button)
+        @if ($search_ceased->count() > 0)
+        setTimeout(function() {
+            var clearButton = $('#clear-filters-example');
+            if (clearButton.length) {
+                var ceasedButton = $(`
+                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 50px;">
+                        <a href="{{ route('search_category_ceased', ['slug' => $category->slug, 'title' => $title]) }}" style="text-decoration: none;">
+                            <div class="button-container-sb" style="display: inline-block;">
+                                <div class="gradient-buttons">
+                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px;">
+                                        <div style="white-space: nowrap;">Show Ceased/Repealed/Amended</div>
+                                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Arrow" style="width: 16px; height: 16px; margin-left: 5px;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `);
+                ceasedButton.insertBefore(clearButton);
+            }
+        }, 100);
+        @endif
+        
         /*
         var table = $('#example').DataTable({
             columnDefs: [
@@ -282,21 +306,6 @@
                     <div class="line-inactive"></div>
                 </div>
             </div>
-
-
-            @if ($search_ceased->count() > 0)
-                <a href="{{ route('search_category_ceased', ['slug' => $category->slug, 'title' => $title]) }}">
-                    <div class="button-container-sb">
-                        <div class="gradient-buttons">
-                            <div class="gradient-button-content">
-                                <div>Show Ceased/Repealed/Amended</div>
-                                <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="FMDQ Logo" />
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            @endif
-
         </div>
         @if (count($search) == 0)
             <img src="{{ asset('public/users/assets/illustration-search.svg') }}" alt="No document purchased illustration"

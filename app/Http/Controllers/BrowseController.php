@@ -61,8 +61,13 @@ class BrowseController extends Controller
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
+        
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.index', compact('data', 'news_alert', 'years', 'category', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses'));
+        return view('categorypages.index', compact('data', 'news_alert', 'years', 'category', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses', 'marketProductTags'));
     }
 
     public function ceasedDoc($slug)
@@ -112,8 +117,13 @@ class BrowseController extends Controller
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
+        
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.ceased', compact('data', 'news_alert', 'alpha', 'years', 'category', 'reg', 'isSubscribed', 'statuses', 'formattedStatuses'));
+        return view('categorypages.ceased', compact('data', 'news_alert', 'alpha', 'years', 'category', 'reg', 'isSubscribed', 'statuses', 'formattedStatuses', 'marketProductTags'));
     }
 
     public function subCatceasedDoc($slug)
@@ -148,8 +158,13 @@ class BrowseController extends Controller
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
+        
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.subceased', compact('data', 'years', 'news_alert', 'category', 'reg', 'subcategory', 'isSubscribed', 'statuses', 'formattedStatuses'));
+        return view('categorypages.subceased', compact('data', 'years', 'news_alert', 'category', 'reg', 'subcategory', 'isSubscribed', 'statuses', 'formattedStatuses', 'marketProductTags'));
     }
 
     public function subCategory($slug)
@@ -198,8 +213,13 @@ class BrowseController extends Controller
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
+        
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.subcat', compact('data', 'years', 'news_alert', 'category', 'reg', 'isSubscribed', 'subcat_ceased', 'subcategory', 'statuses', 'formattedStatuses'));
+        return view('categorypages.subcat', compact('data', 'years', 'news_alert', 'category', 'reg', 'isSubscribed', 'subcat_ceased', 'subcategory', 'statuses', 'formattedStatuses', 'marketProductTags'));
     }
 
     public function search_category(Request $request)
@@ -240,7 +260,12 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        return view('categorypages.category_search', compact('search', 'years', 'title', 'total', 'category', 'cateslug', 'catename', 'data', 'news_alert', 'isSubscribed', 'search_ceased'));
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+            
+        return view('categorypages.category_search', compact('search', 'years', 'title', 'total', 'category', 'cateslug', 'catename', 'data', 'news_alert', 'isSubscribed', 'search_ceased', 'marketProductTags'));
     }
 
     public function search_category_ceased($slug, $title)
@@ -274,8 +299,13 @@ class BrowseController extends Controller
             ->exists();
 
         $years = Year::pluck('name'); // Assuming 'year' is the column name
+        
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.category_ceased', compact('search', 'title', 'years', 'total', 'category', 'cateslug', 'catename', 'data', 'news_alert', 'isSubscribed'));
+        return view('categorypages.category_ceased', compact('search', 'title', 'years', 'total', 'category', 'cateslug', 'catename', 'data', 'news_alert', 'isSubscribed', 'marketProductTags'));
     }
 
     public function alphaname($slug, $name)
@@ -331,8 +361,13 @@ class BrowseController extends Controller
             ->where('regulations.status', 1)
             ->groupBy('years.id', 'years.name')
             ->get();
+            
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.regulations', compact('regulations', 'alpha', 'alphas', 'data_cat', 'data', 'regulations_ceased', 'category', 'news_alert', 'years', 'isSubscribed'));
+        return view('categorypages.regulations', compact('regulations', 'alpha', 'alphas', 'data_cat', 'data', 'regulations_ceased', 'category', 'news_alert', 'years', 'isSubscribed', 'marketProductTags'));
     }
 
     public function yearname($slug, $yname)
@@ -378,8 +413,13 @@ class BrowseController extends Controller
             ->where('regulations.status', 1)
             ->groupBy('years.id', 'years.name')
             ->get();
+            
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('categorypages.regulations', compact('regulations', 'alpha', 'alphas', 'data_cat', 'data', 'regulations_ceased', 'category', 'news_alert', 'years', 'isSubscribed'));
+        return view('categorypages.regulations', compact('regulations', 'alpha', 'alphas', 'data_cat', 'data', 'regulations_ceased', 'category', 'news_alert', 'years', 'isSubscribed', 'marketProductTags'));
     }
 
     public function regulation($slug)
@@ -456,6 +496,68 @@ class BrowseController extends Controller
         $data = Transaction::where('user_id', $id)->where('reference', '!=', null)->where('status', '=', 'success')->paginate(10);
         return view('categorypages.downloads', compact('data'));
         //return   view('categorypages.downloads');
+    }
+
+    public function marketProductTag($slug)
+    {
+        $data = Category::where('status', 1)->get();
+        $marketTag = \App\Models\MarketProductTag::where('slug', $slug)->first();
+        
+        if (!$marketTag) {
+            return redirect()->back()->with('error', 'Market Product Tag not found.');
+        }
+
+        $news_alert = News::all();
+        $years = Year::pluck('name');
+
+        $userId = Auth::id();
+        $today = Carbon::now();
+
+        $isSubscribed = Subscription::where('user_id', $userId)
+            ->where('status', 1)
+            ->where('end_date', '>=', $today)
+            ->exists();
+
+        // Get regulations that have this tag in their market_product_tag field
+        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
+            ->where(function($query) use ($marketTag) {
+                $query->where('market_product_tag', 'LIKE', '%' . $marketTag->id . '%')
+                      ->orWhereHas('marketProductTags', function($q) use ($marketTag) {
+                          $q->where('market_product_tags.id', $marketTag->id);
+                      });
+            })
+            ->whereNull('ceased')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+            
+        // Load page count for each regulation
+        $reg->each(function($regulation) {
+            $regulation->page_count = $regulation->page_count;
+        });
+
+        $regulations_ceased = Regulation::with(['year', 'entity'])
+            ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
+            ->where('status', 1)
+            ->where(function($query) use ($marketTag) {
+                $query->where('market_product_tag', 'LIKE', '%' . $marketTag->id . '%')
+                      ->orWhereHas('marketProductTags', function($q) use ($marketTag) {
+                          $q->where('market_product_tags.id', $marketTag->id);
+                      });
+            })
+            ->whereNotNull('ceased')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $statuses = DB::table('doc_type')->pluck('name')->toArray();
+        $formattedStatuses = implode('/', $statuses);
+        
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('categorypages.market_tag', compact('data', 'news_alert', 'years', 'marketTag', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses', 'marketProductTags'));
     }
 
     public function deletedownload(Request $request, $id)

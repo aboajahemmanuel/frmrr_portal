@@ -140,6 +140,12 @@
 </head>
 
 <body>
+    <div class="loader-mask">
+        <div class="loader">
+            <div></div>
+        </div>
+    </div>
+
     <div class="full-page">
         <div class="content">
             @include('layouts.externalheadercat')
@@ -162,7 +168,7 @@
                         <hr />
                         <div class="footer-d">
                         Powered by iQx Consult Limited. <br>
-Copyright © FMDQ Group PLC. All rights reserved.
+Copyright &copy; FMDQ Group PLC. All rights reserved.
 
                         </div>
                     </div>
@@ -172,7 +178,7 @@ Copyright © FMDQ Group PLC. All rights reserved.
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
         <script>
-            $(window).load('load', function() {
+            $(window).on('load', function() {
                 // Preloader
                 $('.loader').fadeOut();
                 $('.loader-mask').delay(250).fadeOut('slow');

@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\MarketProductTagController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PaymentController;
@@ -124,6 +125,9 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::get('/category/ceased/{slug}', [BrowseController::class, 'ceasedDoc'])->name('ceasedDoc');
     Route::get('/subCategory/{slug}', [BrowseController::class, 'subCategory'])->name('subCategory');
     Route::get('/subCategory/ceased/{slug}', [BrowseController::class, 'subCatceasedDoc'])->name('subCatceasedDoc');
+    
+    // Market Product Tag routes
+    Route::get('/market-tag/{slug}', [BrowseController::class, 'marketProductTag'])->name('marketProductTag');
     Route::get('/search-category-ceased/{slug}/{title}', [BrowseController::class, 'search_category_ceased'])->name('search_category_ceased');
 
     Route::get('/category/{slug}/{name}', [BrowseController::class, 'alphaname'])->name('alphaname');
@@ -236,6 +240,12 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::resource('subcategories', SubcategoryController::class);
     Route::post('deletesubcategory/{id}', [SubcategoryController::class, 'destroy'])->name('deletesubcategory');
     Route::post('/subcategorystatus/{id}', [SubcategoryController::class, 'subcategorystatus'])->name('subCatestatus');
+
+    // Market Product Tag management
+    Route::resource('market-product-tags', MarketProductTagController::class);
+    Route::post('deleteMarketProductTag/{id}', [MarketProductTagController::class, 'destroy'])->name('deleteMarketProductTag');
+    Route::post('tagupdate/{id}', [MarketProductTagController::class, 'update'])->name('tagUpdate');
+    Route::post('/tagstatus/{id}', [MarketProductTagController::class, 'tagstatus'])->name('TagStatus');
 
     // Group management
     Route::get('groups', [GroupController::class, 'index']);

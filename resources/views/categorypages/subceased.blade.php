@@ -117,6 +117,27 @@
             showEntityFilter: false
         });
         
+        // Add back button to filter container (before Clear Filters button)
+        setTimeout(function() {
+            var clearButton = $('#clear-filters-example');
+            if (clearButton.length) {
+                var backButton = $(`
+                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 50px;">
+                        <a href="{{ route('subCategory', $subcategory->slug) }}" style="text-decoration: none;">
+                            <div class="button-container-sb" style="display: inline-block;">
+                                <div class="gradient-buttons">
+                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px;">
+                                        <div style="white-space: nowrap;">< Go back</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `);
+                backButton.insertBefore(clearButton);
+            }
+        }, 100);
+        
         /*
         var table = $('#example').DataTable({
             columnDefs: [
@@ -290,17 +311,6 @@
                     <div class="line-inactive"></div>
                 </div>
             </div>
-            <a href="{{ route('subCategory', $subcategory->slug) }}">
-                <div class="button-container-sb">
-                    <div class="gradient-buttons">
-                        <div class="gradient-button-content">
-                            <div>
-                                < Go back</div>
-                                    {{-- <img src="{{ asset('public/users/assets/Arrow - Left.svg') }}" alt="FMDQ Logo" /> --}}
-                            </div>
-                        </div>
-                    </div>
-            </a>
         </div>
         <div style="background-color: #fff; padding: 20px; width: 100%">
             <div class="row" style="width: 100%">

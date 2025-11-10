@@ -68,11 +68,11 @@
 
               <div class="shortcuts">
                   <div>
-                      <b>Browse Shortcuts</b>:
+                      <b>Market Product Tags</b>:
                       <span>
-                          @foreach ($data as $category)
-                          <a href="{{ route('categorypages', $category->slug) }}"
-                              style="color:#C79D51 !important">{{ trim($category->name) }}</a>@if (!$loop->last),
+                          @foreach ($marketProductTags as $tag)
+                          <a href="{{ route('marketProductTag', $tag->slug) }}"
+                              style="color:#C79D51 !important">{{ trim($tag->name) }}</a>@if (!$loop->last),
                           @endif
                           @endforeach
                       </span>

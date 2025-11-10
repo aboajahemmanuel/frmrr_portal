@@ -50,7 +50,7 @@ class RegulationController extends Controller
             ->role($role)
             ->get();
 
-        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(50);
+        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(200);
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
@@ -133,12 +133,18 @@ class RegulationController extends Controller
             $new_regulation->related_docs = implode(',', $request->related_docs);
         }
 
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $new_regulation->market_product_tag = implode(',', $request->market_product_tags);
+        }
+
        
         $new_regulation->slug     = $slug;
         $new_regulation->group_id = $user->group_id;
 
         $new_regulation->save();
         $id = $new_regulation->id;
+
+     
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -184,6 +190,13 @@ class RegulationController extends Controller
         if ($request->has('related_docs') && is_array($request->related_docs)) {
             $regulation_approval->related_docs = implode(',', $request->related_docs);
         }
+
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $new_regulation->marketProductTags()->sync($request->market_product_tags);
+        }
+
+
+
         $regulation_approval->slug             = $slug;
         $regulation_approval->group_id         = $user->group_id;
 
@@ -239,6 +252,11 @@ class RegulationController extends Controller
         $regulation_update->save();
         $id = $regulation_update->id;
 
+        // Sync market product tags
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $regulation_update->marketProductTags()->sync($request->market_product_tags);
+        }
+
         //$new_document_tag = regulation::find($id);
         $year = Year::find($request['year_id'])->first();
 
@@ -269,6 +287,12 @@ class RegulationController extends Controller
         if ($request->has('related_docs') && is_array($request->related_docs)) {
             $regulation_approval->related_docs = implode(',', $request->related_docs);
         }
+
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $regulation_approval->marketProductTags()->sync($request->market_product_tags);
+        }
+
+
         $regulation_approval->ceased_date    = $request['ceased_date'];
         $regulation_approval->ceased         = $request['ceased'];
         $regulation_approval->slug           = $slug;
@@ -354,7 +378,12 @@ class RegulationController extends Controller
             ->orderBy('title')
             ->get();
 
-        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments'));
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'marketProductTags'));
     }
 
     public function view_doc($id)
@@ -515,6 +544,11 @@ class RegulationController extends Controller
         $formattedStatuses = implode('/', $statua);
 
 
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
         return view('regulations.add_new', [
             'selectedValue' => $selectedValue,
             'entities'      => $entities,
@@ -525,7 +559,8 @@ class RegulationController extends Controller
             'authoriser'    => $authoriser,
             'statuses'      => $statuses,
             'formattedStatuses' => $formattedStatuses,
-            'relatedDocuments' => $relatedDocuments
+            'relatedDocuments' => $relatedDocuments,
+            'marketProductTags' => $marketProductTags
         ]);
     }
 
@@ -595,6 +630,7 @@ class RegulationController extends Controller
             $update_admin_status->doc_preview      = $regulation_approval->doc_preview;
             $update_admin_status->related_docs      = $regulation_approval->related_docs;
             $update_admin_status->doc_preview_count = $regulation_approval->doc_preview_count;
+            $update_admin_status->market_product_tags = $regulation_approval->market_product_tags;
 
             $regulation_approval->status          = $request->status;
             $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated

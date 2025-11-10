@@ -15,7 +15,7 @@ class Regulation extends Model
         'entity_id', 'category_id', 'subcategory_id', 'regulation_doc', 'regulation_doc2',
         'price', 'status', 'note', 'ceased', 'effective_date', 'issue_date',
         'document_version', 'ceased_date', 'group_id', 'doc_preview', 'doc_preview_count', 'admin_status',
-        'related_docs'
+        'related_docs', 'market_product_tag'
             ];
 
 
@@ -38,6 +38,10 @@ class Regulation extends Model
         return $this->belongsTo(SubCategory::class);
     }
 
+    public function marketProductTags()
+    {
+        return $this->belongsToMany(MarketProductTag::class, 'regulation_market_product_tag');
+    }
 
     public function year()
     {

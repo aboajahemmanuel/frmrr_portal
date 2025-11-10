@@ -19,6 +19,10 @@ class WelcomeController extends Controller
         $data = Category::where('status', 1)->get();
         $subscriptionPlans = SubscriptionPlan::all();
         $news_alert = News::orderBy('created_at', 'desc')->where('status', 1)->get();
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
         // Initialize userSubscription to null
         $userSubscription = null;
@@ -35,7 +39,7 @@ class WelcomeController extends Controller
             // $userSubscription = Subscription::where('user_id', $user->id)->latest('created_at')->first();
         }
 
-        return view('welcome', compact('data', 'news_alert', 'subscriptionPlans', 'userSubscription'));
+        return view('welcome', compact('data', 'news_alert', 'subscriptionPlans', 'userSubscription', 'marketProductTags'));
     }
 
 
@@ -47,6 +51,10 @@ class WelcomeController extends Controller
         $data = Category::where('status', 1)->get();
         $subscriptionPlans = SubscriptionPlan::all();
         $news_alert = News::orderBy('created_at', 'desc')->where('status', 1)->get();
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
         // Initialize userSubscription to null
         $userSubscription = null;
@@ -66,7 +74,7 @@ class WelcomeController extends Controller
         }
 
 
-        return view('news', compact('data', 'news_alert', 'subscriptionPlans', 'userSubscription'));
+        return view('news', compact('data', 'news_alert', 'subscriptionPlans', 'userSubscription', 'marketProductTags'));
     }
 
 
@@ -103,7 +111,11 @@ class WelcomeController extends Controller
         $single_news = News::where('id', $id)->first();
         $news_alert = News::where('status', 1)->get();
         $other_news = News::where('status', 1)->limit(4)->get();
-        return view('alert', compact('single_news', 'news_alert', 'other_news', 'data', 'subscriptionPlans', 'userSubscription'));
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+        return view('alert', compact('single_news', 'news_alert', 'other_news', 'data', 'subscriptionPlans', 'userSubscription', 'marketProductTags'));
     }
 
 

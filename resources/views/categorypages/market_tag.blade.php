@@ -1,4 +1,4 @@
-@extends('layouts.externalcategory')
+@extends('layouts.externaltag')
 
 @section('content')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
@@ -213,30 +213,6 @@
             paging: false,
             info: false
         });
-        
-        // Add ceased button to filter container (before Clear Filters button)
-        @if ($regulations_ceased->count() > 0)
-        setTimeout(function() {
-            var clearButton = $('#clear-filters-example');
-            if (clearButton.length) {
-                var ceasedButton = $(`
-                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 50px;">
-                        <a href="{{ route('ceasedDoc', $category->slug) }}" style="text-decoration: none;">
-                            <div class="button-container-sb" style="display: inline-block;">
-                                <div class="gradient-buttons">
-                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px;">
-                                        <div style="white-space: nowrap;">Show {{ $formattedStatuses }}</div>
-                                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Arrow" style="width: 16px; height: 16px; margin-left: 5px;" />
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                `);
-                ceasedButton.insertBefore(clearButton);
-            }
-        }, 100);
-        @endif
     });
 </script>
 
@@ -248,8 +224,8 @@
     <div class="gl-flex">
         <div class="tabs">
             <div class="current">
-                <a href="rules.html">
-                    <p class="current-active" style="font-size: 24px;">A-Z {{ $category->name }}</p>
+                <a href="#">
+                    <p class="current-active" style="font-size: 24px;">{{ $marketTag->name }} Documents</p>
                 </a>
 
             </div>

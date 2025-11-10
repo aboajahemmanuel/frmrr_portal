@@ -213,30 +213,6 @@
             paging: false,
             info: false
         });
-        
-        // Add ceased button to filter container (before Clear Filters button)
-        @if ($regulations_ceased->count() > 0)
-        setTimeout(function() {
-            var clearButton = $('#clear-filters-example');
-            if (clearButton.length) {
-                var ceasedButton = $(`
-                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 50px;">
-                        <a href="{{ route('ceasedDoc', $category->slug) }}" style="text-decoration: none;">
-                            <div class="button-container-sb" style="display: inline-block;">
-                                <div class="gradient-buttons">
-                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px;">
-                                        <div style="white-space: nowrap;">Show {{ $formattedStatuses }}</div>
-                                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Arrow" style="width: 16px; height: 16px; margin-left: 5px;" />
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                `);
-                ceasedButton.insertBefore(clearButton);
-            }
-        }, 100);
-        @endif
     });
 </script>
 
@@ -258,6 +234,21 @@
                 <div class="line-inactive"></div>
             </div>
         </div>
+
+        @if ($regulations_ceased->count() > 0)
+        <a href="{{ route('ceasedDoc', $category->slug) }}">
+            <div class="button-container-sb">
+                <div class="gradient-buttons">
+                    <div class="gradient-button-content">
+                        <div>Show {{ $formattedStatuses }}</div>
+                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="FMDQ Logo" />
+                    </div>
+                </div>
+            </div>
+        </a>
+        @endif
+
+
     </div>
     <div style="background-color: #fff; padding: 20px; width: 100%">
                 <div class="row" style="width: 100%">

@@ -275,18 +275,10 @@
                                                     <option></option>
                                                     <option value="allwords"
                                                         @if ($searchMethod == 'allwords') selected @endif>
-                                                        All of the Words</option>
+                                                        Exact Phrase</option>
                                                     <option value="anywords"
                                                         @if ($searchMethod == 'anywords') selected @endif>
                                                         Any of the Words</option>
-                                                    {{-- <option value="exactwords"
-                                                        @if ($searchMethod == 'exactwords') selected @endif>The Exact
-                                                        Phrase
-                                                    </option> --}}
-                                                    <option value="woutwords"
-                                                        @if ($searchMethod == 'woutwords') selected @endif>Without the
-                                                        Words
-                                                    </option>
                                                 </select>
 
 
@@ -373,6 +365,7 @@
                                                 <select class="si-input-box-s" style="margin-top: 3.5px"
                                                     name="ceasedRepealed" id="">
                                                     <option></option>
+                                                    <option value="Active" {{ trim($ceasedRepealed ?? '') === 'Active' ? 'selected' : '' }}>Active</option>
                                                      @foreach ($statuses as $status)
                                                                 <option value="{{ trim($status->name) }}" 
                                                                     {{ trim($status->name) === trim($ceasedRepealed) ? 'selected' : '' }}>
@@ -503,10 +496,8 @@
                                             <div class="si-title" style="margin-top: 4px;">Search Using</div>
                                             <select class="si-input-box-s" name="searchusing" id="">
                                                 <option></option>
-                                                <option value="allwords">All of The Words</option>
+                                                <option value="allwords">Exact Phrase</option>
                                                 <option value="anywords">Any of The Words</option>
-                                                {{-- <option value="exactwords">The Exact Phrase</option> --}}
-                                                <option value="woutwords">Without The Words</option>
                                             </select>
 
 
@@ -578,13 +569,7 @@
                                             <select class="si-input-box-s" style="margin-top: 3.5px"
                                                 name="ceasedRepealed" id="">
                                                 <option></option>
-                                                {{-- <option value="Ceased" @if (($ceasedRepealed ?? 'Ceased') === 'Ceased') selected @endif>
-                                                Ceased</option>
-                                            <option value="tags" @if (($ceasedRepealed ?? 'Repealed') === 'Repealed') selected @endif>
-                                                Repealed</option> --}}
-
-
-
+                                                <option value="Active" {{ trim($ceasedRepealed ?? '') === 'Active' ? 'selected' : '' }}>Active</option>
                                                 <option value="Ceased">Ceased</option>
                                                 <option value="Repealed">Repealed</option>
 

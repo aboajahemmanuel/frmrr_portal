@@ -138,10 +138,8 @@
                                             <div class="si-title" style="margin-top: 4px;">Search Using</div>
                                             <select class="si-input-box-s" name="searchusing" id="">
                                                 <option></option>
-                                                <option value="allwords">All of the Words</option>
+                                                <option value="allwords">Exact Phrase</option>
                                                 <option value="anywords">Any of the Words</option>
-                                                {{-- <option value="exactwords">The Exact Phrase</option> --}}
-                                                <option value="woutwords">Without the Words</option>
                                             </select>
 
 
@@ -214,6 +212,7 @@
                                             <select class="si-input-box-s" style="margin-top: 3.5px"
                                                 name="ceasedRepealed" id="">
                                                 <option></option>
+                                                <option value="Active">Active</option>
                                                @foreach ($statuses as $status)
                                                                             <option value="{{ $status->name }}">
                                                                                 {{ $status->name }}</option>

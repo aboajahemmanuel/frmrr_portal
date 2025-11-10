@@ -87,6 +87,12 @@
 </head>
 
 <body>
+    <div class="loader-mask">
+        <div class="loader">
+            <div></div>
+        </div>
+    </div>
+
     <div class="full-page">
         <div class="content">
             @include('layouts.externalheader')
@@ -118,6 +124,31 @@ Copyright © FMDQ Group PLC. All rights reserved.
         </div>
 
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        $(window).on('load', function() {
+            // Preloader
+            $('.loader').fadeOut();
+            $('.loader-mask').delay(250).fadeOut('slow');
+        });
+
+        $(document).ready(function() {
+            @if ($errors->any())
+                @foreach ($errors->all() as $error)
+                    toastr.error('{{ $error }}', '');
+                @endforeach
+            @endif
+
+            @if (session('success'))
+                toastr.success('{{ session('success') }}', '');
+            @endif
+
+            @if (session('error'))
+                toastr.error('{{ session('error') }}', '');
+            @endif
+        });
+    </script>
 
     @include('layouts.sessioncheck')
 

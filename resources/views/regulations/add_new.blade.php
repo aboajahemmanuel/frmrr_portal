@@ -256,7 +256,23 @@
                                                                 </div>
 
                                                             </div>
-                                                
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="market-product-tags">Market Product Tags</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-control" name="market_product_tags[]" id="market-product-tags" multiple>
+                                                                            @foreach ($marketProductTags as $tag)
+                                                                                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                        <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple tags</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                             
+                                                            
 
                                                         <div class="col-6">
                                                             <div class="form-group">

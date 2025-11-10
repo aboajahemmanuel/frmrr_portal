@@ -162,13 +162,9 @@ class SearchController extends Controller
                 }
 
                 if ($searchMethod == 'allwords') {
-                    $words = explode(' ', $keywords);
-                    foreach ($words as $word) {
-                        $q->where(function ($query) use ($word) {
-                            $query->where('title', 'like', '%' . $word . '%')
-                                ->orWhere('document_tag', 'like', '%' . $word . '%');
-                        });
-                    }
+                    // Exact phrase match
+                    $q->where('title', 'like', '%' . $keywords . '%')
+                        ->orWhere('document_tag', 'like', '%' . $keywords . '%');
                 } elseif ($searchMethod == 'anywords') {
                     $words = explode(' ', $keywords);
                     $q->where(function ($query) use ($words) {
@@ -245,7 +241,11 @@ class SearchController extends Controller
         }
 
         if ($request->has('ceasedRepealed') && $request->ceasedRepealed) {
-            $query->where('ceased', '=', $ceasedRepealed);
+            if ($request->ceasedRepealed === 'Active') {
+                $query->whereNull('ceased');
+            } else {
+                $query->where('ceased', '=', $ceasedRepealed);
+            }
         }
 
         if ($request->has('document_version') && $request->document_version) {
