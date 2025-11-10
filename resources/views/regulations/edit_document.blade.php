@@ -265,23 +265,25 @@
 
                                                             </div>
 
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="market-product-tags-edit">Market Product Tags</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-control" name="market_product_tags[]" id="market-product-tags-edit" multiple>
-                                                                            @foreach ($marketProductTags as $tag)
-                                                                                <option value="{{ $tag->id }}" 
-                                                                                    @if($regulation->marketProductTags->contains($tag->id)) selected @endif>
-                                                                                    {{ $tag->name }}
-                                                                                </option>
-                                                                            @endforeach
-                                                                        </select>
-                                                                        <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple tags</small>
-                                                                    </div>
+                                                         
+                                                        @endif
+
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="market-product-tags-edit">Market Product Tags</label>
+                                                                <div class="form-control-wrap">
+                                                                    <select class="form-control" name="market_product_tags[]" id="market-product-tags-edit" multiple>
+                                                                        @foreach ($marketProductTags as $tag)
+                                                                            <option value="{{ $tag->id }}" 
+                                                                                @if($regulation->marketProductTags->contains($tag->id)) selected @endif>
+                                                                                {{ $tag->name }}
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple tags</small>
                                                                 </div>
                                                             </div>
-                                                        @endif
+                                                        </div>
 
 
                                                         @if ($regulation->category->slug == 'market-notices' || $regulation->category->slug == 'market-bulletins')

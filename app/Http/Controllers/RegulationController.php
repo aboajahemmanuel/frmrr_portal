@@ -289,7 +289,7 @@ class RegulationController extends Controller
         }
 
         if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
-            $regulation_approval->marketProductTags()->sync($request->market_product_tags);
+            $regulation_approval->market_product_tags = implode(',', $request->market_product_tags);
         }
 
 
@@ -630,7 +630,7 @@ class RegulationController extends Controller
             $update_admin_status->doc_preview      = $regulation_approval->doc_preview;
             $update_admin_status->related_docs      = $regulation_approval->related_docs;
             $update_admin_status->doc_preview_count = $regulation_approval->doc_preview_count;
-            $update_admin_status->market_product_tags = $regulation_approval->market_product_tags;
+            $update_admin_status->market_product_tag = $regulation_approval->market_product_tag;
 
             $regulation_approval->status          = $request->status;
             $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated

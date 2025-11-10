@@ -249,6 +249,7 @@
                                             <th style="text-align: center;">Issue Date</th>
                                             <th style="text-align: center;">Year</th>
                                             <th style="text-align: center;">Effective Date</th>
+                                            <th style="text-align: center;">Category</th>
                                             <th style="text-align: center;">Entity</th>
                                             <th style="text-align: center;">Related Docs</th>
                                             <th style="text-align: center;">Action</th>
@@ -272,13 +273,14 @@
                             </td>
                                                 <td style="text-align: center">{{ $result->document_version }}</td>
                                                 <td style="text-align: center">
-                                                    {{-- {{ \Carbon\Carbon::parse($result->issue_date)->format('M. d, Y') }} --}}
+                                                   
                                                       {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
                                                 </td>
                                                 <td style="text-align: center">{{ $result->year->name }}</td>
                                                 <td style="text-align: center">
                                                     {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                                 </td>
+                                                <td style="text-align: center">{{ $result->category->name }}</td>
                                                 <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                                 <td style="text-align: center">
                                                     @php
@@ -498,6 +500,7 @@
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
                                         <th style="text-align: center;">Entity</th>
+                                        <th style="text-align: center;">Category</th>
                                         <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;"><span
                                                 >Action</span></th>
@@ -530,6 +533,7 @@
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                            <td style="text-align: center">{{ $result->category->name }}</td>
                                             <td style="text-align: center">
                                                 @php
                                                     $relatedDocs = $result->relatedDocuments;
