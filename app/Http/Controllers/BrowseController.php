@@ -44,7 +44,7 @@ class BrowseController extends Controller
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(30);
+            ->paginate(5);
             
         // Load page count for each regulation
         $reg->each(function($regulation) {
