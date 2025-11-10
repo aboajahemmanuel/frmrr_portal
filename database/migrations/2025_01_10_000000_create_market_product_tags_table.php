@@ -16,7 +16,7 @@ class CreateMarketProductTagsTable extends Migration
         Schema::create('market_product_tags', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug', 191)->unique();
             $table->text('description')->nullable();
             $table->unsignedBigInteger('group_id')->nullable();
             $table->tinyInteger('status')->default(0)->comment('0=pending, 1=active, 2=rejected');
