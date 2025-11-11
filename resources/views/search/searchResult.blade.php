@@ -7,56 +7,147 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
     <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
     <style>
+        .break-text {
+            max-width: 200px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            clear: both;
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        
+        .dataTables_wrapper .dataTables_filter {
+            float: none !important;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        
+        .dataTables_wrapper .dataTables_length {
+            float: none !important;
+            margin-bottom: 10px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .filter-select,
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 14px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .clear-filters-btn {
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            align-self: flex-end;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .clear-filters-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .search-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        /* PDF Preview Blur Effects */
         .pdf-page {
             border: 1px solid #ddd;
             margin-bottom: 10px;
             width: 100%;
         }
         
-        .blurred {
-            filter: blur(5px);
-            opacity: 0.7;
+        .pdf-page.blurred {
+            filter: blur(8px);
+            opacity: 0.5;
         }
         
-        .partial-page {
+        .pdf-page.partial-page {
             position: relative;
-            overflow: hidden;
-        }
-        
-        .partial-page .content-mask {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(transparent 0%, white 100%);
-        }
-
-        .alphabet-filter,
-        .year-filter {
-            margin-bottom: 10px;
-        }
-
-        .alphabet-filter a,
-        .year-filter a {
-            margin: 0 4px;
-            text-decoration: none;
-            color: #007bff;
-        }
-
-        .alphabet-filter a.active,
-        .year-filter a.active {
-            font-weight: bold;
-            color: #000;
         }
     </style>
     <script>
         $(document).ready(function() {
-            // Initialize custom table filter
-            initCustomTableFilter('example', {
-                years: [],
-                showAlphabetFilter: true,
-                showEntityFilter: false
+            // Initialize DataTable without custom filters (we have manual filters)
+            var table = $('#example').DataTable({
+                responsive: true,
+                paging: true,
+                searching: true,
+                info: true,
+                dom: 'lrtip' // Remove default search box
+            });
+
+            // Manual filter functionality
+            $('#search-input').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            $('#letter-filter').on('change', function() {
+                var letter = this.value;
+                if (letter) {
+                    table.column(0).search('^' + letter, true, false).draw();
+                } else {
+                    table.column(0).search('').draw();
+                }
+            });
+
+            $('#year-filter').on('change', function() {
+                var year = this.value;
+                table.column(3).search(year).draw();
+            });
+
+            $('#clear-filters-example').on('click', function() {
+                $('#search-input').val('');
+                $('#letter-filter').val('');
+                $('#year-filter').val('');
+                table.search('').columns().search('').draw();
             });
         });
     </script>
@@ -87,64 +178,99 @@
 
 
 
-        <div class="gda-cards-container">
+        <div class="gda-cards-container" style="display: flex; flex-direction: column;">
             @include('search.searchTbaleResult')
-
-
-
-
-            <div class="">
-                @if (count($results) == 0)
+            
+            @if (count($results) == 0)
+                <div class="">
                     <img src="{{ asset('public/users/assets/illustration-search.svg') }}"
                         alt="No document purchased illustration" height="250px" />
                     <div class="no-doc"></div>
                     <div class="get-in">
-                        There is no search for the word <span>“{{ $title }}”</span>, refine
+                        There is no search for the word <span>"{{ $title }}"</span>, refine
                         your search by trying another keyword
                     </div>
-                @else
+                </div>
+            @else
                     <div style="background-color: #fff; padding: 20px; width: 100%">
+                        <!-- Filter Container -->
+                        <div class="filter-container">
+                            <div class="filter-group">
+                                <label for="search-input">Search:</label>
+                                <input type="text" id="search-input" class="filter-input" placeholder="Search...">
+                            </div>
+                            <div class="filter-group">
+                                <label for="letter-filter">First Letter:</label>
+                                <select id="letter-filter" class="filter-select">
+                                    <option value="">All Letters</option>
+                                    @foreach(range('A', 'Z') as $letter)
+                                        <option value="{{ $letter }}">{{ $letter }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="year-filter">Year:</label>
+                                <select id="year-filter" class="filter-select">
+                                    <option value="">All Years</option>
+                                    @php
+                                        $years = $results->pluck('year.name')->unique()->sort()->values();
+                                    @endphp
+                                    @foreach($years as $year)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="filter-group" style="flex: 0 0 100%;">
+                                <button id="clear-filters-example" class="clear-filters-btn">Clear Filters</button>
+                            </div>
+                        </div>
+
                         <div class="row" style="width: 100%">
                             <div class="col-md-12">
-                                <table id="example" class="datatable-init responsive table table-striped"
-                                    style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: center;">Title</th>
+                                @if (Auth::check())
+                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                        <table id="example" class="datatable-init responsive table table-striped"
+                                            style="width:100%">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: center;">Title</th>
+                                                    <th style="text-align: center;">Version Number</th>
+                                                    <th style="text-align: center;">Issue Date</th>
+                                                    <th style="text-align: center;">Year</th>
+                                                    <th style="text-align: center;">Effective Date</th>
+                                                    <th style="text-align: center;">Category</th>
+                                                    <th style="text-align: center;">Entity</th>
+                                                    <th style="text-align: center;">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($results as $result)
+                                                    <tr>
+                                                        <td>
+                                                            @if ($result->doc_preview == 1)
+                                                                <a href="#" data-toggle="modal"
+                                                                    data-target="#pdfModal-{{ $result->id }}">
+                                                                    {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
+                                                                </a>
+                                                            @else
+                                                                {{ $result->formatted_title }}
+                                                            @endif
+                                                        </td>
+                                                        <td style="text-align: center">{{ $result->document_version }}</td>
+                                                        <td style="text-align: center">
+                                                            {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
+                                                        </td>
+                                                        <td style="text-align: center">{{ $result->year->name }}</td>
+                                                        <td style="text-align: center">
+                                                            {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                                        </td>
+                                                        <td style="text-align: center">{{ $result->category->name }}</td>
+                                                        <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                                        <td class="tb-odr-action"
+                                                            style="display: flex !important; align-items: center; justify-content: center">
+                                                            <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
 
-                                            <th style="text-align: center;">Version No.</th>
-                                            <th style="text-align: center;">Year</th>
-                                            <th style="text-align: center;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                        @foreach ($results as $result)
-                                            <tr>
-                                                  <td>
-                                
-                                    @if ($result->doc_preview == 1)
-                                     <a href="#" data-toggle="modal"
-                                                            data-target="#pdfModal-{{ $result->id }}">
-                                                            {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
-
-                                                        </a>
-                                    @else
-                                        {{ $result->formatted_title }}
-                                    @endif
-                                
-                            </td>
-
-                                                <td style="text-align: center;">{{ $result->document_version }}</td>
-
-                                                <td style="text-align: center;">{{ $result->year->name }}</td>
-                                                <td class="tb-odr-action"
-                                                    style="display: flex; align-items: center; justify-content: center">
-                                                    <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
-
-
-
-                                                        @if ($isSubscribed)
+                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
                                                             <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
                                                                 target="_blank"
                                                                 class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
@@ -208,6 +334,12 @@
                                                 aria-hidden="true">
                                                 <div class="modal-dialog modal-lg" role="document">
                                                     <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">Document Preview</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
                                                         <div class="modal-body">
                                                             <div id="pdf-viewer-{{ $result->id }}">
                                                                 <!-- Canvas elements will be dynamically added based on page count -->
@@ -221,14 +353,117 @@
                                                 </div>
                                             </div>
                                         @endforeach
-
                                     </tbody>
-
                                 </table>
-                            </div>
-                        </div>
+                            @endif
+                        @else
+                            <table id="example" class="datatable-init responsive table table-striped"
+                                style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: center;">Title</th>
+                                        <th style="text-align: center;">Effective Date</th>
+                                        <th style="text-align: center;">Entity</th>
+                                        <th style="text-align: center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($results as $result)
+                                        <tr>
+                                            <td>
+                                                @if ($result->doc_preview == 1)
+                                                    <a href="#" data-toggle="modal"
+                                                        data-target="#pdfModal-{{ $result->id }}">
+                                                        {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
+                                                    </a>
+                                                @else
+                                                    {{ $result->formatted_title }}
+                                                @endif
+                                            </td>
+                                            <td style="text-align: center">
+                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                            </td>
+                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                            <td class="tb-odr-action"
+                                                style="display: flex !important; align-items: center; justify-content: center">
+                                                <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
+                                                    @if ($isSubscribed)
+                                                        <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
+                                                            target="_blank"
+                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                            <em class="icon ni ni-book-read"></em>
+                                                        </a>
+
+                                                        <a href="{{ route('download', $result->id) }}"
+                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                                class="icon ni ni-download"></em></a>
+                                                    @else
+                                                        @if (Auth::check())
+                                                            <a href="{{ route('subscribe') }}" target="_blank"
+                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                <em class="icon ni ni-book-read"></em>
+                                                            </a>
+                                                            <a href="{{ route('subscribe') }}"
+                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                                    class="icon ni ni-download"></em></a>
+                                                        @else
+                                                            <a href="{{ route('login') }}" target="_blank"
+                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                                <em class="icon ni ni-book-read"></em>
+                                                            </a>
+                                                            <a href="{{ route('login') }}"
+                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                                    class="icon ni ni-download"></em></a>
+                                                        @endif
+                                                    @endif
+
+                                                    <a href="#" id="submit"
+                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
+                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                            class="icon ni ni-save"></em></a>
+
+                                                    <form id="save-{{ $result->id }}"
+                                                        action="{{ route('save-document', $result->id) }}" method="POST"
+                                                        class="d-none" style="display: none">
+                                                        @csrf
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"
+                                            role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}"
+                                            aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">
+                                                            PDF Preview</h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div id="pdf-viewer-{{ $result->id }}">
+                                                            <!-- Canvas elements will be dynamically added based on page count -->
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
                     </div>
-                    <br>
+                </div>
+            </div>
+            <br>
 
 
                     <script>
@@ -372,8 +607,6 @@
                         });
                     </script>
                 @endif
-            </div>
-
 
         </div>
     </section>

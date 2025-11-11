@@ -108,239 +108,202 @@ class SearchController extends Controller
 
     public function searchPostAdvance(Request $request)
     {
+        // Initialize query with eager loading for better performance
+        $query = Regulation::with(['year', 'entity', 'category']);
 
-        // return $request;
-        $query = Regulation::query();
+        // Extract all filter parameters
+        $filters = [
+            'keywords' => $request->input('search_Words'),
+            'searchMethod' => $request->input('searchusing'),
+            'searchBy' => $request->input('searchBy'),
+            'categories' => $request->input('categories', []),
+            'year_id' => $request->input('year'),
+            'entity_id' => $request->input('entity_id'),
+            'issue_date' => $request->input('issue_date'),
+            'effective_date' => $request->input('effective_date'),
+            'ceasedRepealed' => $request->input('ceasedRepealed'),
+            'document_version' => $request->input('document_version'),
+            'number' => $request->input('number'),
+        ];
 
-      
-
-        $selectedCategories = $request->input('categories', []);
-
-        if (! empty($selectedCategories)) {
-            $query->whereIn('category_id', $selectedCategories);
+        // Apply category filter
+        if (!empty($filters['categories'])) {
+            $query->whereIn('category_id', $filters['categories']);
         }
 
-        $number     = $request->input('number');
-        $year_id    = $request->input('year');
-        $datePosted = $request->input('date_posted');
-        $entity_id  = $request->input('entity_id');
+        // Apply keyword search with different methods
+        if (!empty($filters['keywords'])) {
+            $this->applyKeywordSearch($query, $filters['keywords'], $filters['searchMethod'], $filters['searchBy']);
+        }
 
-        // Additional filters
-        $issueDate      = $request->input('issue_date');
-        $effectiveDate  = $request->input('effective_date');
-        $ceasedRepealed = $request->input('ceasedRepealed');
-        $amended        = $request->input('amended');
-        $versionNumber  = $request->input('document_version');
-        $entity         = $request->input('entity');
-        $searchBy       = $request->input('searchBy');
+        // Apply year filter
+        if (!empty($filters['year_id'])) {
+            $query->where('year_id', $filters['year_id']);
+        }
 
-        $Form = $request->input('Form');
-        // Filter by multiple categories if provided
-        // if ($request->has('categories') && $request->categories) {
-        //     $query->whereIn('category_id', $request->categories);
-        // }
+        // Apply entity filter
+        if (!empty($filters['entity_id'])) {
+            $query->where('entity_id', $filters['entity_id']);
+        }
 
-        // Filter by keywords and search method if provided
-        if ($request->has('search_Words') && $request->search_Words) {
-            $keywords     = $request->search_Words;
-            $searchMethod = $request->input('searchusing'); // Use input() method to handle default value
+        // Apply issue date filter
+        if (!empty($filters['issue_date'])) {
+            $query->whereDate('issue_date', $filters['issue_date']);
+        }
 
-            $query->where(function ($q) use ($keywords, $searchMethod) {
-                
+        // Apply effective date filter
+        if (!empty($filters['effective_date'])) {
+            $query->whereDate('effective_date', $filters['effective_date']);
+        }
 
-                if (empty($searchMethod)) {
-                    // Handle the case where searchMethod is null
-                    $words = explode(' ', $keywords);
-                    foreach ($words as $word) {
-                        $q->where(function ($query) use ($word) {
-                            $query->where('title', 'like', '%' . $word . '%')
-                                ->orWhere('document_tag', 'like', '%' . $word . '%');
-                        });
+        // Apply ceased/repealed status filter
+        if (!empty($filters['ceasedRepealed'])) {
+            if ($filters['ceasedRepealed'] === 'Active') {
+                $query->whereNull('ceased');
+            } else {
+                $query->where('ceased', $filters['ceasedRepealed']);
+            }
+        }
 
-                        
-                    }
+        // Apply document version filter
+        if (!empty($filters['document_version'])) {
+            $query->where('document_version', $filters['document_version']);
+        }
+
+        // Apply result limit
+        if (!empty($filters['number'])) {
+            $query->limit($filters['number']);
+        }
+
+        // Get filtered results
+        $results = $query->get();
+
+        // Check user subscription status
+        $isSubscribed = $this->checkUserSubscription();
+
+        // Prepare view data
+        $viewData = [
+            'results' => $results,
+            'categories' => Category::where('status', 1)->get(),
+            'months' => DB::table('months')->get(),
+            'years' => DB::table('years')->get(),
+            'entities' => Entity::where('status', 1)->get(),
+            'title' => $filters['keywords'],
+            'isSubscribed' => $isSubscribed,
+            'issueDate' => $filters['issue_date'],
+            'effectiveDate' => $filters['effective_date'],
+            'ceasedRepealed' => $filters['ceasedRepealed'],
+            'versionNumber' => $filters['document_version'],
+            'year_id' => $filters['year_id'],
+            'number' => $filters['number'],
+            'entity_id' => $filters['entity_id'],
+            'Form' => $request->input('Form'),
+            'selectedCategories' => $filters['categories'],
+            'searchMethod' => $filters['searchMethod'],
+            'searchBy' => $filters['searchBy'],
+            'statuses' => DB::table('doc_type')->get(),
+            'status' => DB::table('doc_type')->pluck('name')->toArray(),
+            'formattedStatuses' => implode('/', DB::table('doc_type')->pluck('name')->toArray()),
+        ];
+
+        // Return appropriate view based on ceased/repealed filter
+        $view = !empty($filters['ceasedRepealed']) 
+            ? 'search.AdsearchResultceasedRepealed' 
+            : 'search.AdsearchResult';
+
+        return view($view, $viewData);
+    }
+
+    /**
+     * Apply keyword search with different search methods
+     */
+    private function applyKeywordSearch($query, $keywords, $searchMethod = null, $searchBy = null)
+    {
+        // Define stop words for title search
+        $stopWords = ['on', 'and', 'or', 'of', 'in', 'for', 'to', 'with'];
+
+        // Handle search by title with stop words filtering
+        if ($searchBy === 'title') {
+            $searchWords = array_filter(
+                explode(' ', trim($keywords)), 
+                fn($word) => !in_array(strtolower($word), $stopWords)
+            );
+
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->orWhere('title', 'like', '%' . $word . '%');
                 }
+            });
+            return;
+        }
 
-                if ($searchMethod == 'allwords') {
-                    // Exact phrase match
+        // Handle search by tags
+        if ($searchBy === 'tags') {
+            $query->where(function ($q) use ($keywords) {
+                $q->where('title', 'LIKE', "%{$keywords}%")
+                  ->orWhere('document_tag', 'LIKE', "%{$keywords}%");
+            });
+            return;
+        }
+
+        // Handle different search methods
+        $query->where(function ($q) use ($keywords, $searchMethod) {
+            switch ($searchMethod) {
+                case 'allwords':
+                case 'exactwords':
+                    // Search for exact phrase in title or tags
                     $q->where('title', 'like', '%' . $keywords . '%')
-                        ->orWhere('document_tag', 'like', '%' . $keywords . '%');
-                } elseif ($searchMethod == 'anywords') {
+                      ->orWhere('document_tag', 'like', '%' . $keywords . '%');
+                    break;
+
+                case 'anywords':
+                    // Search for any of the words
                     $words = explode(' ', $keywords);
                     $q->where(function ($query) use ($words) {
                         foreach ($words as $word) {
                             $query->orWhere('title', 'like', '%' . $word . '%')
-                                ->orWhere('document_tag', 'like', '%' . $word . '%');
+                                  ->orWhere('document_tag', 'like', '%' . $word . '%');
                         }
                     });
-                } elseif ($searchMethod == 'exactwords') {
-                    $q->where('title', 'like', '%' . $keywords . '%')
-                        ->orWhere('document_tag', 'like', '%' . $keywords . '%');
-                } elseif ($searchMethod == 'woutwords') {
+                    break;
+
+                case 'woutwords':
+                    // Exclude documents containing these words
+                    $words = explode(' ', $keywords);
+                    foreach ($words as $word) {
+                        $q->where('title', 'not like', '%' . $word . '%')
+                          ->where('document_tag', 'not like', '%' . $word . '%');
+                    }
+                    break;
+
+                default:
+                    // Default: search for all words (AND logic)
                     $words = explode(' ', $keywords);
                     foreach ($words as $word) {
                         $q->where(function ($query) use ($word) {
-                            $query->where('title', 'not like', '%' . $word . '%')
-                                ->where('document_tag', 'not like', '%' . $word . '%');
+                            $query->where('title', 'like', '%' . $word . '%')
+                                  ->orWhere('document_tag', 'like', '%' . $word . '%');
                         });
                     }
-                }
-            });
-        }
-
-        if ($request->has('searchBy') && $searchBy == 'tags') {
-            $query->where(function ($q) use ($keywords) {
-            $q->where('title', 'LIKE', "%{$keywords}%")
-            ->orWhere('document_tag', 'LIKE', "%{$keywords}%");
-                });
-
-                }
-
-        if ($request->has('searchBy') && $searchBy == 'title') {
-           $stopWords = ['on', 'and', 'or', 'of', 'in', 'for', 'to', 'with'];
-
-            // Break the keywords into individual words and remove stop words
-            $searchWords = array_filter(explode(' ', trim($keywords)), function ($word) use ($stopWords) {
-                return !in_array(strtolower($word), $stopWords);
-            });
-
-            // Apply the filtered words to the query
-            $query->where(function ($q) use ($searchWords) {
-                foreach ($searchWords as $word) {
-                    $q->orWhere('title', 'like', '%' . $word . '%');
-                  
-                }
-            });
-
-           
-
-        }
-
-        if ($request->has('issue_date') && $request->issue_date) {
-            $query->where('issue_date', $request->issue_date);
-        }
-
-        // Filter by year if provided
-        // Apply the year filter if selected
-        if ($request->has('year') && $request->year) {
-            $query->where('year_id', $year_id);
-        }
-
-        // Apply the date posted filter if provided
-        // if ($request->has('year') && $request->year) {
-        //     $query->whereDate('created_at', $datePosted);
-        // }
-
-        // Apply the additional filters
-        if ($request->has('issueDate') && $request->issueDate) {
-            $query->whereDate('issue_date', $issueDate);
-        }
-
-        if ($request->has('effective_date') && $request->effective_date) {
-            $query->where('effective_date', $effectiveDate);
-        }
-
-        if ($request->has('ceasedRepealed') && $request->ceasedRepealed) {
-            if ($request->ceasedRepealed === 'Active') {
-                $query->whereNull('ceased');
-            } else {
-                $query->where('ceased', '=', $ceasedRepealed);
+                    break;
             }
-        }
+        });
+    }
 
-        if ($request->has('document_version') && $request->document_version) {
-            $query->where('document_version', $versionNumber);
-        }
-        if ($request->has('entity_id') && $request->entity_id) {
-             $query->where('entity_id',$entity_id);
-        }
-
-        // Apply the category filter if categories are selected
-        if (! empty($selectedCategories)) {
-            $query->whereIn('category_id', $selectedCategories);
-        }
-
-        // Apply the limit if number is provided
-        if ($number) {
-            $query->limit($number);
-        }
-
-        // Get the filtered results
-         $results = $query->get();
-
+    /**
+     * Check if the current user has an active subscription
+     */
+    private function checkUserSubscription()
+    {
         $userId = Auth::id();
-
-        // Check if the user is subscribed
-        $today = Carbon::now();
-
-        $isSubscribed = Subscription::where('user_id', $userId)
-            ->where('status', 1)
-            ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
-            ->exists();
-
-        // Fetch additional data for the view
-        $categories = Category::where('status', 1)->get();
-        $months     = DB::table('months')->get();
-        $years      = DB::table('years')->get();
-        $entities   = Entity::where('status', 1)->get();
-        $title      = $request->input('search_Words');
-
-        $statuses = \DB::table('doc_type')->get();
-
-        $status            = \DB::table('doc_type')->pluck('name')->toArray();
-        $formattedStatuses = implode('/', $status);
-
-        if ($request->input('ceasedRepealed')) {
-            return view('search.AdsearchResultceasedRepealed', compact(
-                'results',
-                'categories',
-                'months',
-                'years',
-                'entities',
-                'title',
-                'isSubscribed',
-                'issueDate',
-                'effectiveDate',
-                'ceasedRepealed',
-                'versionNumber',
-                'year_id',
-                'number',
-                'entity_id',
-                'Form',
-                'selectedCategories',
-                'searchMethod',
-                'statuses',
-                'formattedStatuses',
-                'status',
-                'searchBy'
-
-            ));
-        } else {
-            return view('search.AdsearchResult', compact(
-                'results',
-                'categories',
-                'months',
-                'years',
-                'entities',
-                'title',
-                'isSubscribed',
-                'issueDate',
-                'effectiveDate',
-                'ceasedRepealed',
-                'versionNumber',
-                'year_id',
-                'number',
-                'entity_id',
-                'Form',
-                'selectedCategories',
-                'searchMethod',
-                'statuses',
-                'formattedStatuses',
-                'status',
-                'searchBy'
-            ));
+        if (!$userId) {
+            return false;
         }
 
+        return Subscription::where('user_id', $userId)
+            ->where('status', 1)
+            ->where('end_date', '>=', Carbon::now())
+            ->exists();
     }
 
     public function search_result(Request $request)
