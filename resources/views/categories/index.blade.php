@@ -387,6 +387,25 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group">
+                                                <label class="form-label" for="abbr">Abbreviation (optional)</label>
+                                                <div class="form-control-wrap">
+                                                    <input name="abbreviation" maxlength="16" type="text" class="form-control" id="abbr" placeholder="e.g., TAX">
+                                                </div>
+                                                <small class="text-muted">Short code like "TAX". Max 16 characters.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="form-label" for="abbr_desc">Abbreviation Description (optional)</label>
+                                                <div class="form-control-wrap">
+                                                    <input name="abbreviation_description" maxlength="255" type="text" class="form-control" id="abbr_desc" placeholder="What this abbreviation means">
+                                                </div>
+                                                <small class="text-muted">Shown to users as a tooltip/explanation. Max 255 characters.</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
                                                 <label class="form-label" for="lead-name">Description</label>
                                                 <div class="form-control-wrap">
                                                     <textarea required class="form-control" name="description"></textarea>
@@ -513,8 +532,24 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="abbr-{{ $category->id }}">Abbreviation (optional)</label>
+                                                    <div class="form-control-wrap">
+                                                        <input name="abbreviation" maxlength="16" type="text" class="form-control" id="abbr-{{ $category->id }}" value="{{ $category->abbreviation }}" placeholder="e.g., TAX">
+                                                    </div>
+                                                    <small class="text-muted">Short code like "TAX". Max 16 characters.</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="abbr-desc-{{ $category->id }}">Abbreviation Description (optional)</label>
+                                                    <div class="form-control-wrap">
+                                                        <input name="abbreviation_description" maxlength="255" type="text" class="form-control" id="abbr-desc-{{ $category->id }}" value="{{ $category->abbreviation_description }}" placeholder="What this abbreviation means">
+                                                    </div>
+                                                    <small class="text-muted">Shown to users as a tooltip/explanation. Max 255 characters.</small>
+                                                </div>
+                                            </div>
 
                                             <div class="col-md-12">
                                                 <div class="form-group">

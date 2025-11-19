@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zxx" class="js">
+<head>
+    <base href="">
+    <meta charset="utf-8">
+    <meta name="author" content="Softnio">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Select2 Debug Test - App Context</title>
+    
+    <!-- Session timeout configuration -->
+    <meta name="session-timeout-minutes" content="30">
+    <link href="/public/admin/css/dashlite.css" rel="stylesheet" type="text/css" />
+    <link href="/public/admin/css/theme.css" rel="stylesheet" type="text/css" />
+    <link href="/public/admin/css/libs/fontawesome-icons.css" rel="stylesheet" type="text/css" />
+    <link href="/public/admin/css/libs/themify-icons.css" rel="stylesheet" type="text/css" />
+    <!-- Select2 CSS -->
+    <link href="/public/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- Custom Select2 CSS to match existing design -->
+    <style>
+        .select2-container .select2-selection--single {
+            height: 38px !important;
+            border: 1px solid #e5e9f2 !important;
+            border-radius: 4px !important;
+        }
+        
+        .select2-container .select2-selection--single .select2-selection__rendered {
+            line-height: 36px !important;
+            padding-left: 12px !important;
+            color: #333 !important;
+        }
+        
+        .select2-container .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #6576ff transparent transparent transparent !important;
+        }
+        
+        .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+            border-color: transparent transparent #6576ff transparent !important;
+        }
+        
+        .select2-dropdown {
+            border: 1px solid #e5e9f2 !important;
+            border-radius: 4px !important;
+        }
+        
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #6576ff !important;
+        }
+        
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: #f5f6fa !important;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .debug-info {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+    </style>
+    
+    <!-- jQuery (needed for select2) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    
+    <!-- Select2 JS -->
+    <script src="/public/assets/libs/select2/js/select2.min.js"></script>
+</head>
+<body>
+    <h1>Select2 Debug Test - App Context</h1>
+    
+    <div class="debug-info">
+        <h3>Debug Information</h3>
+        <p>This test replicates the exact setup used in your application to identify issues.</p>
+    </div>
+    
+    <div id="status" class="status">Initializing...</div>
+    
+    <div class="form-group">
+        <label for="entity">Entity (Type to search):</label>
+        <select id="entity" name="entity_id" class="si-input-box-s select2-entity">
+            <option></option>
+            <option value="1">Central Bank of Nigeria</option>
+            <option value="2">Securities and Exchange Commission</option>
+            <option value="3">National Insurance Commission</option>
+            <option value="4">Corporate Affairs Commission</option>
+            <option value="5">Federal Inland Revenue Service</option>
+            <option value="6">Nigerian Stock Exchange</option>
+            <option value="7">Office of the Auditor General</option>
+            <option value="8">Federal Ministry of Finance</option>
+            <option value="9">Nigerian Export Promotion Council</option>
+            <option value="10">Banking and Other Financial Institutions</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="status-select">Status (Type to search):</label>
+        <select id="status-select" name="ceasedRepealed" class="si-input-box-s select2-status">
+            <option></option>
+            <option value="Active">Active</option>
+            <option value="Ceased">Ceased</option>
+            <option value="Repealed">Repealed</option>
+            <option value="Draft">Draft</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Suspended">Suspended</option>
+        </select>
+    </div>
+
+    <script>
+        console.log('Script execution started');
+        
+        // Function to check library availability
+        function checkLibraries() {
+            const statusElement = document.getElementById('status');
+            
+            // Check if jQuery is loaded
+            if (typeof $ === 'undefined') {
+                statusElement.className = 'status error';
+                statusElement.innerHTML = 'ERROR: jQuery is not loaded<br>' +
+                    'typeof $: ' + typeof $ + '<br>' +
+                    'jQuery version: ' + (typeof jQuery !== 'undefined' ? jQuery.fn.jquery : 'undefined');
+                console.error('jQuery is not loaded');
+                return false;
+            } else {
+                console.log('jQuery version:', $.fn.jquery);
+            }
+            
+            // Check if Select2 is available
+            if (typeof $.fn.select2 === 'undefined') {
+                statusElement.className = 'status error';
+                statusElement.innerHTML = 'ERROR: Select2 is not loaded<br>' +
+                    'typeof $.fn.select2: ' + typeof $.fn.select2;
+                console.error('Select2 is not loaded');
+                return false;
+            } else {
+                console.log('Select2 version:', $.fn.select2.defaults.version);
+            }
+            
+            statusElement.className = 'status success';
+            statusElement.textContent = 'SUCCESS: jQuery and Select2 are loaded. Initializing Select2...';
+            return true;
+        }
+        
+        // Initialize Select2
+        function initializeSelect2() {
+            const statusElement = document.getElementById('status');
+            
+            try {
+                console.log('Initializing Select2 components...');
+                
+                // Initialize Select2 for Entity field
+                $('#entity').select2({
+                    placeholder: "Select or type to search entities...",
+                    allowClear: true,
+                    minimumInputLength: 2,
+                    width: '100%'
+                });
+                console.log('Entity Select2 initialized');
+                
+                // Initialize Select2 for Status field
+                $('#status-select').select2({
+                    placeholder: "Select or type to search statuses...",
+                    allowClear: true,
+                    minimumInputLength: 2,
+                    width: '100%'
+                });
+                console.log('Status Select2 initialized');
+                
+                statusElement.className = 'status success';
+                statusElement.innerHTML = 'SUCCESS: Select2 initialized successfully!<br>' +
+                    'jQuery version: ' + $.fn.jquery + '<br>' +
+                    'Select2 version: ' + $.fn.select2.defaults.version;
+                
+                // Log when selections change
+                $('#entity').on('select2:select', function (e) {
+                    console.log('Entity selected:', e.params.data);
+                });
+                
+                $('#status-select').on('select2:select', function (e) {
+                    console.log('Status selected:', e.params.data);
+                });
+                
+                console.log('All initialization complete');
+            } catch (error) {
+                console.error('Error initializing Select2:', error);
+                statusElement.className = 'status error';
+                statusElement.innerHTML = 'ERROR: Failed to initialize Select2<br>' +
+                    'Error: ' + error.message + '<br>' +
+                    'Stack: ' + error.stack;
+            }
+        }
+        
+        // Document ready handler
+        $(document).ready(function() {
+            console.log('Document ready fired');
+            document.getElementById('status').textContent = 'Document ready fired. Checking libraries...';
+            
+            // Check libraries first
+            if (checkLibraries()) {
+                // Initialize Select2
+                initializeSelect2();
+            }
+        });
+        
+        // Also try to initialize after a delay
+        setTimeout(function() {
+            console.log('Timeout handler executed');
+            if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                console.log('Initializing Select2 via timeout handler');
+                initializeSelect2();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

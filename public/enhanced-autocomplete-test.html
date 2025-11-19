@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Autocomplete Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .si-input-box-s {
+            width: calc(100% - 30px);
+            padding: 8px 12px;
+            border: 1px solid #e5e9f2;
+            border-radius: 4px;
+            font-size: 14px;
+            height: 38px;
+            box-sizing: border-box;
+            float: left;
+        }
+        
+        .autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        .dropdown-btn {
+            width: 30px;
+            height: 38px;
+            border: 1px solid #e5e9f2;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            background: #f8f9fa;
+            cursor: pointer;
+            float: right;
+            box-sizing: border-box;
+        }
+        
+        .dropdown-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .autocomplete-box {
+            position: absolute;
+            background: white;
+            border: 1px solid #e5e9f2;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            top: 38px;
+            left: 0;
+        }
+        
+        .autocomplete-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .autocomplete-item:hover {
+            background-color: #f5f6fa;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .highlight {
+            background-color: #6576ff;
+            color: white;
+        }
+        
+        .instructions {
+            background-color: #f0f8ff;
+            border: 1px solid #add8e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .clear-btn {
+            position: absolute;
+            right: 35px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enhanced Autocomplete Test</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>1. <strong>Type</strong> in the input boxes (at least 2 characters) to get filtered suggestions</p>
+        <p>2. <strong>Click the ▼ button</strong> to see all options in a dropdown</p>
+        <p>3. Click on a suggestion to select it</p>
+        <p>4. The hidden input will store the selected value</p>
+    </div>
+    
+    <div class="form-group">
+        <label for="entityInput">Entity (Type to search or click ▼):</label>
+        <div class="autocomplete-wrapper">
+            <input type="text" id="entityInput" class="si-input-box-s" placeholder="Type to search entities..." autocomplete="off">
+            <input type="hidden" id="entityHidden">
+            <div id="entitySuggestionBox" class="autocomplete-box"></div>
+            <button type="button" class="dropdown-btn" id="entityDropdownBtn">▼</button>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="statusInput">Status (Type to search or click ▼):</label>
+        <div class="autocomplete-wrapper">
+            <input type="text" id="statusInput" class="si-input-box-s" placeholder="Type to search statuses..." autocomplete="off">
+            <input type="hidden" id="statusHidden">
+            <div id="statusSuggestionBox" class="autocomplete-box"></div>
+            <button type="button" class="dropdown-btn" id="statusDropdownBtn">▼</button>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <button onclick="showValues()">Show Selected Values</button>
+        <button onclick="clearAll()">Clear All</button>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // Sample data
+        const entities = [
+            {id: "1", name: "Central Bank of Nigeria"},
+            {id: "2", name: "Securities and Exchange Commission"},
+            {id: "3", name: "National Insurance Commission"},
+            {id: "4", name: "Corporate Affairs Commission"},
+            {id: "5", name: "Federal Inland Revenue Service"},
+            {id: "6", name: "Nigerian Stock Exchange"},
+            {id: "7", name: "Office of the Auditor General"},
+            {id: "8", name: "Federal Ministry of Finance"},
+            {id: "9", name: "Nigerian Export Promotion Council"},
+            {id: "10", name: "Banking and Other Financial Institutions"}
+        ];
+        
+        const statuses = [
+            {name: "Active"},
+            {name: "Ceased"},
+            {name: "Repealed"},
+            {name: "Draft"},
+            {name: "Pending"},
+            {name: "Approved"},
+            {name: "Rejected"},
+            {name: "Suspended"}
+        ];
+        
+        // Initialize autocomplete
+        document.addEventListener('DOMContentLoaded', function() {
+            initAutocomplete();
+        });
+        
+        function initAutocomplete() {
+            // Entity autocomplete
+            const entityInput = document.getElementById('entityInput');
+            const entityHidden = document.getElementById('entityHidden');
+            const entitySuggestionBox = document.getElementById('entitySuggestionBox');
+            const entityDropdownBtn = document.getElementById('entityDropdownBtn');
+            
+            // Status autocomplete
+            const statusInput = document.getElementById('statusInput');
+            const statusHidden = document.getElementById('statusHidden');
+            const statusSuggestionBox = document.getElementById('statusSuggestionBox');
+            const statusDropdownBtn = document.getElementById('statusDropdownBtn');
+            
+            // Entity autocomplete functions
+            entityInput.addEventListener('input', function() {
+                const inputValue = this.value.toLowerCase();
+                if (inputValue.length >= 2) {
+                    const filteredEntities = entities.filter(entity => 
+                        entity.name.toLowerCase().includes(inputValue)
+                    );
+                    showSuggestions(filteredEntities, entitySuggestionBox, entityInput, entityHidden, 'entity');
+                } else {
+                    entitySuggestionBox.style.display = 'none';
+                }
+            });
+            
+            entityInput.addEventListener('blur', function() {
+                // Hide suggestions after a short delay to allow clicking
+                setTimeout(() => {
+                    entitySuggestionBox.style.display = 'none';
+                }, 150);
+            });
+            
+            // Entity dropdown button
+            entityDropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (entitySuggestionBox.style.display === 'block') {
+                    entitySuggestionBox.style.display = 'none';
+                } else {
+                    showSuggestions(entities, entitySuggestionBox, entityInput, entityHidden, 'entity');
+                }
+            });
+            
+            // Status autocomplete functions
+            statusInput.addEventListener('input', function() {
+                const inputValue = this.value.toLowerCase();
+                if (inputValue.length >= 2) {
+                    const filteredStatuses = statuses.filter(status => 
+                        status.name.toLowerCase().includes(inputValue)
+                    );
+                    showSuggestions(filteredStatuses, statusSuggestionBox, statusInput, statusHidden, 'status');
+                } else {
+                    statusSuggestionBox.style.display = 'none';
+                }
+            });
+            
+            statusInput.addEventListener('blur', function() {
+                // Hide suggestions after a short delay to allow clicking
+                setTimeout(() => {
+                    statusSuggestionBox.style.display = 'none';
+                }, 150);
+            });
+            
+            // Status dropdown button
+            statusDropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (statusSuggestionBox.style.display === 'block') {
+                    statusSuggestionBox.style.display = 'none';
+                } else {
+                    showSuggestions(statuses, statusSuggestionBox, statusInput, statusHidden, 'status');
+                }
+            });
+        }
+        
+        function showSuggestions(suggestions, suggestionBox, inputElement, hiddenElement, type) {
+            if (suggestions.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            
+            suggestionBox.innerHTML = '';
+            const inputValue = inputElement.value.toLowerCase();
+            
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                const name = type === 'entity' ? suggestion.name : suggestion.name;
+                const id = type === 'entity' ? suggestion.id : suggestion.name;
+                
+                // Highlight matching text only when filtering
+                if (inputValue.length >= 2) {
+                    const regex = new RegExp(`(${inputValue})`, 'gi');
+                    const highlightedName = name.replace(regex, '<strong>$1</strong>');
+                    item.innerHTML = highlightedName;
+                } else {
+                    item.textContent = name;
+                }
+                
+                item.addEventListener('click', function() {
+                    inputElement.value = name;
+                    hiddenElement.value = id;
+                    suggestionBox.style.display = 'none';
+                });
+                suggestionBox.appendChild(item);
+            });
+            
+            suggestionBox.style.display = 'block';
+        }
+        
+        function showValues() {
+            const entityValue = document.getElementById('entityHidden').value;
+            const statusValue = document.getElementById('statusHidden').value;
+            const entityText = document.getElementById('entityInput').value;
+            const statusText = document.getElementById('statusInput').value;
+            
+            document.getElementById('output').innerHTML = `
+                <p><strong>Entity:</strong> ${entityText} (ID: ${entityValue})</p>
+                <p><strong>Status:</strong> ${statusText} (Value: ${statusValue})</p>
+            `;
+        }
+        
+        function clearAll() {
+            document.getElementById('entityInput').value = '';
+            document.getElementById('entityHidden').value = '';
+            document.getElementById('entitySuggestionBox').style.display = 'none';
+            
+            document.getElementById('statusInput').value = '';
+            document.getElementById('statusHidden').value = '';
+            document.getElementById('statusSuggestionBox').style.display = 'none';
+            
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                document.getElementById('entitySuggestionBox').style.display = 'none';
+                document.getElementById('statusSuggestionBox').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

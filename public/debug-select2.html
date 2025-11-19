@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select2 Debug Test</title>
+    <!-- Include Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select2 Debug Test</h1>
+    
+    <div id="status" class="status">Checking Select2 availability...</div>
+    
+    <div class="form-group">
+        <label for="entity">Entity (Type to search):</label>
+        <select id="entity" name="entity">
+            <option></option>
+            <option value="1">Central Bank of Nigeria</option>
+            <option value="2">Securities and Exchange Commission</option>
+            <option value="3">National Insurance Commission</option>
+            <option value="4">Corporate Affairs Commission</option>
+            <option value="5">Federal Inland Revenue Service</option>
+            <option value="6">Nigerian Stock Exchange</option>
+            <option value="7">Office of the Auditor General</option>
+            <option value="8">Federal Ministry of Finance</option>
+            <option value="9">Nigerian Export Promotion Council</option>
+            <option value="10">Banking and Other Financial Institutions</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="status-select">Status (Type to search):</label>
+        <select id="status-select" name="status">
+            <option></option>
+            <option value="active">Active</option>
+            <option value="ceased">Ceased</option>
+            <option value="repealed">Repealed</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+        </select>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            console.log('Document ready fired');
+            
+            // Check if jQuery is loaded
+            if (typeof $ === 'undefined') {
+                $('#status').addClass('error').text('ERROR: jQuery is not loaded');
+                console.error('jQuery is not loaded');
+                return;
+            } else {
+                console.log('jQuery is loaded');
+            }
+            
+            // Check if Select2 is available
+            if (typeof $.fn.select2 === 'undefined') {
+                $('#status').addClass('error').text('ERROR: Select2 is not loaded');
+                console.error('Select2 is not loaded');
+                return;
+            } else {
+                console.log('Select2 is loaded');
+                $('#status').addClass('success').text('SUCCESS: jQuery and Select2 are loaded. Initializing Select2...');
+            }
+            
+            try {
+                // Initialize Select2 for Entity field
+                $('#entity').select2({
+                    placeholder: "Start typing to search entities...",
+                    allowClear: true,
+                    minimumInputLength: 2,
+                    width: '100%'
+                });
+                console.log('Entity Select2 initialized');
+                
+                // Initialize Select2 for Status field
+                $('#status-select').select2({
+                    placeholder: "Start typing to search statuses...",
+                    allowClear: true,
+                    minimumInputLength: 2,
+                    width: '100%'
+                });
+                console.log('Status Select2 initialized');
+                
+                $('#status').addClass('success').text('SUCCESS: Select2 initialized successfully!');
+                
+                // Log when selections change
+                $('#entity').on('select2:select', function (e) {
+                    console.log('Entity selected:', e.params.data);
+                });
+                
+                $('#status-select').on('select2:select', function (e) {
+                    console.log('Status selected:', e.params.data);
+                });
+                
+                console.log('All initialization complete');
+            } catch (error) {
+                console.error('Error initializing Select2:', error);
+                $('#status').addClass('error').text('ERROR: Failed to initialize Select2 - ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

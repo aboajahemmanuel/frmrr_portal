@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Select2 Test</title>
+    <!-- Include Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            border: 1px solid #add8e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select2 Type-Ahead Test</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>1. Start typing in the select boxes (at least 2 characters)</p>
+        <p>2. You should see a dropdown with filtered options</p>
+        <p>3. You can select an option or continue typing to refine results</p>
+    </div>
+    
+    <div class="form-group">
+        <label for="entity">Entity (Type to search):</label>
+        <select id="entity" name="entity">
+            <option></option>
+            <option value="1">Central Bank of Nigeria</option>
+            <option value="2">Securities and Exchange Commission</option>
+            <option value="3">National Insurance Commission</option>
+            <option value="4">Corporate Affairs Commission</option>
+            <option value="5">Federal Inland Revenue Service</option>
+            <option value="6">Nigerian Stock Exchange</option>
+            <option value="7">Office of the Auditor General</option>
+            <option value="8">Federal Ministry of Finance</option>
+            <option value="9">Nigerian Export Promotion Council</option>
+            <option value="10">Banking and Other Financial Institutions</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="status">Status (Type to search):</label>
+        <select id="status" name="status">
+            <option></option>
+            <option value="active">Active</option>
+            <option value="ceased">Ceased</option>
+            <option value="repealed">Repealed</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+        </select>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for Entity field
+            $('#entity').select2({
+                placeholder: "Start typing to search entities...",
+                allowClear: true,
+                minimumInputLength: 2,
+                width: '100%'
+            });
+            
+            // Initialize Select2 for Status field
+            $('#status').select2({
+                placeholder: "Start typing to search statuses...",
+                allowClear: true,
+                minimumInputLength: 2,
+                width: '100%'
+            });
+            
+            // Log when selections change
+            $('#entity').on('select2:select', function (e) {
+                console.log('Entity selected:', e.params.data);
+            });
+            
+            $('#status').on('select2:select', function (e) {
+                console.log('Status selected:', e.params.data);
+            });
+        });
+    </script>
+</body>
+</html>

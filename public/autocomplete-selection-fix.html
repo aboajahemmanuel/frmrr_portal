@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Autocomplete Selection Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .autocomplete-wrapper {
+            position: relative;
+            margin: 20px 0;
+        }
+        .si-input-box-s {
+            width: calc(100% - 30px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            float: left;
+        }
+        .dropdown-btn {
+            width: 30px;
+            height: 38px;
+            border: 1px solid #ccc;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            background: #f5f5f5;
+            cursor: pointer;
+            float: right;
+        }
+        .autocomplete-box {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+            display: none;
+            top: 38px;
+            left: 0;
+        }
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .autocomplete-item:hover {
+            background-color: #f0f0f0;
+        }
+        .debug-info {
+            background: #e7f3ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Autocomplete Selection Fix Test</h1>
+    
+    <div class="debug-info">
+        <p><strong>Test Instructions:</strong></p>
+        <p>1. Type "app" in the input - should show "Apple"</p>
+        <p>2. Click on "Apple" - should populate the input field</p>
+        <p>3. Click the ▼ button - should show all options</p>
+        <p>4. Click any option - should populate the input field</p>
+    </div>
+    
+    <div class="autocomplete-wrapper">
+        <input type="text" id="testInput" class="si-input-box-s" placeholder="Type to search..." autocomplete="off">
+        <input type="hidden" id="testHidden">
+        <div id="suggestionBox" class="autocomplete-box"></div>
+        <button type="button" class="dropdown-btn" id="dropdownBtn">▼</button>
+    </div>
+    
+    <div>
+        <h3>Current Values:</h3>
+        <p>Input Value: <span id="inputValue">-</span></p>
+        <p>Hidden Value: <span id="hiddenValue">-</span></p>
+    </div>
+    
+    <button onclick="updateDisplay()">Update Display</button>
+    <button onclick="testSelection()">Test Selection</button>
+    <button onclick="clearFields()">Clear</button>
+    
+    <div id="testResult"></div>
+
+    <script>
+        // Sample data
+        const testData = [
+            {id: "1", name: "Apple"},
+            {id: "2", name: "Banana"},
+            {id: "3", name: "Cherry"},
+            {id: "4", name: "Date"},
+            {id: "5", name: "Elderberry"}
+        ];
+        
+        let ignoreBlur = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('testInput');
+            const hidden = document.getElementById('testHidden');
+            const suggestionBox = document.getElementById('suggestionBox');
+            const dropdownBtn = document.getElementById('dropdownBtn');
+            
+            // Input event
+            input.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                if (value.length >= 1) {
+                    const filtered = testData.filter(item => 
+                        item.name.toLowerCase().includes(value)
+                    );
+                    showSuggestions(filtered);
+                } else {
+                    suggestionBox.style.display = 'none';
+                }
+            });
+            
+            // Dropdown button
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (suggestionBox.style.display === 'block') {
+                    suggestionBox.style.display = 'none';
+                } else {
+                    showSuggestions(testData);
+                }
+            });
+            
+            // Blur handling - FIXED
+            input.addEventListener('blur', function() {
+                // Only hide if not clicking on a suggestion
+                if (!ignoreBlur) {
+                    setTimeout(() => {
+                        suggestionBox.style.display = 'none';
+                    }, 150);
+                }
+            });
+            
+            function showSuggestions(suggestions) {
+                if (suggestions.length === 0) {
+                    suggestionBox.style.display = 'none';
+                    return;
+                }
+                
+                suggestionBox.innerHTML = '';
+                
+                suggestions.forEach(function(suggestion) {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.textContent = suggestion.name;
+                    
+                    // FIXED: Use mousedown instead of click and prevent default
+                    item.addEventListener('mousedown', function(e) {
+                        e.preventDefault(); // Prevent blur from firing before click
+                        input.value = suggestion.name;
+                        hidden.value = suggestion.id;
+                        suggestionBox.style.display = 'none';
+                        ignoreBlur = false; // Reset flag
+                        updateDisplay(); // Update display to show values
+                    });
+                    
+                    suggestionBox.appendChild(item);
+                });
+                
+                suggestionBox.style.display = 'block';
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.autocomplete-wrapper')) {
+                    suggestionBox.style.display = 'none';
+                }
+            });
+        });
+        
+        function updateDisplay() {
+            document.getElementById('inputValue').textContent = document.getElementById('testInput').value;
+            document.getElementById('hiddenValue').textContent = document.getElementById('testHidden').value;
+        }
+        
+        function testSelection() {
+            const inputValue = document.getElementById('testInput').value;
+            const hiddenValue = document.getElementById('testHidden').value;
+            
+            if (inputValue && hiddenValue) {
+                document.getElementById('testResult').innerHTML = 
+                    '<div class="result success">SUCCESS: Selection is working correctly!</div>';
+            } else {
+                document.getElementById('testResult').innerHTML = 
+                    '<div class="result error">ERROR: Selection is not working. Check values above.</div>';
+            }
+        }
+        
+        function clearFields() {
+            document.getElementById('testInput').value = '';
+            document.getElementById('testHidden').value = '';
+            document.getElementById('suggestionBox').style.display = 'none';
+            updateDisplay();
+            document.getElementById('testResult').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

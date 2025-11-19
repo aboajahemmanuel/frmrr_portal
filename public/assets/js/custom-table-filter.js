@@ -20,6 +20,8 @@ function initCustomTableFilter(tableId, options = {}) {
         year: '',
         search: '',
         entity: '',
+        effectiveDate: '',
+        version: '',
         custom: {}
     };
     
@@ -35,6 +37,8 @@ function initCustomTableFilter(tableId, options = {}) {
     const titleColIndex = 0;
     const yearColIndex = headers.indexOf('Year');
     const entityColIndex = headers.indexOf('Entity');
+    const effectiveDateColIndex = headers.indexOf('Effective Date');
+    const versionColIndex = headers.indexOf('Version Number');
     
     // Build filter HTML
     function buildFilterHtml() {
@@ -83,6 +87,68 @@ function initCustomTableFilter(tableId, options = {}) {
             filterHtml += '</div>';
         }
         
+        // Effective Date filter
+        if (effectiveDateColIndex !== -1 && options.showEffectiveDateFilter !== false) {
+            // Collect unique effective dates
+            const effectiveDates = new Set();
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const effectiveDateText = cells[effectiveDateColIndex]?.textContent.trim();
+                if (effectiveDateText) effectiveDates.add(effectiveDateText);
+            });
+            
+            const sortedDates = Array.from(effectiveDates).sort();
+            
+            filterHtml += '<div class="filter-group">';
+            filterHtml += '<label for="effective-date-filter-' + tableId + '">Effective Date:</label>';
+            filterHtml += '<select id="effective-date-filter-' + tableId + '" class="filter-select">';
+            filterHtml += '<option value="">All Dates</option>';
+            sortedDates.forEach(date => {
+                filterHtml += `<option value="${date}">${date}</option>`;
+            });
+            filterHtml += '</select>';
+            filterHtml += '</div>';
+        }
+        
+        // Version filter
+        if (versionColIndex !== -1 && options.showVersionFilter !== false) {
+            // Collect unique versions
+            const versions = new Set();
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const versionText = cells[versionColIndex]?.textContent.trim();
+                if (versionText) versions.add(versionText);
+            });
+            
+            // Sort versions properly
+            const sortedVersions = Array.from(versions).sort((a, b) => {
+                // Try to parse as version numbers
+                const aParts = a.split('.').map(Number);
+                const bParts = b.split('.').map(Number);
+                
+                for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                    const aNum = aParts[i] || 0;
+                    const bNum = bParts[i] || 0;
+                    
+                    if (aNum !== bNum) {
+                        return aNum - bNum;
+                    }
+                }
+                
+                return 0;
+            });
+            
+            filterHtml += '<div class="filter-group">';
+            filterHtml += '<label for="version-filter-' + tableId + '">Version:</label>';
+            filterHtml += '<select id="version-filter-' + tableId + '" class="filter-select">';
+            filterHtml += '<option value="">All Versions</option>';
+            sortedVersions.forEach(version => {
+                filterHtml += `<option value="${version}">${version}</option>`;
+            });
+            filterHtml += '</select>';
+            filterHtml += '</div>';
+        }
+        
         // Clear button
         filterHtml += '<button class="clear-filters-btn" id="clear-filters-' + tableId + '">Clear Filters</button>';
         filterHtml += '</div>';
@@ -127,6 +193,8 @@ function initCustomTableFilter(tableId, options = {}) {
             const titleText = cells[titleColIndex]?.textContent.trim() || '';
             const yearText = cells[yearColIndex >= 0 ? yearColIndex : 2]?.textContent.trim() || '';
             const entityText = entityColIndex >= 0 ? cells[entityColIndex]?.textContent.trim() || '' : '';
+            const effectiveDateText = effectiveDateColIndex >= 0 ? cells[effectiveDateColIndex]?.textContent.trim() || '' : '';
+            const versionText = versionColIndex >= 0 ? cells[versionColIndex]?.textContent.trim() || '' : '';
             
             // Search filter
             if (currentFilters.search) {
@@ -149,6 +217,16 @@ function initCustomTableFilter(tableId, options = {}) {
             // Entity filter
             if (visible && currentFilters.entity) {
                 visible = visible && entityText.includes(currentFilters.entity);
+            }
+            
+            // Effective Date filter
+            if (visible && currentFilters.effectiveDate) {
+                visible = visible && effectiveDateText.includes(currentFilters.effectiveDate);
+            }
+            
+            // Version filter
+            if (visible && currentFilters.version) {
+                visible = visible && versionText.includes(currentFilters.version);
             }
             
             // Custom filters
@@ -179,6 +257,21 @@ function initCustomTableFilter(tableId, options = {}) {
         if (currentFilters.entity) {
             activeFilters.push('Entity: ' + currentFilters.entity);
         }
+        if (currentFilters.effectiveDate) {
+            activeFilters.push('Effective Date: ' + currentFilters.effectiveDate);
+        }
+        if (currentFilters.version) {
+            activeFilters.push('Version: ' + currentFilters.version);
+        }
+        
+        // Add custom filters to info
+        if (currentFilters.custom) {
+            Object.keys(currentFilters.custom).forEach(key => {
+                if (currentFilters.custom[key]) {
+                    activeFilters.push(key + ': ' + currentFilters.custom[key]);
+                }
+            });
+        }
         
         const searchInfo = document.getElementById('search-info-' + tableId);
         if (activeFilters.length > 0) {
@@ -193,24 +286,70 @@ function initCustomTableFilter(tableId, options = {}) {
     
     // Sort table
     function sortTable(columnIndex) {
+        console.log('Sorting column:', columnIndex, 'Direction:', sortDirection);
+        
         const sortedRows = rows.slice().sort((a, b) => {
-            const aText = a.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
-            const bText = b.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+            const aCells = a.querySelectorAll('td');
+            const bCells = b.querySelectorAll('td');
             
+            // Handle case where cells might not exist
+            if (!aCells[columnIndex] || !bCells[columnIndex]) {
+                console.log('Missing cell data for sorting');
+                return 0;
+            }
+            
+            const aText = aCells[columnIndex].textContent.trim() || '';
+            const bText = bCells[columnIndex].textContent.trim() || '';
+            
+            console.log('Comparing:', aText, 'with', bText, 'in column', columnIndex);
+            
+            // Special handling for Year column (index 4)
+            if (columnIndex === 4) {
+                const aYear = parseInt(aText, 10);
+                const bYear = parseInt(bText, 10);
+                
+                console.log('Year comparison:', aYear, 'vs', bYear);
+                
+                if (!isNaN(aYear) && !isNaN(bYear)) {
+                    const result = sortDirection === 'asc' ? aYear - bYear : bYear - aYear;
+                    console.log('Year sort result:', result);
+                    return result;
+                }
+            }
+            
+            // Special handling for Version column (index 1)
+            if (columnIndex === 1) {
+                // Try to parse as version numbers
+                const aVersion = parseFloat(aText);
+                const bVersion = parseFloat(bText);
+                
+                if (!isNaN(aVersion) && !isNaN(bVersion)) {
+                    const result = sortDirection === 'asc' ? aVersion - bVersion : bVersion - aVersion;
+                    console.log('Version sort result:', result);
+                    return result;
+                }
+            }
+            
+            // Special handling for numeric values
             const aNum = parseFloat(aText);
             const bNum = parseFloat(bText);
             
             if (!isNaN(aNum) && !isNaN(bNum)) {
-                return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                const result = sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                console.log('Numeric sort result:', result);
+                return result;
             }
             
-            if (sortDirection === 'asc') {
-                return aText.localeCompare(bText);
-            } else {
-                return bText.localeCompare(aText);
-            }
+            // Default string comparison
+            const result = sortDirection === 'asc' ? 
+                aText.localeCompare(bText) : 
+                bText.localeCompare(aText);
+            
+            console.log('String sort result:', result);
+            return result;
         });
         
+        console.log('Sorted rows count:', sortedRows.length);
         sortedRows.forEach(row => tbody.appendChild(row));
         filterAndDisplayRows();
     }
@@ -248,6 +387,24 @@ function initCustomTableFilter(tableId, options = {}) {
         });
     }
     
+    // Effective Date filter
+    const effectiveDateFilter = document.getElementById('effective-date-filter-' + tableId);
+    if (effectiveDateFilter) {
+        effectiveDateFilter.addEventListener('change', function(e) {
+            currentFilters.effectiveDate = e.target.value;
+            filterAndDisplayRows();
+        });
+    }
+    
+    // Version filter
+    const versionFilter = document.getElementById('version-filter-' + tableId);
+    if (versionFilter) {
+        versionFilter.addEventListener('change', function(e) {
+            currentFilters.version = e.target.value;
+            filterAndDisplayRows();
+        });
+    }
+    
     const clearButton = document.getElementById('clear-filters-' + tableId);
     if (clearButton) {
         clearButton.addEventListener('click', function() {
@@ -255,18 +412,28 @@ function initCustomTableFilter(tableId, options = {}) {
             if (alphabetFilter) alphabetFilter.value = '';
             if (yearFilter) yearFilter.value = '';
             if (entityFilter) entityFilter.value = '';
+            if (effectiveDateFilter) effectiveDateFilter.value = '';
+            if (versionFilter) versionFilter.value = '';
             
             currentFilters = {
                 alphabet: '',
                 year: '',
                 search: '',
                 entity: '',
+                effectiveDate: '',
+                version: '',
                 custom: {}
             };
             
             filterAndDisplayRows();
         });
     }
+    
+    // Listen for custom filter changes
+    table.addEventListener('customFilterChange', function(e) {
+        currentFilters.custom = e.detail;
+        filterAndDisplayRows();
+    });
     
     // Add sort to headers
     thead.querySelectorAll('th').forEach((th, index) => {

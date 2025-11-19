@@ -138,158 +138,7 @@
             }
         }, 100);
         
-        /*
-        var table = $('#example').DataTable({
-            columnDefs: [
-                {
-                    targets: 0, // Title column
-                    render: function (data, type, row) {
-                        if (type === 'filter' || type === 'sort') {
-                            return $('<div>').html(data).text(); // Strips HTML for filtering/sorting
-                        }
-                        return data; // Keep HTML for display
-                    }
-                }
-            ],
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            order: [[0, 'asc']], // Default sort by title
-            responsive: true,
-            language: {
-                search: "Search documents:",
-                lengthMenu: "Show _MENU_ documents per page",
-                info: "Showing _START_ to _END_ of _TOTAL_ documents",
-                infoFiltered: "(filtered from _MAX_ total documents)"
-            }
-        });
-
-        // Detect table structure and get column indices
-        var headers = [];
-        $('#example thead th').each(function(index) {
-            headers.push($(this).text().trim());
-        });
-        
-        var titleColIndex = 0; // Title is always first
-        var yearColIndex = headers.indexOf('Year');
-
-        // Create enhanced filter container
-        var filterHtml = '<div class="filter-container">';
-        
-        // Alphabet filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="alphabet-filter">Filter by First Letter:</label>';
-        filterHtml += '<select id="alphabet-filter" class="filter-select">';
-        filterHtml += '<option value="">All Letters</option>';
-        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        alphabet.forEach(function (letter) {
-            filterHtml += '<option value="' + letter + '">' + letter + '</option>';
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Year filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="year-filter">Filter by Year:</label>';
-        filterHtml += '<select id="year-filter" class="filter-select">';
-        filterHtml += '<option value="">All Years</option>';
-        years.forEach(function (year) {
-            filterHtml += '<option value="' + year + '">' + year + '</option>';
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Clear filters button
-        filterHtml += '<button class="clear-filters-btn" id="clear-filters">Clear All Filters</button>';
-        filterHtml += '</div>';
-
-        // Add search info container
-        filterHtml += '<div id="search-info" class="search-info" style="display: none;"></div>';
-
-        $('#example_wrapper').prepend(filterHtml);
-
-        // Custom search function for first letter and year filtering
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var selectedLetter = $('#alphabet-filter').val();
-                var selectedYear = $('#year-filter').val();
-                
-                // If no filters are selected, show all rows
-                if (!selectedLetter && !selectedYear) {
-                    return true;
-                }
-                
-                var match = true;
-                
-                // Check alphabet filter
-                if (selectedLetter) {
-                    var titleText = $('<div>').html(data[titleColIndex]).text().trim();
-                    var firstLetter = titleText.charAt(0).toUpperCase();
-                    if (firstLetter !== selectedLetter.toUpperCase()) {
-                        match = false;
-                    }
-                }
-                
-                // Check year filter - find year column dynamically
-                if (match && selectedYear) {
-                    var currentYearColIndex = yearColIndex;
-                    // For tables without explicit year column, try hidden year column
-                    if (currentYearColIndex === -1) {
-                        // For non-subscribed users, year is in hidden column (index 6)
-                        currentYearColIndex = 6;
-                    }
-                    
-                    var yearText = $('<div>').html(data[currentYearColIndex]).text().trim();
-                    if (yearText !== selectedYear) {
-                        match = false;
-                    }
-                }
-                
-                return match;
-            }
-        );
-
-        // Alphabet filter functionality
-        $('#alphabet-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
-        });
-
-        // Year filter functionality
-        $('#year-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
-        });
-
-        // Clear all filters
-        $('#clear-filters').on('click', function () {
-            $('#alphabet-filter').val('');
-            $('#year-filter').val('');
-            table.draw();
-            $('#search-info').hide();
-        });
-
-        // Update search info
-        function updateSearchInfo() {
-            var info = table.page.info();
-            var activeFilters = [];
-            
-            if ($('#alphabet-filter').val()) {
-                activeFilters.push('Letter: ' + $('#alphabet-filter').val());
-            }
-            if ($('#year-filter').val()) {
-                activeFilters.push('Year: ' + $('#year-filter').val());
-            }
-            
-            if (activeFilters.length > 0) {
-                var infoText = 'Active filters: ' + activeFilters.join(', ') + 
-                              ' | Showing ' + info.recordsDisplay + ' of ' + info.recordsTotal + ' documents';
-                $('#search-info').text(infoText).show();
-            } else {
-                $('#search-info').hide();
-            }
-        }
-
-        */
+    
     });
 </script>
     <section class="gd-main-container">
@@ -321,6 +170,8 @@
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
+                                        <th style="text-align: center;">Category</th>
+                                        <th style="text-align: center;">Subcategory</th>
                                         <th style="text-align: center;">Version Number</th>
                                         <th style="text-align: center;">Issue Date</th>
                                         <th style="text-align: center;">Year</th>
@@ -328,6 +179,7 @@
                                         <th style="text-align: center;">{{$formattedStatuses}}</th>
                                         <th style="text-align: center;">{{$formattedStatuses}} Date</th>
                                         <th style="text-align: center;">Entity</th>
+                                        <th style="text-align: center;">Market Product</th>
                                         <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;">Action</th>
                                     </tr>
@@ -342,6 +194,9 @@
 
                                                 </a>
                                             </td>
+                                            <td style="text-align: center">{{ optional($result->category)->name }}</td>
+                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
+                                            
                                             <td style="text-align: center">{{ $result->document_version }}</td>
                                             <td style="text-align: center">
                                                 {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
@@ -359,6 +214,24 @@
                                             </td>
 
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                            <td style="text-align: center">
+                                                @php
+                                                    $tags = $result->marketProductTags ?? collect();
+                                                    if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
+                                                        $ids = array_filter(explode(',', $result->market_product_tag));
+                                                        if (!empty($ids)) {
+                                                            $tags = \App\Models\MarketProductTag::whereIn('id', $ids)->get();
+                                                        }
+                                                    }
+                                                @endphp
+                                                @if($tags && $tags->count())
+                                                    @foreach($tags as $tag)
+                                                        <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="badge badge-secondary">None</span>
+                                                @endif
+                                            </td>
                                             
                                             {{-- Related Documents Column --}}
                                             <td style="text-align: center">
@@ -597,288 +470,14 @@
                         @endif
                     @endif
 
-                    @if (Auth::check())
-                        @if (!$isSubscribed && Auth::user()->usertype != 'internal')
-                            <table id="example" class="datatable-init responsive table table-striped"
-                                style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Entity</th>
-                                         <th style="text-align: center;">{{$formattedStatuses}}</th>
-                                        <th style="text-align: center;">{{$formattedStatuses}} Date</th>
-                                        <th style="text-align: center;">Related Docs</th>
-                                        <th style="text-align: center;">Year</th>
-                                        <th style="text-align: center;"><span
-                                                style="margin: 0px -190px 0px 0px ">Action</span></th>
-
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reg as $result)
-                                        <tr>
-                                             <td class="" style="text-align: justify;">
-                                                <a href="#" data-toggle="modal"
-                                                    data-target="#pdfModal-{{ $result->id }}">
-                                                    {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
-
-                                                </a>
-                                            </td>
-
-
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td style="text-align: center">
-                                                <span class="badge fmdq_Blue">{{$result->ceased}}</span>
-                                            </td>
-
-                                             <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->ceased_date)->format('M. d, Y') }}
-                                            </td>
-                                            {{-- Related Documents Column --}}
-                                            <td style="text-align: center">
-                                                @if($result->related_docs)
-                                                    @php
-                                                        $relatedDocuments = $result->related_documents;
-                                                        $relatedCount = $relatedDocuments->count();
-                                                    @endphp
-                                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                @else
-                                                    <span class="badge badge-secondary">None</span>
-                                                @endif
-                                            </td>
-                                            {{-- End Related Documents Column --}}
-                                            
-                                            <td style="text-align: center">{{ $result->year->name }}</td>
-                                            <td class="tb-odr-action"
-                                                style="display: flex !important; align-items: center; justify-content: center">
-                                                <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
-
-
-
-
-
-                                                    @if ($isSubscribed)
-                                                        <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
-                                                            target="_blank"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                            <em class="icon ni ni-book-read"></em>
-                                                        </a>
-
-                                                        <a href="{{ route('download', $result->id) }}"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-download"></em></a>
-                                                    @else
-                                                        @if (Auth::check())
-                                                            <a href="{{ route('subscribe') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('subscribe') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @else
-                                                            <a href="{{ route('login') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('login') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @endif
-                                                    @endif
-
-
-
-
-                                                    <a href="#" id="submit"
-                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                            class="icon ni ni-save"></em></a>
-
-
-
-
-
-
-                                                    <form id="save-{{ $result->id }}"
-                                                        action="{{ route('save-document', $result->id) }}" method="POST"
-                                                        class="d-none" style="display: none">
-                                                        @csrf
-
-                                                    </form>
-
-
-
-
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-
-                                        <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"
-                                            role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
-                                                <div class="modal-content">
-
-                                                    <div class="modal-body">
-                                                        <div id="pdf-viewer-{{ $result->id }}">
-                                                            <canvas id="canvas-page1-{{ $result->id }}"
-                                                                class="pdf-page"></canvas>
-                                                            <canvas id="canvas-page2-{{ $result->id }}"
-                                                                class="pdf-page"></canvas>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Modal for Related Documents -->
-                                        <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
-                            
-                                                        @if($relatedDocuments && $relatedDocuments->count() > 0)
-                                                            <div class="card w-100 border-0 shadow-sm">
-                                                                <div class="card-header bg-light">
-                                                                    <h5 class="mb-0 fw-bold">Related Documents</h5>
-                                                                </div>
-                                
-                                                                <div class="card-body p-0">
-                                                                    <!-- Header Row -->
-                                                                    <div class="d-flex bg-light border-bottom p-3 fw-bold text-center" style="font-size: 14px;">
-                                                                        <div style="width: 8%; min-width: 50px;">S/N</div>
-                                                                        <div style="width: 30%; min-width: 200px;">Title</div>
-                                                                        <div style="width: 10%; min-width: 80px;">Year</div>
-                                                                        <div style="width: 15%; min-width: 120px;">Effective Date</div>
-                                                                        <div style="width: 15%; min-width: 120px;">Issued Date</div>
-                                                                        <div style="width: 12%; min-width: 100px;">Status</div>
-                                                                        <div style="width: 10%; min-width: 120px;">Action</div>
-                                                                    </div>
-                                                                    
-                                                                    <div class="list-group w-100">
-                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item border-0 border-bottom">
-                                                                                    <div class="d-flex align-items-center p-2" style="font-size: 14px;">
-                                                                                        <div style="width: 8%; min-width: 50px; text-align: center;">
-                                                                                            <strong>{{ $index + 1 }}</strong>
-                                                                                        </div>
-                                                                                        <div style="width: 30%; min-width: 200px;" class="text-truncate">
-                                                                                            {{ $relatedDoc->title }}
-                                                                                        </div>
-                                                                                        <div style="width: 10%; min-width: 80px; text-align: center;">
-                                                                                            {{ optional($relatedDoc->year)->name ?? 'N/A' }}
-                                                                                        </div>
-                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
-                                                                                            {{ $relatedDoc->effective_date ? \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') : 'N/A' }}
-                                                                                        </div>
-                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
-                                                                                            {{ $relatedDoc->issue_date ? \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
-                                                                                        </div>
-                                                                                        <div style="width: 12%; min-width: 100px; text-align: center;">
-                                                                                            <span class="badge badge-success">{{ $relatedDoc->ceased ?? 'Active' }}</span>
-                                                                                        </div>
-                                                                                        <div style="width: 10%; min-width: 120px; text-align: center;">
-                                                                                            <div class="d-flex gap-1 justify-content-center">
-                                                                                                <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                    <em class="icon ni ni-book-read"></em>
-                                                                                                </a>
-                                                                                                <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                    <em class="icon ni ni-download"></em>
-                                                                                                </a>
-                                                                                                <a href="#" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                    <em class="icon ni ni-save"></em>
-                                                                                                </a>
-                                                                                                <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                                    @csrf
-                                                                                                </form>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1,
-                                                                                            'isSubscribed' => $isSubscribed || Auth::user()->usertype == 'internal'
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @else
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item border-0 border-bottom">
-                                                                                    <div class="d-flex align-items-center p-2" style="font-size: 14px;">
-                                                                                        <div style="width: 8%; min-width: 50px; text-align: center;">
-                                                                                            <strong>{{ $index + 1 }}</strong>
-                                                                                        </div>
-                                                                                        <div style="width: 72%; min-width: 400px;" class="text-muted">
-                                                                                            Restricted - Upgrade to view document details
-                                                                                        </div>
-                                                                                        <div style="width: 20%; min-width: 120px; text-align: center;">
-                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                                Upgrade to Access
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1,
-                                                                                            'isSubscribed' => false
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @else
-                                                            <p>No related documents found.</p>
-                                                        @endif
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- End Modal for Related Documents -->
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                
                     @else
                         <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th style="text-align: center;">Title</th>
+                                    <th style="text-align: center;">Category</th>
+                                        <th style="text-align: center;">Subcategory</th>
                                     <th style="text-align: center;">Effective Date</th>
                                     <th style="text-align: center;">Entity</th>
                                     <th style="text-align: center;">Related Docs</th>
@@ -899,12 +498,31 @@
                                             </a>
                                         </td>
 
+                                                                                    <td style="text-align: center">{{ optional($result->category)->name }}</td>
+                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
 
                                         <td style="text-align: center">
                                             {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                         </td>
                                         <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                        
+                                        <td style="text-align: center">
+                                            @php
+                                                $tags = $result->marketProductTags ?? collect();
+                                                if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
+                                                    $ids = array_filter(explode(',', $result->market_product_tag));
+                                                    if (!empty($ids)) {
+                                                        $tags = \App\Models\MarketProductTag::whereIn('id', $ids)->get();
+                                                    }
+                                                }
+                                            @endphp
+                                            @if($tags && $tags->count())
+                                                @foreach($tags as $tag)
+                                                    <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="badge badge-secondary">None</span>
+                                            @endif
+                                        </td>
                                         {{-- Related Documents Column --}}
                                         <td style="text-align: center">
                                             @if($result->related_docs)

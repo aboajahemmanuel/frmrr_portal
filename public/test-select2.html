@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select2 Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body>
+    <h1>Select2 Type-Ahead Test</h1>
+    
+    <label for="entity">Entity:</label>
+    <select id="entity" style="width: 300px;">
+        <option></option>
+        <option value="1">Central Bank of Nigeria</option>
+        <option value="2">Securities and Exchange Commission</option>
+        <option value="3">National Insurance Commission</option>
+        <option value="4">Corporate Affairs Commission</option>
+        <option value="5">Federal Inland Revenue Service</option>
+    </select>
+    
+    <br><br>
+    
+    <label for="status">Status:</label>
+    <select id="status" style="width: 300px;">
+        <option></option>
+        <option value="active">Active</option>
+        <option value="ceased">Ceased</option>
+        <option value="repealed">Repealed</option>
+        <option value="draft">Draft</option>
+        <option value="pending">Pending</option>
+    </select>
+
+    <script>
+        $(document).ready(function() {
+            $('#entity').select2({
+                placeholder: "Select or type to search entities...",
+                allowClear: true,
+                minimumInputLength: 2
+            });
+            
+            $('#status').select2({
+                placeholder: "Select or type to search statuses...",
+                allowClear: true,
+                minimumInputLength: 2
+            });
+        });
+    </script>
+</body>
+</html>

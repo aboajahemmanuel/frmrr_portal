@@ -2,21 +2,20 @@
       <div class="w-1100">
           @include('layouts.appnavbar')
           <div class="info">
-              <div class="title">{{ $marketTag->name }} Documents</div>
+              <div class="title">{{ $subcategory->name ?? ($category->name ?? 'Subcategory') }}</div>
               <div class="desc">
-                  Browse documents tagged with {{ $marketTag->name }}. Use the search below to find specific documents.
+                   {{ $subcategory->summary  }}
               </div>
+               
               <?php
                 $title = '';
                 ?>
-
-
-              <form method="GET" action="{{ route('search_market_tag') }}">
+              <form method="GET" action="{{ route('search_subcategory') }}">
                   <div class="search">
                       <div class="search-box">
                           <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
-                          <input hidden name="market_tag_slug" value="{{ $marketTag->slug }}">
-                          <input required name="title" type="search" placeholder="What are you looking for?" />
+                          <input hidden name="subcategory_slug" value="{{ $subcategory->slug }}">
+                          <input required name="title" type="search" placeholder="Search within this subcategory..." />
                       </div>
                       <a href="#" style="height: 100%;">
                           <button style="height: 100%;" type="submit">

@@ -1,11 +1,11 @@
-@extends('layouts.externalcategory')
+@extends('layouts.externalsubcategory')
 
 @section('content')
     <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-    <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
+    <script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
     <style>
         .break-text {
             max-width: 200px;
@@ -89,56 +89,132 @@
             color: #495057;
         }
         
-        /* Custom styles for PDF preview */
+        /* Related Documents Styling */
+        .related-docs-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .related-docs-badge:hover {
+            background-color: #0056b3;
+        }
+        
+        .related-docs-badge.no-docs {
+            background-color: #6c757d;
+            cursor: default;
+        }
+        
+        .related-doc-item {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+        }
+        
+        .related-doc-item:last-child {
+            border-bottom: none;
+        }
+        
+        .related-doc-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .related-doc-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .related-doc-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .related-doc-meta span {
+            margin-right: 15px;
+        }
+        
+        .related-docs-modal .modal-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .nested-related-docs {
+            margin-left: 25px;
+            padding-left: 15px;
+            border-left: 2px solid #007bff;
+            margin-top: 10px;
+        }
+        
+        .nested-doc-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .nested-doc-title {
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .nested-badge {
+            display: inline-block;
+            background-color: #17a2b8;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+        
+        /* PDF Preview Blur Effects */
         .pdf-page {
             border: 1px solid #ddd;
             margin-bottom: 10px;
             width: 100%;
         }
         
-        .blurred {
-            filter: blur(5px);
-            opacity: 0.7;
+        .pdf-page.blurred {
+            filter: blur(8px);
+            opacity: 0.5;
         }
         
-        .partial-page {
+        .pdf-page.partial-page {
             position: relative;
-            overflow: hidden;
         }
-        
-        .partial-page .content-mask {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(transparent 0%, white 100%);
-        }
+        /* Gradient button styles for ceased documents */
+        .button-container-sb { display: inline-block; }
+        .gradient-buttons { display: inline-block; }
+        .gradient-button-content { display: flex; align-items: center; }
     </style>
     <script>
     $(document).ready(function() {
         var years = @json($years);
         
-        // Initialize custom table filter with pagination disabled
-        initCustomTableFilter('example', {
-            years: years,
-            showAlphabetFilter: true,
-            showEntityFilter: false,
-            paging: false,
-            info: false
+        // Initialize centralized table filter with pagination disabled
+        window.tableFilter = initCentralizedTableFilter('example', {
+            years: years
         });
         
-        // Add ceased button to filter container (before Clear Filters button)
+        // Add ceased button to filter container (after Clear Filters button)
         @if ($subcat_ceased->count() > 0)
         setTimeout(function() {
             var clearButton = $('#clear-filters-example');
             if (clearButton.length) {
                 var ceasedButton = $(`
-                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 50px;">
+                    <div class="filter-group" style="align-self: flex-end; margin-left: 10px;">
                         <a href="{{ route('subCatceasedDoc', $subcategory->slug) }}" style="text-decoration: none;">
                             <div class="button-container-sb" style="display: inline-block;">
                                 <div class="gradient-buttons">
-                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px;">
+                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; display: flex; align-items: center;">
                                         <div style="white-space: nowrap;">Show {{$formattedStatuses}}</div>
                                         <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Arrow" style="width: 16px; height: 16px; margin-left: 5px;" />
                                     </div>
@@ -147,7 +223,7 @@
                         </a>
                     </div>
                 `);
-                ceasedButton.insertBefore(clearButton);
+                clearButton.parent().after(ceasedButton);
             }
         }, 100);
         @endif
@@ -165,6 +241,7 @@
                   
 
                 </div>
+               
                 <div class="active-line">
                     <div class="line-active"></div>
                     <div class="line-inactive"></div>
@@ -174,491 +251,30 @@
         <div style="background-color: #fff; padding: 20px; width: 100%">
             <div class="row" style="width: 100%">
                 <div class="col-md-12">
-                    @if (Auth::check())
-                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                            <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        <th style="text-align: center;">Version Number</th>
-                                        <th style="text-align: center;">Issue Date</th>
-                                        <th style="text-align: center;">Year</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;">Related Docs</th>
-                                        <th style="text-align: center;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reg as $result)
-                                        <tr>
-                                               <td>
-                                
-                                    @if ($result->doc_preview == 1)
-                                     <a href="#" data-toggle="modal"
-                                                            data-target="#pdfModal-{{ $result->id }}">
-                                                            {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
+               
+                    @include('components.regulations.table', [
+                        'records' => $reg, 
+                        'isSubscribed' => $isSubscribed,
+                        'showFilters' => true,
+                        'tableId' => 'example',
+                        'filterOptions' => [
+                            'showAlphabetFilter' => true,
+                            'showYearFilter' => true,
+                            'showEntityFilter' => true,
+                            'showEffectiveDateFilter' => false,
+                            'showVersionFilter' => true,
+                            'years' => $years
+                        ]
+                    ])
 
-                                                        </a>
-                                    @else
-                                        {{ $result->formatted_title }}
-                                    @endif
-                                
-                            </td>
-                                            <td style="text-align: center">{{ $result->document_version }}</td>
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ $result->year->name }}</td>
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            
-                                            {{-- Related Documents Column --}}
-                                            <td style="text-align: center">
-                                                @if($result->related_docs)
-                                                    @php
-                                                        $relatedDocuments = $result->related_documents;
-                                                        $relatedCount = $relatedDocuments->count();
-                                                    @endphp
-                                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                    @else
-                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                    @endif
-                                                @else
-                                                    <span class="badge badge-secondary">None</span>
-                                                @endif
-                                            </td>
-                                            {{-- End Related Documents Column --}}
-                                          
-                                            <td class="tb-odr-action"
-                                                style="display: flex !important; align-items: center; justify-content: center">
-                                                <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
-
-
-
-                                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                        <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
-                                                            target="_blank"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                            <em class="icon ni ni-book-read"></em>
-                                                        </a>
-
-                                                        <a href="{{ route('download', $result->id) }}"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-download"></em></a>
-                                                    @else
-                                                        @if (Auth::check())
-                                                            <a href="{{ route('subscribe') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('subscribe') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @else
-                                                            <a href="{{ route('login') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('login') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @endif
-                                                    @endif
-
-
-
-
-                                                    <a href="#" id="submit"
-                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                            class="icon ni ni-save"></em></a>
-
-
-
-
-
-
-                                                    <form id="save-{{ $result->id }}"
-                                                        action="{{ route('save-document', $result->id) }}" method="POST"
-                                                        class="d-none" style="display: none">
-                                                        @csrf
-
-                                                    </form>
-
-
-
-
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                        <!-- Modal for PDF Preview -->
-                                        <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"
-                                            role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-body">
-                                                        <div id="pdf-viewer-{{ $result->id }}">
-                                                            <!-- Canvas elements will be dynamically added based on page count -->
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Modal for Related Documents -->
-                                        <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
-                            
-                                                        @if($relatedDocuments && $relatedDocuments->count() > 0)
-                                                            <div class="card">
-                                                                <div class="card-header">
-                                                                    <h5 class="mb-0 text-center">Related Documents</h5>
-                                                                </div>
-                                
-                                                                <div class="card-body p-0">
-                                                                    <div class="list-group">
-                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item">
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                        <span>{{ $index + 1 }}. {{ $relatedDoc->title }}</span>
-                                                                                        <div>
-                                                                                            <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                <em class="icon ni ni-book-read"></em>
-                                                                                            </a>
-                                                                                            <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                <em class="icon ni ni-download"></em>
-                                                                                            </a>
-                                                                                            <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                <em class="icon ni ni-save"></em>
-                                                                                            </a>
-                                                                                            <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                                @csrf
-                                                                                            </form>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @else
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item">
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                        <span>{{ $index + 1 }}. <span class="text-muted">Restricted - Upgrade to view</span></span>
-                                                                                        <div>
-                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                                Upgrade to Access
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @else
-                                                            <p>No related documents found.</p>
-                                                        @endif
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- End Modal for Related Documents -->
-                                    @endforeach
-                                </tbody>
-                            </table>
-                       
-                          @else
-                          <table id="example" class="datatable-init responsive table table-striped"
-                                style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Year</th>
-                                        <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;">Related Docs</th>
-                                        <th style="text-align: center;"><span
-                                                style="">Action</span></th>
-
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reg as $result)
-                                        <tr>
-                                               <td>
-                                
-                                    @if ($result->doc_preview == 1)
-                                     <a href="#" data-toggle="modal"
-                                                            data-target="#pdfModal-{{ $result->id }}">
-                                                            {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
-
-                                                        </a>
-                                    @else
-                                        {{ $result->formatted_title }}
-                                    @endif
-                                
-                            </td>
-
-
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ $result->year->name }}</td>
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                          
-                                            <td style="text-align: center">
-                                                @if($result->related_docs)
-                                                    @php
-                                                        $relatedDocuments = $result->related_documents;
-                                                        $relatedCount = $relatedDocuments->count();
-                                                    @endphp
-                                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                    @else
-                                                        <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                    @endif
-                                                @else
-                                                    <span class="badge badge-secondary">None</span>
-                                                @endif
-                                            </td>
-                                            <td class="tb-odr-action"
-                                                style="display: flex !important; align-items: center; justify-content: center">
-                                                <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
-
-
-
-                                                    @if ($isSubscribed)
-                                                        <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
-                                                            target="_blank"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                            <em class="icon ni ni-book-read"></em>
-                                                        </a>
-
-                                                        <a href="{{ route('download', $result->id) }}"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-download"></em></a>
-                                                    @else
-                                                        @if (Auth::check())
-                                                            <a href="{{ route('subscribe') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('subscribe') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @else
-                                                            <a href="{{ route('login') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('login') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @endif
-                                                    @endif
-
-
-
-
-                                                    <a href="#" id="submit"
-                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                            class="icon ni ni-save"></em></a>
-
-
-
-
-
-
-                                                    <form id="save-{{ $result->id }}"
-                                                        action="{{ route('save-document', $result->id) }}" method="POST"
-                                                        class="d-none" style="display: none">
-                                                        @csrf
-
-                                                    </form>
-
-
-
-
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-
-                                        <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"
-                                            role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-body">
-                                                        <div id="pdf-viewer-{{ $result->id }}">
-                                                            <!-- Canvas elements will be dynamically added based on page count -->
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Modal for Related Documents -->
-                                        <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
-                                                        @endphp
-                            
-                                                        @if($relatedDocuments && $relatedDocuments->count() > 0)
-                                                            <div class="card">
-                                                                <div class="card-header">
-                                                                    <h5 class="mb-0 text-center">Related Documents</h5>
-                                                                </div>
-                                
-                                                                <div class="card-body p-0">
-                                                                    <div class="list-group">
-                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item">
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                        <span>{{ $index + 1 }}. {{ $relatedDoc->title }}</span>
-                                                                                        <div>
-                                                                                            <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                <em class="icon ni ni-book-read"></em>
-                                                                                            </a>
-                                                                                            <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                <em class="icon ni ni-download"></em>
-                                                                                            </a>
-                                                                                            <a href="#" id="submit" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                <em class="icon ni ni-save"></em>
-                                                                                            </a>
-                                                                                            <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                                @csrf
-                                                                                            </form>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @else
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item">
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                        <span>{{ $index + 1 }}. <span class="text-muted">Restricted - Upgrade to view</span></span>
-                                                                                        <div>
-                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                                Upgrade to Access
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @else
-                                                            <p>No related documents found.</p>
-                                                        @endif
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- End Modal for Related Documents -->
-                                    @endforeach
-                                </tbody>
-                            </table>
-                    @endif
-                    
                     {{-- Pagination Info --}}
-                    <div class="row mt-3">
-                        <div class="col-sm-12 col-md-5">
-                            <div class="dataTables_info" role="status" aria-live="polite">
-                                Showing {{ $reg->firstItem() ?? 0 }} to {{ $reg->lastItem() ?? 0 }} of {{ $reg->total() }} entries
-                            </div>
+                   @if($reg->hasPages())
+                        <div class="mt-4 d-flex justify-content-center">
+                            <nav aria-label="Regulations pagination">
+                                {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                            </nav>
                         </div>
-                        <div class="col-sm-12 col-md-7">
-                            <div class="dataTables_paginate paging_simple_numbers">
-                                {{ $reg->links() }}
-                            </div>
-                        </div>
-                    </div>
-                      
-                    @endif
+                        @endif
                 </div>
             </div>
         </div>
@@ -674,6 +290,7 @@
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
+                    var isPrivileged = {!! ($isSubscribed || (Auth::check() && Auth::user()->usertype == 'internal')) ? 'true' : 'false' !!};
                     @foreach ($reg as $result)
                         (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
@@ -691,21 +308,34 @@
                                 // Use actual page count from PDF if backend didn't provide it
                                 var actualPageCount = pageCount > 0 ? pageCount : pdfDoc.numPages;
                                 
-                                // Implement page-based blur logic
+                                // Implement page-based blur logic (only for non-privileged users)
                                 if (actualPageCount === 1) {
-                                    // 1-page docs: Show first 50% with rest blurred
-                                    renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                                    if (!isPrivileged) {
+                                        renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                                    } else {
+                                        renderFullPage(pdfDoc, 1, viewer, false);
+                                    }
                                 } else if (actualPageCount === 2) {
-                                    // 2-page docs: Show 1 full page, blur entire second page
                                     renderFullPage(pdfDoc, 1, viewer, false);
-                                    renderFullPage(pdfDoc, 2, viewer, true);
+                                    if (!isPrivileged) {
+                                        renderFullPage(pdfDoc, 2, viewer, true);
+                                    } else {
+                                        renderFullPage(pdfDoc, 2, viewer, false);
+                                    }
                                 } else if (actualPageCount >= 3) {
-                                    // 3+ page docs: Show first 1.5 pages, blur remaining
                                     renderFullPage(pdfDoc, 1, viewer, false);
-                                    renderPartialPage(pdfDoc, 2, viewer, 0.5);
-                                    // Blur remaining pages (limit to 5 for performance)
-                                    for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
-                                        renderFullPage(pdfDoc, i, viewer, true);
+                                    if (!isPrivileged) {
+                                        renderPartialPage(pdfDoc, 2, viewer, 0.5);
+                                        for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                            renderFullPage(pdfDoc, i, viewer, true);
+                                        }
+                                    } else {
+                                        if (pdfDoc.numPages >= 2) {
+                                            renderFullPage(pdfDoc, 2, viewer, false);
+                                        }
+                                        for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                            renderFullPage(pdfDoc, i, viewer, false);
+                                        }
                                     }
                                 } else {
                                     // Fallback: show first 2 pages
@@ -796,40 +426,7 @@
                     @endforeach
                 });
             </script>
-            {{-- <div class="search-filters">
-                <div class="sf-title-gd">Showing guidelines current and historical versions (including ceased
-                    versions) with index information:</div>
-                <div class="b-a">
-                    By Alphabet:
-                </div>
-                <div class="alphabet-container">
-                    @foreach ($alpha as $alphas)
-                        <a href="{{ route('alphaname', ['slug' => $category->slug, 'name' => $alphas->name]) }}">
-                            <div class="alphabet-card">{{ $alphas->name }}
-                            </div>
-                        </a>
-                    @endforeach
-
-                </div>
-                <div class="b-a">
-                    By Year:
-                </div>
-                <div class="alphabet-container" style="font-size: 20px;">
-                    @foreach ($years as $year)
-                        <a href="{{ route('yearname', ['slug' => $category->slug, 'yname' => $year->name]) }}">
-                            <div class="alphabet-card">{{ $year->name }}</div>
-                        </a>
-                    @endforeach
-
-                </div>
-            </div>
-            <div class="adv-search-empty">
-                <img src="{{ asset('public/users/assets/illustration-search.svg') }}" alt="search illustration">
-                <div class="no-doc">No Results to Show</div>
-                <div class="get-in">
-                    Enter a query to see results here
-                </div>
-            </div> --}}
+         
         </div>
     </section>
     </div>

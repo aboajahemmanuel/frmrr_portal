@@ -38,8 +38,8 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
-
-              $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+        
+              $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNull('ceased')
@@ -51,7 +51,7 @@ class BrowseController extends Controller
             $regulation->page_count = $regulation->page_count;
         });
 
-          $regulations_ceased = Regulation::with(['year', 'entity'])
+          $regulations_ceased = Regulation::with(['year', 'entity', 'marketProductTags'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'category_id')
             ->where('status', 1)
             ->whereNotNull('ceased')
@@ -104,7 +104,7 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        $reg = Regulation::with(['year', 'entity', 'category'])
+        $reg = Regulation::with(['year', 'entity', 'category', 'marketProductTags'])
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNotNull('ceased')
@@ -150,7 +150,7 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('subcategory_id', $subcategory->id)
@@ -191,7 +191,7 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
 
-        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where('status', 1)
             ->where('subcategory_id', $subcategory->id)
             ->whereNull('ceased')
@@ -203,7 +203,7 @@ class BrowseController extends Controller
             $regulation->page_count = $regulation->page_count;
         });
 
-        $subcat_ceased = Regulation::with(['year', 'entity'])
+        $subcat_ceased = Regulation::with(['year', 'entity', 'marketProductTags'])
             ->select('id', 'title', 'ceased', 'ceased_date', 'year_id', 'entity_id', 'subcategory_id')
             ->where('status', 1)
             ->whereNotNull('ceased')
@@ -233,14 +233,14 @@ class BrowseController extends Controller
           $data       = Category::where('status', 1)->get();
         $news_alert = News::all();
 
-        $search = Regulation::with(['year', 'entity', 'category'])
+        $search = Regulation::with(['year', 'entity', 'category', 'marketProductTags'])
             ->where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->get();
 
-        $search_ceased = Regulation::with(['year', 'entity'])
+        $search_ceased = Regulation::with(['year', 'entity', 'marketProductTags'])
             ->where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->where('category_id', $category->id)
@@ -268,6 +268,54 @@ class BrowseController extends Controller
         return view('categorypages.category_search', compact('search', 'years', 'title', 'total', 'category', 'cateslug', 'catename', 'data', 'news_alert', 'isSubscribed', 'search_ceased', 'marketProductTags'));
     }
 
+    public function search_subcategory(Request $request)
+    {
+        $years = Year::pluck('name');
+        $title = $request['title'];
+        $subcategory_slug = $request['subcategory_slug'];
+
+        $subcategory = Subcategory::where('slug', $subcategory_slug)->first();
+        $category = Category::where('id', optional($subcategory)->category_id)->first();
+        $data = Category::where('status', 1)->get();
+        $news_alert = News::all();
+
+        $search = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
+            ->where('title', 'like', '%' . $title . '%')
+            ->where('status', 1)
+            ->when($subcategory, function ($q) use ($subcategory) {
+                $q->where('subcategory_id', $subcategory->id);
+            })
+            ->whereNull('ceased')
+            ->get();
+
+        $search_ceased = Regulation::with(['year', 'entity', 'marketProductTags'])
+            ->where('title', 'like', '%' . $title . '%')
+            ->where('status', 1)
+            ->when($subcategory, function ($q) use ($subcategory) {
+                $q->where('subcategory_id', $subcategory->id);
+            })
+            ->whereNotNull('ceased')
+            ->get();
+
+        $total = $search->count();
+
+        $userId = Auth::id();
+        $today = Carbon::now();
+        $isSubscribed = Subscription::where('user_id', $userId)
+            ->where('status', 1)
+            ->where('end_date', '>=', $today)
+            ->exists();
+
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('categorypages.subcategory_search', compact(
+            'search', 'years', 'title', 'total', 'category', 'subcategory', 'data', 'news_alert', 'isSubscribed', 'search_ceased', 'marketProductTags'
+        ));
+    }
+
     public function search_category_ceased($slug, $title)
     {
 
@@ -278,7 +326,7 @@ class BrowseController extends Controller
         $data       = Category::where('status', 1)->get();
         $news_alert = News::all();
 
-        $search = Regulation::with(['year', 'entity', 'category'])
+        $search = Regulation::with(['year', 'entity', 'category', 'marketProductTags'])
             ->where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->where('category_id', $category->id)
@@ -558,6 +606,52 @@ class BrowseController extends Controller
             ->get();
 
         return view('categorypages.market_tag', compact('data', 'news_alert', 'years', 'marketTag', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses', 'marketProductTags'));
+    }
+
+    public function search_market_tag(Request $request)
+    {
+        $data = Category::where('status', 1)->get();
+        $market_tag_slug = $request->get('market_tag_slug');
+        $title = $request->get('title');
+
+        $marketTag = \App\Models\MarketProductTag::where('slug', $market_tag_slug)->first();
+        if (!$marketTag) {
+            return redirect()->back()->with('error', 'Market Product Tag not found.');
+        }
+
+        $news_alert = News::all();
+        $years = Year::pluck('name');
+
+        $userId = Auth::id();
+        $today = Carbon::now();
+        $isSubscribed = Subscription::where('user_id', $userId)
+            ->where('status', 1)
+            ->where('end_date', '>=', $today)
+            ->exists();
+
+        $search = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
+            ->where('title', 'like', '%' . $title . '%')
+            ->where(function($query) use ($marketTag) {
+                $query->where('market_product_tag', 'LIKE', '%' . $marketTag->id . '%')
+                      ->orWhereHas('marketProductTags', function($q) use ($marketTag) {
+                          $q->where('market_product_tags.id', $marketTag->id);
+                      });
+            })
+            ->whereNull('ceased')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $total = $search->count();
+
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('categorypages.market_tag_search', compact(
+            'data', 'news_alert', 'years', 'marketTag', 'search', 'isSubscribed', 'title', 'total', 'marketProductTags'
+        ));
     }
 
     public function deletedownload(Request $request, $id)

@@ -25,7 +25,7 @@
                       </div>
                   </form> 
                   @if (Auth::check())
-                  @if ($userSubscription || Auth::user()->usertype == 'internal')
+                  @if (($userSubscription ?? $isSubscribed) || Auth::user()->usertype == 'internal')
                   <a href="{{ url('search') }}">
                       <div>
                           <div class="gradient-buttons">
@@ -41,7 +41,7 @@
 
 
                   @if (Auth::check())
-                  @if (!$userSubscription && Auth::user()->usertype != 'internal')
+                  @if (!($userSubscription ?? $isSubscribed) && Auth::user()->usertype != 'internal')
                   <a href="{{ url('subscribe') }}">
                       <div>
                           <div class="gradient-buttons">

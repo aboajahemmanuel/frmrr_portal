@@ -1,0 +1,22 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('subcategories_pendings', function (Blueprint $table) {
+            $table->string('abbreviation', 16)->nullable()->after('name');
+            $table->string('abbreviation_description', 255)->nullable()->after('abbreviation');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('subcategories_pendings', function (Blueprint $table) {
+            $table->dropColumn(['abbreviation', 'abbreviation_description']);
+        });
+    }
+};

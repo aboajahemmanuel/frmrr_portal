@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Year Filter</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <style>
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+        .filter-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .filter-select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .clear-filters-btn {
+            align-self: flex-end;
+            padding: 8px 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .clear-filters-btn:hover {
+            background: #c82333;
+        }
+        .debug-info {
+            background: #e7f3ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Year Filter</h1>
+    
+    <div class="debug-info">
+        <p><strong>Debug Information:</strong></p>
+        <p>1. Open browser console (F12) to see debug messages</p>
+        <p>2. Select a year from the dropdown</p>
+        <p>3. Check if filter is applied and results are shown</p>
+    </div>
+    
+    <div class="filter-container">
+        <div class="filter-group">
+            <label for="year-filter">Year:</label>
+            <select id="year-filter" class="filter-select">
+                <option value="">All Years</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <button id="clear-filters-example" class="clear-filters-btn">Clear Filters</button>
+        </div>
+    </div>
+
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Document A</td>
+                <td>2020</td>
+            </tr>
+            <tr>
+                <td>Document B</td>
+                <td>2021</td>
+            </tr>
+            <tr>
+                <td>Document C</td>
+                <td>2019</td>
+            </tr>
+            <tr>
+                <td>Document D</td>
+                <td>2022</td>
+            </tr>
+            <tr>
+                <td>Document E</td>
+                <td>2018</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="debug-info">
+        <h3>Debug Output:</h3>
+        <div id="debug-output"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            console.log('Initializing DataTable...');
+            
+            // Initialize DataTable
+            var table = $('#example').DataTable({
+                "columnDefs": [
+                    { "type": "num", "targets": 1 } // Year column as numeric
+                ]
+            });
+            
+            console.log('DataTable initialized');
+            
+            // Debug function to log messages
+            function logDebug(message) {
+                console.log(message);
+                $('#debug-output').append('<p>' + message + '</p>');
+            }
+            
+            // Add custom filtering function for Year with extensive debugging
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    try {
+                        // Year filter
+                        var yearFilter = $('#year-filter').val();
+                        var yearData = data[1]; // Year column (0-indexed)
+                        
+                        logDebug('Filter check - Filter value: "' + yearFilter + '", Data value: "' + yearData + '", Index: ' + dataIndex);
+                        
+                        if (!yearFilter || yearFilter === '') {
+                            logDebug('No filter applied, showing row ' + dataIndex);
+                            return true;
+                        }
+                        
+                        // Check for exact match
+                        var result = yearData && yearData.toString().trim() === yearFilter.toString().trim();
+                        logDebug('Match result for row ' + dataIndex + ': ' + result);
+                        return result;
+                    } catch (e) {
+                        logDebug('Error in year filter: ' + e.message);
+                        return true;
+                    }
+                }
+            );
+            
+            // Event listener for year filter with debugging
+            $('#year-filter').on('change', function() {
+                var selectedValue = $(this).val();
+                logDebug('Year filter changed to: "' + selectedValue + '"');
+                
+                try {
+                    table.draw();
+                    logDebug('Table redraw completed');
+                } catch (e) {
+                    logDebug('Error redrawing table: ' + e.message);
+                }
+            });
+            
+            // Clear filters
+            $('#clear-filters-example').on('click', function() {
+                logDebug('Clearing all filters');
+                $('#year-filter').val('');
+                table.search('').columns().search('').draw();
+            });
+            
+            logDebug('Year filter debug initialized successfully');
+        });
+    </script>
+</body>
+</html>

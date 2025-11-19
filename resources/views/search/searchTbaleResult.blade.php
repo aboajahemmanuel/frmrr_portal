@@ -247,12 +247,7 @@
                                                 <select class="si-input-box-s" name="searchBy">
                                                     <option></option>
 
-                                                    {{-- <option value="title">
-                                                        Title</option>
-                                                    <option value="tags">
-                                                        All Content Keywords</option> --}}
-
-                                                        
+                                                  
 
                                                         <option value="title"
                                                         @if ($searchBy == 'title') selected @endif>
@@ -264,8 +259,6 @@
                                                     
 
 
-                                                    {{-- <option value="title">Title</option>
-                                                <option value="tags">All Content Keywords</option> --}}
                                                 </select>
 
                                             </div>
@@ -457,6 +450,74 @@
                                 <br>
                                 <form id="searchFormAD1" method="GET" action="{{ route('searchPostAdvance') }}">
                                     <div class="sf-title">Select one or more options</div>
+                                    <!-- Add custom CSS for autocomplete -->
+                                    <style>
+                                        .si-input-box-s {
+                                            width: calc(100% - 30px);
+                                            padding: 8px 12px;
+                                            border: 1px solid #e5e9f2;
+                                            border-radius: 4px;
+                                            font-size: 14px;
+                                            height: 38px;
+                                            box-sizing: border-box;
+                                            float: left;
+                                        }
+                                        
+                                        .autocomplete-wrapper {
+                                            position: relative;
+                                            width: 100%;
+                                        }
+                                        
+                                        .dropdown-btn {
+                                            width: 30px;
+                                            height: 38px;
+                                            border: 1px solid #e5e9f2;
+                                            border-left: none;
+                                            border-radius: 0 4px 4px 0;
+                                            background: #f8f9fa;
+                                            cursor: pointer;
+                                            float: right;
+                                            box-sizing: border-box;
+                                        }
+                                        
+                                        .dropdown-btn:hover {
+                                            background: #e9ecef;
+                                        }
+                                        
+                                        .autocomplete-box {
+                                            position: absolute;
+                                            background: white;
+                                            border: 1px solid #e5e9f2;
+                                            border-radius: 4px;
+                                            max-height: 200px;
+                                            overflow-y: auto;
+                                            z-index: 1000;
+                                            width: 100%;
+                                            display: none;
+                                            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                                            top: 38px;
+                                            left: 0;
+                                        }
+                                        
+                                        .autocomplete-item {
+                                            padding: 10px 12px;
+                                            cursor: pointer;
+                                            border-bottom: 1px solid #f0f0f0;
+                                        }
+                                        
+                                        .autocomplete-item:hover {
+                                            background-color: #f5f6fa;
+                                        }
+                                        
+                                        .autocomplete-item:last-child {
+                                            border-bottom: none;
+                                        }
+                                        
+                                        .highlight {
+                                            background-color: #6576ff;
+                                            color: white;
+                                        }
+                                    </style>
                                     <div class="spc-btw">
                                         <div>
                                             <div class="cb-gap">
@@ -554,27 +615,22 @@
                                         </div> --}}
                                         <div class="w-33">
                                             <div class="si-title" style="margin-top: 4px;">Entity</div>
-                                            <select class="si-input-box-s" style="margin-top: 3.5px" name="entity_id"
-                                                id="">\
-                                                <option></option>
-                                                @foreach ($entities as $entity)
-                                                    <option value="{{ $entity->id }}">{{ $entity->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div class="autocomplete-wrapper">
+                                                <input type="text" id="entityInput" class="si-input-box-s" placeholder="Type to search entities..." autocomplete="off">
+                                                <input type="hidden" name="entity_id" id="entityHidden">
+                                                <div id="entitySuggestionBox" class="autocomplete-box"></div>
+                                                <button type="button" class="dropdown-btn" id="entityDropdownBtn">▼</button>
+                                            </div>
                                         </div>
 
                                         <div class="w-33">
                                             <div class="si-title" style="margin-top: 4px;">Ceased/Repealed </div>
-                                            <select class="si-input-box-s" style="margin-top: 3.5px"
-                                                name="ceasedRepealed" id="">
-                                                <option></option>
-                                                <option value="Active" {{ trim($ceasedRepealed ?? '') === 'Active' ? 'selected' : '' }}>Active</option>
-                                                <option value="Ceased">Ceased</option>
-                                                <option value="Repealed">Repealed</option>
-
-
-                                            </select>
+                                            <div class="autocomplete-wrapper">
+                                                <input type="text" id="statusInput" class="si-input-box-s" placeholder="Type to search statuses..." autocomplete="off">
+                                                <input type="hidden" name="ceasedRepealed" id="statusHidden">
+                                                <div id="statusSuggestionBox" class="autocomplete-box"></div>
+                                                <button type="button" class="dropdown-btn" id="statusDropdownBtn">▼</button>
+                                            </div>
                                         </div>
                                     </div>
                                     <input name="Form" value="Advanced" hidden>
@@ -603,7 +659,10 @@
                             </form>
 
                            <script>
-    function clearFormAD1() {
+    // Namespace our functions to avoid conflicts
+    window.SearchTableResult = window.SearchTableResult || {};
+    
+    SearchTableResult.clearFormAD1 = function() {
         // Get the form element
         const form = document.getElementById('searchFormAD1');
 
@@ -625,10 +684,196 @@
 
             // Reset all select dropdowns
             form.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-
-           
+            
+            // Clear hidden inputs and hide suggestion boxes
+            if (document.getElementById('entityHidden')) {
+                document.getElementById('entityHidden').value = '';
+            }
+            if (document.getElementById('statusHidden')) {
+                document.getElementById('statusHidden').value = '';
+            }
+            if (document.getElementById('entitySuggestionBox')) {
+                document.getElementById('entitySuggestionBox').style.display = 'none';
+            }
+            if (document.getElementById('statusSuggestionBox')) {
+                document.getElementById('statusSuggestionBox').style.display = 'none';
+            }
         }
     }
+
+    // Autocomplete functionality
+    SearchTableResult.initAutocomplete = function() {
+        // Check if elements exist (only initialize if on the right page)
+        if (!document.getElementById('entityInput') || !document.getElementById('statusInput')) {
+            return;
+        }
+        
+        // Entity autocomplete
+        const entityInput = document.getElementById('entityInput');
+        const entityHidden = document.getElementById('entityHidden');
+        const entitySuggestionBox = document.getElementById('entitySuggestionBox');
+        const entityDropdownBtn = document.getElementById('entityDropdownBtn');
+        
+        // Status autocomplete
+        const statusInput = document.getElementById('statusInput');
+        const statusHidden = document.getElementById('statusHidden');
+        const statusSuggestionBox = document.getElementById('statusSuggestionBox');
+        const statusDropdownBtn = document.getElementById('statusDropdownBtn');
+        
+        // Create entity data array from Blade template
+        const entities = [
+            @foreach ($entities as $entity)
+                {id: "{{ $entity->id }}", name: "{{ $entity->name }}"},
+            @endforeach
+        ];
+        
+        // Create status data array
+        const statuses = [
+            {name: "Active"},
+            {name: "Ceased"},
+            {name: "Repealed"},
+            @foreach ($statuses as $status)
+                {name: "{{ $status->name }}"},
+            @endforeach
+        ];
+        
+        // Variables to handle blur properly
+        let entityIgnoreBlur = false;
+        let statusIgnoreBlur = false;
+        
+        // Entity autocomplete functions
+        entityInput.addEventListener('input', function() {
+            const inputValue = this.value.toLowerCase();
+            if (inputValue.length >= 2) {
+                const filteredEntities = entities.filter(entity => 
+                    entity.name.toLowerCase().includes(inputValue)
+                );
+                SearchTableResult.showSuggestions(filteredEntities, entitySuggestionBox, entityInput, entityHidden, 'entity', () => {
+                    entityIgnoreBlur = false;
+                });
+            } else {
+                entitySuggestionBox.style.display = 'none';
+            }
+        });
+        
+        entityInput.addEventListener('blur', function() {
+            // Only hide if not clicking on a suggestion
+            if (!entityIgnoreBlur) {
+                setTimeout(() => {
+                    entitySuggestionBox.style.display = 'none';
+                }, 150);
+            }
+        });
+        
+        // Entity dropdown button
+        entityDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (entitySuggestionBox.style.display === 'block') {
+                entitySuggestionBox.style.display = 'none';
+            } else {
+                SearchTableResult.showSuggestions(entities, entitySuggestionBox, entityInput, entityHidden, 'entity', () => {
+                    entityIgnoreBlur = false;
+                });
+            }
+        });
+        
+        // Status autocomplete functions
+        statusInput.addEventListener('input', function() {
+            const inputValue = this.value.toLowerCase();
+            if (inputValue.length >= 2) {
+                const filteredStatuses = statuses.filter(status => 
+                    status.name.toLowerCase().includes(inputValue)
+                );
+                SearchTableResult.showSuggestions(filteredStatuses, statusSuggestionBox, statusInput, statusHidden, 'status', () => {
+                    statusIgnoreBlur = false;
+                });
+            } else {
+                statusSuggestionBox.style.display = 'none';
+            }
+        });
+        
+        statusInput.addEventListener('blur', function() {
+            // Only hide if not clicking on a suggestion
+            if (!statusIgnoreBlur) {
+                setTimeout(() => {
+                    statusSuggestionBox.style.display = 'none';
+                }, 150);
+            }
+        });
+        
+        // Status dropdown button
+        statusDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (statusSuggestionBox.style.display === 'block') {
+                statusSuggestionBox.style.display = 'none';
+            } else {
+                SearchTableResult.showSuggestions(statuses, statusSuggestionBox, statusInput, statusHidden, 'status', () => {
+                    statusIgnoreBlur = false;
+                });
+            }
+        });
+    };
+    
+    SearchTableResult.showSuggestions = function(suggestions, suggestionBox, inputElement, hiddenElement, type, onSelectCallback) {
+        if (suggestions.length === 0) {
+            suggestionBox.style.display = 'none';
+            return;
+        }
+        
+        suggestionBox.innerHTML = '';
+        const inputValue = inputElement.value.toLowerCase();
+        
+        suggestions.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            const name = type === 'entity' ? suggestion.name : suggestion.name;
+            const id = type === 'entity' ? suggestion.id : suggestion.name;
+            
+            // Highlight matching text only when filtering
+            if (inputValue.length >= 2) {
+                const regex = new RegExp(`(${inputValue})`, 'gi');
+                const highlightedName = name.replace(regex, '<strong>$1</strong>');
+                item.innerHTML = highlightedName;
+            } else {
+                item.textContent = name;
+            }
+            
+            // Add click event with proper closure
+            item.addEventListener('mousedown', (function(name, id) {
+                return function(e) {
+                    // Prevent blur event from firing before click
+                    e.preventDefault();
+                    inputElement.value = name;
+                    hiddenElement.value = id;
+                    suggestionBox.style.display = 'none';
+                    if (onSelectCallback) onSelectCallback();
+                };
+            })(name, id));
+            
+            suggestionBox.appendChild(item);
+        });
+        
+        suggestionBox.style.display = 'block';
+    };
+
+    // Initialize when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        SearchTableResult.initAutocomplete();
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        const entitySuggestionBox = document.getElementById('entitySuggestionBox');
+        const statusSuggestionBox = document.getElementById('statusSuggestionBox');
+        
+        if (entitySuggestionBox && !e.target.closest('#entityInput, #entitySuggestionBox, #entityDropdownBtn')) {
+            entitySuggestionBox.style.display = 'none';
+        }
+        
+        if (statusSuggestionBox && !e.target.closest('#statusInput, #statusSuggestionBox, #statusDropdownBtn')) {
+            statusSuggestionBox.style.display = 'none';
+        }
+    });
 </script>
 
                         </div>

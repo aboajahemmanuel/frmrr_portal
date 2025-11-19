@@ -89,7 +89,8 @@ class CategoryController extends Controller
         // return $request;
         $this->validate($request, [
             'name' => 'required|unique:categories,name',
-
+            'abbreviation' => 'nullable|string|max:16',
+            'abbreviation_description' => 'nullable|string|max:255',
         ]);
 
         $slug = Str::slug($request->name);
@@ -100,6 +101,8 @@ class CategoryController extends Controller
         $new_category->description = $request['description'];
         $new_category->display_on_menu = $request['display_on_menu'];
         $new_category->slug = $slug;
+        $new_category->abbreviation = $request->input('abbreviation');
+        $new_category->abbreviation_description = $request->input('abbreviation_description');
 
 
 
@@ -130,6 +133,8 @@ class CategoryController extends Controller
         $category_pending->inputer_id = Auth::user()->id;
         $category_pending->status = 0;
         $category_pending->action_type = 'Insert';
+        $category_pending->abbreviation = $request->input('abbreviation');
+        $category_pending->abbreviation_description = $request->input('abbreviation_description');
 
         $category_pending->save();
 
@@ -191,6 +196,8 @@ class CategoryController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'abbreviation' => 'nullable|string|max:16',
+            'abbreviation_description' => 'nullable|string|max:255',
         ]);
 
         $category = Category::find($id);
@@ -229,6 +236,8 @@ class CategoryController extends Controller
         $categoryPending->inputer_id = Auth::user()->id;
         $categoryPending->status = 0;
         $categoryPending->action_type = 'Edit';
+        $categoryPending->abbreviation = $request->input('abbreviation');
+        $categoryPending->abbreviation_description = $request->input('abbreviation_description');
         $categoryPending->save();
 
         //$authoriserUsers = User::role('Authoriser')->get();
@@ -387,6 +396,8 @@ class CategoryController extends Controller
             $update_status->name = $update_status_pending->name;
             $update_status->description = $update_status_pending->description;
             $update_status->display_on_menu = $update_status_pending->display_on_menu;
+            $update_status->abbreviation = $update_status_pending->abbreviation;
+            $update_status->abbreviation_description = $update_status_pending->abbreviation_description;
             $update_status->status = $request->status;
             $update_status->admin_status = $request->status;
             $update_status_pending->status = $request->status;
@@ -421,6 +432,9 @@ class CategoryController extends Controller
 
             $update_status->status = $request->status;
             $update_status->admin_status = $request->status;
+            // Ensure abbreviation fields from pending are applied as well
+            $update_status->abbreviation = $update_status_pending->abbreviation;
+            $update_status->abbreviation_description = $update_status_pending->abbreviation_description;
 
             $update_status_pending->status = $request->status;
             $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated

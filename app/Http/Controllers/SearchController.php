@@ -99,11 +99,12 @@ class SearchController extends Controller
         $date_posted        = $request->input('date_posted');
         $selectedCategories = $request->input('category_id');
 
-        // $statuses          = DB::table('doc_type')->pluck('name')->toArray();
-        // $formattedStatuses = implode('/', $statuses);
+        // Get statuses for the dropdown
+        $statuses = DB::table('doc_type')->get();
+        $formattedStatuses = implode('/', $statuses->pluck('name')->toArray());
 
         // Return the view with the results and additional data
-        return view('search.searchResult', compact('results', 'Form', 'selectedCategories', 'categories', 'months', 'years', 'date_posted', 'year', 'number', 'entities', 'title', 'isSubscribed'));
+        return view('search.searchResult', compact('results', 'Form', 'selectedCategories', 'categories', 'months', 'years', 'date_posted', 'year', 'number', 'entities', 'title', 'isSubscribed', 'statuses', 'formattedStatuses'));
     }
 
     public function searchPostAdvance(Request $request)
@@ -320,7 +321,8 @@ class SearchController extends Controller
             return ! in_array(strtolower($word), $stopWords);
         });
 
-        $search = Regulation::where(function ($query) use ($searchWords) {
+        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
+            ->where(function ($query) use ($searchWords) {
             $query->where(function ($q) use ($searchWords) {
                 foreach ($searchWords as $word) {
                     $q->orWhere('title', 'like', '%' . $word . '%');
@@ -330,16 +332,17 @@ class SearchController extends Controller
         })
             ->whereNull('ceased')
             ->where('status', 1)
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
 
       
 
-        $search_ceased = Regulation::where('title', 'like', '%' . $title . '%')
+        $reg_ceased = Regulation::where('title', 'like', '%' . $title . '%')
             ->where('status', 1)
             ->whereNotNull('ceased')
             ->get();
 
-        $total = $search->count();
+        $total = $reg->total();
 
         $userId = Auth::id();
         $years  = Year::pluck('name'); // Assuming 'year' is the column name
@@ -354,11 +357,11 @@ class SearchController extends Controller
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
 
-        if (count($search) == 0) {
-            return view('search.index', ['search' => null, 'years' => $years, 'title' => $title, 'total' => $total, 'isSubscribed', 'search_ceased' => $search_ceased, 'formattedStatuses' => $formattedStatuses]);
+        if (count($reg) == 0) {
+            return view('search.index', ['reg' => null, 'years' => $years, 'title' => $title, 'total' => $total, 'isSubscribed', 'reg_ceased' => $search_ceased, 'formattedStatuses' => $formattedStatuses]);
         }
 
-        return view('search.index', compact('search', 'years', 'title', 'total', 'isSubscribed', 'search_ceased', 'formattedStatuses'));
+        return view('search.index', compact('reg', 'years', 'title', 'total', 'isSubscribed', 'reg_ceased', 'formattedStatuses'));
     }
 
     public function search_result_ceased(Request $request, $search)

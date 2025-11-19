@@ -108,7 +108,9 @@ class SubcategoryController extends Controller
 
         $this->validate($request, [
             'name' => 'required',
-
+            'summary' => 'nullable|string',
+            'abbreviation' => 'nullable|string|max:16',
+            'abbreviation_description' => 'nullable|string|max:255',
         ]);
 
 
@@ -129,6 +131,9 @@ class SubcategoryController extends Controller
         $new_category->group_id = $user->group_id;
         $new_category->slug = $slug;
         $new_category->status = 0;
+        $new_category->summary = $request['summary'];
+        $new_category->abbreviation = $request->input('abbreviation');
+        $new_category->abbreviation_description = $request->input('abbreviation_description');
 
         $new_category->save();
 
@@ -142,6 +147,9 @@ class SubcategoryController extends Controller
         $category_category->inputer_id = Auth::user()->id;
         $category_category->status = 0;
         $category_category->action_type = 'Insert';
+        $category_category->summary = $request['summary'];
+        $category_category->abbreviation = $request->input('abbreviation');
+        $category_category->abbreviation_description = $request->input('abbreviation_description');
 
         $category_category->save();
 
@@ -188,6 +196,9 @@ class SubcategoryController extends Controller
 
         $this->validate($request, [
             'name' => 'required|string|max:255', // Ensuring 'name' is a string and not too long
+            'summary' => 'nullable|string',
+            'abbreviation' => 'nullable|string|max:16',
+            'abbreviation_description' => 'nullable|string|max:255',
         ]);
 
         $category = Subcategory::find($id);
@@ -226,6 +237,9 @@ class SubcategoryController extends Controller
         $category_pending->inputer_id = Auth::user()->id;
         $category_pending->status = 0;
         $category_pending->action_type = 'Edit';
+        $category_pending->summary = $request->input('summary');
+        $category_pending->abbreviation = $request->input('abbreviation');
+        $category_pending->abbreviation_description = $request->input('abbreviation_description');
 
         $category_pending->save();
 
@@ -365,6 +379,9 @@ class SubcategoryController extends Controller
             $update_status->name = $update_status_pending->name;
             $update_status->slug = $update_status_pending->slug;
             $update_status->category_id = $update_status_pending->category_id;
+            $update_status->summary = $update_status_pending->summary;
+            $update_status->abbreviation = $update_status_pending->abbreviation;
+            $update_status->abbreviation_description = $update_status_pending->abbreviation_description;
             $update_status->admin_status = $request->status;
             $update_status->status = $request->status;
             $update_status_pending->status = $request->status;
@@ -399,6 +416,8 @@ class SubcategoryController extends Controller
             $update_status->name = $update_status_pending->name;
             $update_status->slug = $update_status_pending->slug;
             $update_status->category_id = $update_status_pending->category_id;
+            $update_status->abbreviation = $update_status_pending->abbreviation;
+            $update_status->abbreviation_description = $update_status_pending->abbreviation_description;
 
 
             $update_status->status = $request->status;

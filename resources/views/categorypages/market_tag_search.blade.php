@@ -221,7 +221,7 @@
         <div class="row" style="width: 100%">
             <div class="col-md-12">
                 @include('components.regulations.table', [
-                    'records' => $reg, 
+                    'records' =>$search, 
                     'isSubscribed' => $isSubscribed,
                     'showFilters' => true,
                     'tableId' => 'example',
@@ -235,13 +235,13 @@
                     ]
                 ])
 
-                @if($reg->hasPages())
+                {{-- @if($search->hasPages())
                 <div class="mt-4 d-flex justify-content-center">
                     <nav aria-label="Regulations pagination">
-                        {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                        {{$search->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
                     </nav>
                 </div>
-                @endif
+                @endif --}}
                 {{-- Pagination Info --}}
                
             </div>
@@ -262,7 +262,7 @@
             }, 100);
             
             var isPrivileged = {!! ($isSubscribed || (Auth::check() && Auth::user()->usertype == 'internal')) ? 'true' : 'false' !!};
-            @foreach ($reg as $result)
+            @foreach ($search as $result)
                 (function(id) {
                     var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
                     var pageCount = {{ $result->page_count ?? 0 }};

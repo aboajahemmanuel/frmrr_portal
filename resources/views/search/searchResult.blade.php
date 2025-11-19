@@ -247,6 +247,13 @@
                                                 @foreach ($results as $result)
                                                     <tr>
                                                         <td>
+                                                            @php
+                                                                $abbr = optional($result->subcategory)->abbreviation ?? optional($result->category)->abbreviation;
+                                                                $abbrDesc = optional($result->subcategory)->abbreviation_description ?? optional($result->category)->abbreviation_description;
+                                                            @endphp
+                                                            @if(!empty($abbr))
+                                                                <span class="badge badge-info" style="margin-right:6px;" title="{{ $abbrDesc ?? 'Category abbreviation' }}">{{ $abbr }}</span>
+                                                            @endif
                                                             @if ($result->doc_preview == 1)
                                                                 <a href="#" data-toggle="modal"
                                                                     data-target="#pdfModal-{{ $result->id }}">
@@ -336,9 +343,6 @@
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">Document Preview</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
                                                         </div>
                                                         <div class="modal-body">
                                                             <div id="pdf-viewer-{{ $result->id }}">
@@ -371,6 +375,13 @@
                                     @foreach ($results as $result)
                                         <tr>
                                             <td>
+                                                @php
+                                                    $abbr = optional($result->subcategory)->abbreviation ?? optional($result->category)->abbreviation;
+                                                    $abbrDesc = optional($result->subcategory)->abbreviation_description ?? optional($result->category)->abbreviation_description;
+                                                @endphp
+                                                @if(!empty($abbr))
+                                                    <span class="badge badge-info" style="margin-right:6px;" title="{{ $abbrDesc ?? 'Category abbreviation' }}">{{ $abbr }}</span>
+                                                @endif
                                                 @if ($result->doc_preview == 1)
                                                     <a href="#" data-toggle="modal"
                                                         data-target="#pdfModal-{{ $result->id }}">
@@ -439,10 +450,6 @@
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">
                                                             PDF Preview</h5>
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                            aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <div id="pdf-viewer-{{ $result->id }}">

@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-    <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
+    <script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
     @php
         // Extract unique years from the regulations
         $uniqueYears = $reg->pluck('year.name')->unique()->sort();
@@ -125,11 +125,9 @@
     $(document).ready(function() {
         var years = @json($uniqueYears);
         
-        // Initialize custom table filter
-        initCustomTableFilter('example', {
-            years: years,
-            showAlphabetFilter: true,
-            showEntityFilter: false
+        // Initialize centralized table filter
+        window.tableFilter = initCentralizedTableFilter('example', {
+            years: years
         });
     });
 </script>
@@ -172,6 +170,8 @@
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
+                                        <th style="text-align: center;">Category</th>
+                                        <th style="text-align: center;">Subcategory</th>
                                         <th style="text-align: center;">Version Number</th>
                                         <th style="text-align: center;">Issue Date</th>
                                         <th style="text-align: center;">Year</th>
@@ -179,6 +179,7 @@
                                         <th style="text-align: center;">{{$formattedStatuses}}</th>
                                         <th style="text-align: center;">{{$formattedStatuses}} Date</th>
                                         <th style="text-align: center;">Entity</th>
+                                        <th style="text-align: center;">Market Product</th>
                                         <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;">Action</th>
                                     </tr>
@@ -199,6 +200,8 @@
                                     @endif
                                 
                             </td>
+                                                                        <td style="text-align: center">{{ optional($result->category)->name }}</td>
+                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
                                             <td style="text-align: center">{{ $result->document_version }}</td>
                                             <td style="text-align: center">
                                                 {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
@@ -219,6 +222,24 @@
                                                
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                            <td style="text-align: center">
+                                                @php
+                                                    $tags = $result->marketProductTags ?? collect();
+                                                    if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
+                                                        $ids = array_filter(explode(',', $result->market_product_tag));
+                                                        if (!empty($ids)) {
+                                                            $tags = \App\Models\MarketProductTag::whereIn('id', $ids)->get();
+                                                        }
+                                                    }
+                                                @endphp
+                                                @if($tags && $tags->count())
+                                                    @foreach($tags as $tag)
+                                                        <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="badge badge-secondary">None</span>
+                                                @endif
+                                            </td>
                                             
                                             {{-- Related Documents Column --}}
                                             <td style="text-align: center">
@@ -354,18 +375,33 @@
                                         <!-- End Modal for Related Documents -->
                                     @endforeach
                                 </tbody>
-                            </table>
+                            @include('components.regulations.table', [
+                                'records' => $reg, 
+                                'isSubscribed' => $isSubscribed,
+                                'showFilters' => true,
+                                'filterOptions' => [
+                                    'showAlphabetFilter' => true,
+                                    'showYearFilter' => true,
+                                    'showEntityFilter' => false,
+                                    'showEffectiveDateFilter' => true,
+                                    'showVersionFilter' => true,
+                                    'years' => $uniqueYears
+                                ]
+                            ])
                          @else
                           <table id="example" class="datatable-init responsive table table-striped"
                                 style="width:100%">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
+                                        <th style="text-align: center;">Category</th>
+                                        <th style="text-align: center;">Subcategory</th>
                                         <th style="text-align: center;">Effective Date</th>
                                         <th style="text-align: center;">Year</th>
                                         <th style="text-align: center !important;">Entity</th>
                                           <th style="text-align: center;">{{$formattedStatuses}}</th>
                                         <th style="text-align: center;">{{$formattedStatuses}} Date</th>
+                                        <th style="text-align: center;">Market Product</th>
                                         <th style="text-align: center;">Related Docs</th>
                                         <th style="text-align: center;"><span
                                                 >Action</span></th>
@@ -388,6 +424,8 @@
                                     @endif
                                 
                             </td>
+                                                                        <td style="text-align: center">{{ optional($result->category)->name }}</td>
+                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
 
 
                                             <td style="text-align: center">
@@ -403,6 +441,24 @@
                                              <td style="text-align: center">
                                                  {{ \Carbon\Carbon::parse($result->ceased_date)->format('M. j, Y') }}
                                                
+                                            </td>
+                                            <td style="text-align: center">
+                                                @php
+                                                    $tags = $result->marketProductTags ?? collect();
+                                                    if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
+                                                        $ids = array_filter(explode(',', $result->market_product_tag));
+                                                        if (!empty($ids)) {
+                                                            $tags = \App\Models\MarketProductTag::whereIn('id', $ids)->get();
+                                                        }
+                                                    }
+                                                @endphp
+                                                @if($tags && $tags->count())
+                                                    @foreach($tags as $tag)
+                                                        <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="badge badge-secondary">None</span>
+                                                @endif
                                             </td>
                                             
                                             {{-- Related Documents Column --}}
@@ -540,7 +596,19 @@
                                         <!-- End Modal for Related Documents -->
                                     @endforeach
                                 </tbody>
-                            </table>
+                            @include('components.regulations.table', [
+                                'records' => $reg, 
+                                'isSubscribed' => $isSubscribed,
+                                'showFilters' => true,
+                                'filterOptions' => [
+                                    'showAlphabetFilter' => true,
+                                    'showYearFilter' => true,
+                                    'showEntityFilter' => false,
+                                    'showEffectiveDateFilter' => true,
+                                    'showVersionFilter' => true,
+                                    'years' => $uniqueYears
+                                ]
+                            ])
                   
                        
                    @endif
@@ -554,6 +622,7 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                var isPrivileged = {!! ($isSubscribed || (Auth::check() && Auth::user()->usertype == 'internal')) ? 'true' : 'false' !!};
                 @foreach ($reg as $result)
                     (function(id) {
                         var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
@@ -571,21 +640,34 @@
                             // Use actual page count from PDF if backend didn't provide it
                             var actualPageCount = pageCount > 0 ? pageCount : pdfDoc.numPages;
                             
-                            // Implement page-based blur logic
+                            // Implement page-based blur logic (only for non-privileged users)
                             if (actualPageCount === 1) {
-                                // 1-page docs: Show first 50% with rest blurred
-                                renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                                if (!isPrivileged) {
+                                    renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                                } else {
+                                    renderFullPage(pdfDoc, 1, viewer, false);
+                                }
                             } else if (actualPageCount === 2) {
-                                // 2-page docs: Show 1 full page, blur entire second page
                                 renderFullPage(pdfDoc, 1, viewer, false);
-                                renderFullPage(pdfDoc, 2, viewer, true);
+                                if (!isPrivileged) {
+                                    renderFullPage(pdfDoc, 2, viewer, true);
+                                } else {
+                                    renderFullPage(pdfDoc, 2, viewer, false);
+                                }
                             } else if (actualPageCount >= 3) {
-                                // 3+ page docs: Show first 1.5 pages, blur remaining
                                 renderFullPage(pdfDoc, 1, viewer, false);
-                                renderPartialPage(pdfDoc, 2, viewer, 0.5);
-                                // Blur remaining pages (limit to 5 for performance)
-                                for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
-                                    renderFullPage(pdfDoc, i, viewer, true);
+                                if (!isPrivileged) {
+                                    renderPartialPage(pdfDoc, 2, viewer, 0.5);
+                                    for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                        renderFullPage(pdfDoc, i, viewer, true);
+                                    }
+                                } else {
+                                    if (pdfDoc.numPages >= 2) {
+                                        renderFullPage(pdfDoc, 2, viewer, false);
+                                    }
+                                    for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                        renderFullPage(pdfDoc, i, viewer, false);
+                                    }
                                 }
                             } else {
                                 // Fallback: show first 2 pages

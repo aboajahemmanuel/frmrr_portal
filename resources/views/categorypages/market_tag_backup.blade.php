@@ -382,9 +382,7 @@
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">Document Preview</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
+                                                           
                                                         </div>
                                                         <div class="modal-body">
                                                             <div id="pdf-viewer-{{ $result->id }}">
@@ -409,9 +407,7 @@
                                                             <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">
                                                                 Related Documents - {{ $result->title }}
                                                             </h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
+                                                           
                                                         </div>
                                                         <div class="modal-body">
                                                             @php
@@ -635,10 +631,7 @@
                                                         <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">
                                                             PDF
                                                             Preview</h5>
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                            aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
+                                                        
                                                     </div>
                                                     <div class="modal-body">
                                                         <div id="pdf-viewer-{{ $result->id }}">
@@ -666,9 +659,7 @@
                                                         <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">
                                                             Related Documents - {{ $result->title }}
                                                         </h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
+                                                        
                                                     </div>
                                                     <div class="modal-body">
                                                         @php

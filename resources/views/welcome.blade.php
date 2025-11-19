@@ -255,7 +255,7 @@
         <div>
             <div class="card-header">
                 <div class="header-text">
-                    <h1>Upgrade to <span></span></h1>
+                    <h1>Upgrade to <span>Pro Membership</span></h1>
                 </div>
                 <div class="medal-icon">
                     <div class="medal-ribbon"></div>

@@ -311,6 +311,7 @@
                                             <th style="text-align: center;">Year</th>
                                             <th style="text-align: center;">Effective Date</th>
                                             <th style="text-align: center;">Entity</th>
+                                            <th style="text-align: center;">Market Tags</th>
                                             <th>Ceased/Repealed/Amended Date </th>
                                             <th style="text-align: center;">Action</th>
                                         </tr>
@@ -339,6 +340,24 @@
                                                     {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                                 </td>
                                                 <td style="text-align: center">{{ optional($result->entity)->name }}</td>
+                                                <td style="text-align: center">
+                                                    @php
+                                                        $tags = $result->marketProductTags ?? collect();
+                                                        if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
+                                                            $ids = array_filter(explode(',', $result->market_product_tag));
+                                                            if (!empty($ids)) {
+                                                                $tags = \App\Models\MarketProductTag::whereIn('id', $ids)->get();
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    @if($tags && $tags->count())
+                                                        @foreach($tags as $tag)
+                                                            <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="badge badge-secondary">None</span>
+                                                    @endif
+                                                </td>
                                                 <td style="text-align: center">{{ $result->ceased_date }}</td>
                                                 <td class="tb-odr-action"
                                                     style="display: flex !important; align-items: center; justify-content: center">
@@ -440,9 +459,9 @@
                                         <th style="text-align: center;">Title</th>
                                         <th style="text-align: center;">Effective Date</th>
                                         <th style="text-align: center;">Entity</th>
+                                        <th style="text-align: center;">Market Tags</th>
                                         <th style="text-align: center;"><span style=" display:none">Entity</span></th>
-                                        <th style="text-align: center;"><span
-                                                >Action</span></th>
+                                        <th style="text-align: center;"><span>Action</span></th>
 
                                     </tr>
                                 </thead>
@@ -467,8 +486,25 @@
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td style="text-align: center;"><span
-                                                    style=" display:none">{{ $result->year->name }}</span></td>
+                                            <td style="text-align: center">
+                                                @php
+                                                    $tags = $result->marketProductTags ?? collect();
+                                                    if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
+                                                        $ids = array_filter(explode(',', $result->market_product_tag));
+                                                        if (!empty($ids)) {
+                                                            $tags = \App\Models\MarketProductTag::whereIn('id', $ids)->get();
+                                                        }
+                                                    }
+                                                @endphp
+                                                @if($tags && $tags->count())
+                                                    @foreach($tags as $tag)
+                                                        <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="badge badge-secondary">None</span>
+                                                @endif
+                                            </td>
+                                            <td style="text-align: center;"><span style=" display:none">{{ $result->year->name }}</span></td>
                                             <td class="tb-odr-action"
                                                 style="display: flex !important; align-items: center; justify-content: center">
                                                 <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
@@ -545,10 +581,7 @@
                                                         <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">
                                                             PDF
                                                             Preview</h5>
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                            aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
+                                                        
                                                     </div>
                                                     <div class="modal-body">
                                                         <div id="pdf-viewer-{{ $result->id }}">

@@ -397,6 +397,24 @@
                                         </div>
                                         <div class="col-md-12">
                                             <div class="form-group">
+                                                <label class="form-label" for="sub_abbr">Abbreviation (optional)</label>
+                                                <div class="form-control-wrap">
+                                                    <input name="abbreviation" maxlength="16" type="text" class="form-control" id="sub_abbr" placeholder="e.g., TAX">
+                                                </div>
+                                                <small class="text-muted">Short code like "TAX". Max 16 characters.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="form-label" for="sub_abbr_desc">Abbreviation Description (optional)</label>
+                                                <div class="form-control-wrap">
+                                                    <input name="abbreviation_description" maxlength="255" type="text" class="form-control" id="sub_abbr_desc" placeholder="What this abbreviation means">
+                                                </div>
+                                                <small class="text-muted">Shown to users as a tooltip/explanation. Max 255 characters.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
                                                 <label class="form-label" for="lead-category">Category <span
                                                         style="color: red;">*</span></label>
                                                 <div class="form-control-wrap">
@@ -429,6 +447,14 @@
                                                     </select>
 
 
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="form-label" for="summary">Summary</label>
+                                                <div class="form-control-wrap">
+                                                    <textarea name="summary" id="summary" class="form-control" rows="4" placeholder="Describe the scope and content focus of this subcategory (optional)"></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -483,6 +509,24 @@
                                         </div>
                                         <div class="col-md-12">
                                             <div class="form-group">
+                                                <label class="form-label" for="sub_abbr_{{ $category->id }}">Abbreviation (optional)</label>
+                                                <div class="form-control-wrap">
+                                                    <input name="abbreviation" maxlength="16" type="text" class="form-control" id="sub_abbr_{{ $category->id }}" value="{{ $category->abbreviation }}" placeholder="e.g., TAX">
+                                                </div>
+                                                <small class="text-muted">Short code like "TAX". Max 16 characters.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="form-label" for="sub_abbr_desc_{{ $category->id }}">Abbreviation Description (optional)</label>
+                                                <div class="form-control-wrap">
+                                                    <input name="abbreviation_description" maxlength="255" type="text" class="form-control" id="sub_abbr_desc_{{ $category->id }}" value="{{ $category->abbreviation_description }}" placeholder="What this abbreviation means">
+                                                </div>
+                                                <small class="text-muted">Shown to users as a tooltip/explanation. Max 255 characters.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
                                                 <label class="form-label"
                                                     for="lead-category-{{ $category->id }}">Category<span
                                                         style="color: red;">*</span></label>
@@ -517,6 +561,14 @@
                                                     </select>
 
 
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="form-label" for="summary-{{ $category->id }}">Summary</label>
+                                                <div class="form-control-wrap">
+                                                    <textarea name="summary" id="summary-{{ $category->id }}" class="form-control" rows="4" placeholder="Describe the scope and content focus of this subcategory (optional)">{{ $category->summary }}</textarea>
                                                 </div>
                                             </div>
                                         </div>

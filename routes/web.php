@@ -129,6 +129,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     // Market Product Tag routes
     Route::get('/market-tag/{slug}', [BrowseController::class, 'marketProductTag'])->name('marketProductTag');
     Route::get('/search-category-ceased/{slug}/{title}', [BrowseController::class, 'search_category_ceased'])->name('search_category_ceased');
+    Route::get('/search_market_tag', [BrowseController::class, 'search_market_tag'])->name('search_market_tag');
 
     Route::get('/category/{slug}/{name}', [BrowseController::class, 'alphaname'])->name('alphaname');
     Route::get('/categoryname/{slug}/{yname}', [BrowseController::class, 'yearname'])->name('yearname');
@@ -140,6 +141,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::post('deletedownlaod/{id}', [BrowseController::class, 'deletedownlaod'])->name('deletedownlaod');
 
     Route::get('/search_category', [BrowseController::class, 'search_category'])->name('search_category');
+    Route::get('/search_subcategory', [BrowseController::class, 'search_subcategory'])->name('search_subcategory');
 
     // Search routes
     Route::match(['get', 'post'], '/search', [SearchController::class, 'search'])->name('search');

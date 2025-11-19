@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Year Sorting Test</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #e0e0e0;
+        }
+        .sort-indicator {
+            opacity: 0.3;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Year Sorting Test</h1>
+    
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Version Number</th>
+                <th>Issue Date</th>
+                <th>Category</th>
+                <th>Year</th>
+                <th>Effective Date</th>
+                <th>Entity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Document A</td>
+                <td>1.0</td>
+                <td>Jan. 1, 2020</td>
+                <td>Finance</td>
+                <td>2020</td>
+                <td>Jan. 1, 2020</td>
+                <td>Entity A</td>
+            </tr>
+            <tr>
+                <td>Document B</td>
+                <td>1.1</td>
+                <td>Feb. 15, 2021</td>
+                <td>Legal</td>
+                <td>2021</td>
+                <td>Feb. 15, 2021</td>
+                <td>Entity B</td>
+            </tr>
+            <tr>
+                <td>Document C</td>
+                <td>2.0</td>
+                <td>Mar. 3, 2019</td>
+                <td>HR</td>
+                <td>2019</td>
+                <td>Mar. 3, 2019</td>
+                <td>Entity C</td>
+            </tr>
+            <tr>
+                <td>Document D</td>
+                <td>1.5</td>
+                <td>Apr. 10, 2022</td>
+                <td>IT</td>
+                <td>2022</td>
+                <td>Apr. 10, 2022</td>
+                <td>Entity D</td>
+            </tr>
+            <tr>
+                <td>Document E</td>
+                <td>3.0</td>
+                <td>May 5, 2018</td>
+                <td>Marketing</td>
+                <td>2018</td>
+                <td>May 5, 2018</td>
+                <td>Entity E</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        // Custom sorting implementation for testing
+        function initCustomSorting() {
+            const table = document.getElementById('example');
+            const tbody = table.querySelector('tbody');
+            const thead = table.querySelector('thead');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            let sortColumn = 0;
+            let sortDirection = 'asc';
+            
+            // Add sort indicators to headers
+            thead.querySelectorAll('th').forEach((th, index) => {
+                th.style.cursor = 'pointer';
+                th.style.userSelect = 'none';
+                
+                const sortIndicator = document.createElement('span');
+                sortIndicator.className = 'sort-indicator';
+                sortIndicator.innerHTML = ' ↕';
+                th.appendChild(sortIndicator);
+                
+                th.addEventListener('click', function() {
+                    // Update sort direction
+                    if (sortColumn === index) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = index;
+                        sortDirection = 'asc';
+                    }
+                    
+                    // Update indicators
+                    thead.querySelectorAll('th .sort-indicator').forEach((indicator, i) => {
+                        if (i === index) {
+                            indicator.innerHTML = sortDirection === 'asc' ? ' ▲' : ' ▼';
+                            indicator.style.opacity = '1';
+                        } else {
+                            indicator.innerHTML = ' ↕';
+                            indicator.style.opacity = '0.3';
+                        }
+                    });
+                    
+                    // Perform sorting
+                    sortTable(index);
+                });
+            });
+            
+            function sortTable(columnIndex) {
+                console.log('Sorting column:', columnIndex, 'Direction:', sortDirection);
+                
+                const sortedRows = rows.slice().sort((a, b) => {
+                    const aCells = a.querySelectorAll('td');
+                    const bCells = b.querySelectorAll('td');
+                    
+                    if (!aCells[columnIndex] || !bCells[columnIndex]) {
+                        return 0;
+                    }
+                    
+                    const aText = aCells[columnIndex].textContent.trim() || '';
+                    const bText = bCells[columnIndex].textContent.trim() || '';
+                    
+                    console.log('Comparing:', aText, 'with', bText, 'in column', columnIndex);
+                    
+                    // Special handling for Year column (index 4)
+                    if (columnIndex === 4) {
+                        const aYear = parseInt(aText, 10);
+                        const bYear = parseInt(bText, 10);
+                        
+                        console.log('Year comparison:', aYear, 'vs', bYear);
+                        
+                        if (!isNaN(aYear) && !isNaN(bYear)) {
+                            const result = sortDirection === 'asc' ? aYear - bYear : bYear - aYear;
+                            console.log('Year sort result:', result);
+                            return result;
+                        }
+                    }
+                    
+                    // Special handling for Version column (index 1)
+                    if (columnIndex === 1) {
+                        const aVersion = parseFloat(aText);
+                        const bVersion = parseFloat(bText);
+                        
+                        if (!isNaN(aVersion) && !isNaN(bVersion)) {
+                            const result = sortDirection === 'asc' ? aVersion - bVersion : bVersion - aVersion;
+                            console.log('Version sort result:', result);
+                            return result;
+                        }
+                    }
+                    
+                    // Special handling for numeric values
+                    const aNum = parseFloat(aText);
+                    const bNum = parseFloat(bText);
+                    
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        const result = sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                        console.log('Numeric sort result:', result);
+                        return result;
+                    }
+                    
+                    // Default string comparison
+                    const result = sortDirection === 'asc' ? 
+                        aText.localeCompare(bText) : 
+                        bText.localeCompare(aText);
+                    
+                    console.log('String sort result:', result);
+                    return result;
+                });
+                
+                console.log('Sorted rows count:', sortedRows.length);
+                sortedRows.forEach(row => tbody.appendChild(row));
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initCustomSorting();
+        });
+    </script>
+</body>
+</html>
