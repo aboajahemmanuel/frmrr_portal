@@ -195,155 +195,20 @@
                     </div>
                 </div>
             @else
-                <div style="background-color: #fff; padding: 20px; width: 100%">
-                    <!-- Filter Container -->
-                    <div class="filter-container">
-                        <div class="filter-group">
-                            <label for="search-input">Search:</label>
-                            <input type="text" id="search-input" class="filter-input" placeholder="Search...">
-                        </div>
-                        <div class="filter-group">
-                            <label for="letter-filter">First Letter:</label>
-                            <select id="letter-filter" class="filter-select">
-                                <option value="">All Letters</option>
-                                @foreach(range('A', 'Z') as $letter)
-                                    <option value="{{ $letter }}">{{ $letter }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="year-filter">Year:</label>
-                            <select id="year-filter" class="filter-select">
-                                <option value="">All Years</option>
-                                @php
-                                    $years = $results->pluck('year.name')->unique()->sort()->values();
-                                @endphp
-                                @foreach($years as $year)
-                                    <option value="{{ $year }}">{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="filter-group" style="flex: 0 0 100%;">
-                            <button id="clear-filters-example" class="clear-filters-btn">Clear Filters</button>
-                        </div>
-                    </div>
-
-                    <div class="row" style="width: 100%">
-                        <div class="col-md-12">
-                            <table id="example" class="datatable-init responsive table table-striped"
-                                style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        <th style="text-align: center;">Version Number</th>
-                                        <th style="text-align: center;">Issue Date</th>
-                                        <th style="text-align: center;">Year</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Category</th>
-                                        <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;">{{$formattedStatuses}}</th>
-                                        <th style="text-align: center;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($results as $result)
-                                        <tr>
-                                            <td>
-                                                @if ($result->doc_preview == 1)
-                                                    <a href="#" data-toggle="modal"
-                                                        data-target="#pdfModal-{{ $result->id }}">
-                                                        {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
-                                                    </a>
-                                                @else
-                                                    {{ $result->title }}
-                                                @endif
-                                            </td>
-                                            <td style="text-align: center">{{ $result->document_version }}</td>
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ $result->year->name }}</td>
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ $result->category->name }}</td>
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td style="text-align: center">
-                                                <span class="badge fmdq_Blue">{{ $result->ceased }}</span>
-                                            </td>
-                                            <td class="tb-odr-action"
-                                                style="display: flex !important; align-items: center; justify-content: center">
-                                                    <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
-
-
-
-
-
-                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                            <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
-                                                                target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-
-                                                            <a href="{{ route('download', $result->id) }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @else
-                                                            @if (Auth::check())
-                                                                <a href="{{ route('subscribe') }}" target="_blank"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                    <em class="icon ni ni-book-read"></em>
-                                                                </a>
-                                                                <a href="{{ route('subscribe') }}"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                        class="icon ni ni-download"></em></a>
-                                                            @else
-                                                                <a href="{{ route('login') }}" target="_blank"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                    <em class="icon ni ni-book-read"></em>
-                                                                </a>
-                                                                <a href="{{ route('login') }}"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                        class="icon ni ni-download"></em></a>
-                                                            @endif
-                                                        @endif
-
-
-
-
-                                                        <a href="#" id="submit"
-                                                            onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-save"></em></a>
-
-
-
-
-
-
-                                                        <form id="save-{{ $result->id }}"
-                                                            action="{{ route('save-document', $result->id) }}"
-                                                            method="POST" class="d-none" style="display: none">
-                                                            @csrf
-
-                                                        </form>
-
-
-
-
-                                                    </div>
-
-                                                </td>
-                                            </tr>
-                                        @endforeach
-
-                                    </tbody>
-
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                     @include('components.regulations.ceasedtable', [
+                        'records' => $results, 
+                        'isSubscribed' => $isSubscribed,
+                        'showFilters' => true,
+                        'tableId' => 'example',
+                        'filterOptions' => [
+                            'showAlphabetFilter' => true,
+                            'showYearFilter' => true,
+                            'showEntityFilter' => true,
+                            'showEffectiveDateFilter' => false,
+                            'showVersionFilter' => true,
+                            'years' => $years
+                        ]
+                    ])
                 @endif
             </div>
 
