@@ -375,19 +375,7 @@
                                         <!-- End Modal for Related Documents -->
                                     @endforeach
                                 </tbody>
-                            @include('components.regulations.table', [
-                                'records' => $reg, 
-                                'isSubscribed' => $isSubscribed,
-                                'showFilters' => true,
-                                'filterOptions' => [
-                                    'showAlphabetFilter' => true,
-                                    'showYearFilter' => true,
-                                    'showEntityFilter' => false,
-                                    'showEffectiveDateFilter' => true,
-                                    'showVersionFilter' => true,
-                                    'years' => $uniqueYears
-                                ]
-                            ])
+                           
                          @else
                           <table id="example" class="datatable-init responsive table table-striped"
                                 style="width:100%">

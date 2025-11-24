@@ -27,7 +27,10 @@
                                         <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1"
                                             data-target="more-options"><em class="icon ni ni-more-v"></em></a>
                                         <div class="toggle-expand-content" data-content="more-options">
-                                            <ul class="nk-block-tools g-3">
+                                            <br>
+                                            <br>
+                                            <br>
+                                            <ul class="nk-block-tools g-3" style="margin: 1000px 0px 0px 100px;">
 
 
 

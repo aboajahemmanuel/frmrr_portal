@@ -464,7 +464,7 @@
     </label>
     <div class="form-control-wrap">
         <select 
-            required 
+             
             name="related_docs[]" 
             id="related-documents-select"
             class="form-select form-control select2"
