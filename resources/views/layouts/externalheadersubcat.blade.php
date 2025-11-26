@@ -2,7 +2,7 @@
       <div class="w-1100">
           @include('layouts.appnavbar')
           <div class="info">
-              <div class="title">{{ $subcategory->name ?? ($category->name ?? 'Subcategory') }}</div>
+              <div class="title">{{ $subcategory->name ?? ($category->name ?? 'Subcategory') }}  ({{$subcategory->abbreviation }} )</div>
               <div class="desc">
                    {{ $subcategory->summary  }}
               </div>

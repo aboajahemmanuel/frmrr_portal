@@ -132,7 +132,7 @@
                         <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents - {{ $result->title }} -  </h5>
+                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}  </h5>
                                     
                                     <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#activeRelatedDocsModal-{{ $result->id }}"> Jump to Active Version</span>
                                 </div>
@@ -471,7 +471,7 @@
                         <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents - {{ $result->title }} -  </h5>
+                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }} -  </h5>
                                     <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#activeRelatedDocsModal-{{ $result->id }}"> Jump to Active Version</span>
                                 </div>
                                 <div class="modal-body">
@@ -759,7 +759,7 @@
                 <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
-                            <div class="modal-header"><h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents - {{ $result->title }}</h5></div>
+                            <div class="modal-header"><h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5></div>
                             <div class="modal-body">
                                 @php 
                                     $relatedDocs = $result->relatedDocuments;
