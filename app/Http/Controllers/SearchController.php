@@ -30,9 +30,9 @@ class SearchController extends Controller
         // Check if the user is subscribed
         $today = Carbon::now();
 
-        $statuses = \DB::table('doc_type')->get();
+        $statuses = DB::table('doc_type')->get();
 
-        $status            = \DB::table('doc_type')->pluck('name')->toArray();
+        $status            = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $status);
 
         $isSubscribed = Subscription::where('user_id', $userId)
@@ -321,47 +321,46 @@ class SearchController extends Controller
             return ! in_array(strtolower($word), $stopWords);
         });
 
-        $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
+        // Store the query parameters for pagination
+        $regQuery = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where(function ($query) use ($searchWords) {
             $query->where(function ($q) use ($searchWords) {
                 foreach ($searchWords as $word) {
                     $q->orWhere('title', 'like', '%' . $word . '%');
-                    // ->orWhere('document_tag', 'like', '%' . $word . '%');
+                   
                 }
             });
         })
             ->whereNull('ceased')
             ->where('status', 1)
-            ->orderBy('created_at', 'desc')
-            ->paginate(30);
+            ->orderBy('created_at', 'desc');
+            
+        // Get the total count before pagination
+        $totalRecords = $regQuery->count();
+        
+        // Apply pagination
+        $reg = $regQuery->paginate(30)->appends($request->except('page'));
 
-      
-
-        $reg_ceased = Regulation::where('title', 'like', '%' . $title . '%')
-            ->where('status', 1)
-            ->whereNotNull('ceased')
-            ->get();
-
+       
         $total = $reg->total();
 
         $userId = Auth::id();
-        $years  = Year::pluck('name'); // Assuming 'year' is the column name
+        $years  = Year::pluck('name'); 
 
-        // $isSubscribed = Subscription::where('user_id', $userId)->where('status', 1)->exists();
-
+     
         $isSubscribed = Subscription::where('user_id', $userId)
             ->where('status', 1)
-            ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
+            ->where('end_date', '>=', $today) 
             ->exists();
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
 
         if (count($reg) == 0) {
-            return view('search.index', ['reg' => null, 'years' => $years, 'title' => $title, 'total' => $total, 'isSubscribed', 'formattedStatuses' => $formattedStatuses]);
+            return view('search.index', ['reg' => null, 'years' => $years, 'title' => $title, 'total' => $total, 'isSubscribed' => $isSubscribed, 'formattedStatuses' => $formattedStatuses]);
         }
 
-        return view('search.index', compact('reg', 'years', 'title', 'total', 'isSubscribed', 'reg_ceased', 'formattedStatuses'));
+        return view('search.index', compact('reg', 'years', 'title', 'total', 'isSubscribed', 'formattedStatuses'));
     }
 
     public function search_result_ceased(Request $request, $search)

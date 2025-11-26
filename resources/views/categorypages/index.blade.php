@@ -99,7 +99,7 @@
                             'showVersionFilter' => true,
                             'years' => $years
                         ]
-                    ])
+                    ]) 
 
                     {{-- Pagination Info --}}
                   @if($reg->hasPages())

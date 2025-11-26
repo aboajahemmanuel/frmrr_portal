@@ -95,7 +95,7 @@
                         @if($reg->hasPages())
                         <div class="mt-4 d-flex justify-content-center">
                             <nav aria-label="Regulations pagination">
-                                {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                                {{ $reg->links('vendor.pagination.bootstrap-4') }}
                             </nav>
                         </div>
                         @endif
