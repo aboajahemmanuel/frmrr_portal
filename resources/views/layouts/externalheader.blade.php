@@ -11,8 +11,8 @@
                 $title = ''; 
                 ?>
               <div style="display: flex; align-items:center; gap: 5px;">
-                  <form method="GET" action="{{ route('search_result') }}">
-                      <div class="search">
+                  <form method="GET" action="{{ route('search_result') }}" style="width: 100% !important;">
+                      <div class="search" style="width: 100% !important;">
                           <div class="search-box">
                               <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
                               <input required name="title" type="search" placeholder="What are you looking for?" />
@@ -29,7 +29,7 @@
                   <a href="{{ url('search') }}">
                       <div>
                           <div class="gradient-buttons">
-                              <div class="gradient-button-content-gold">
+                              <div class="gradient-button-content-gold" style="text-align: center !important; padding: 3px !important;">
                                   <div>Advanced Search</div>
                               </div>
                           </div>

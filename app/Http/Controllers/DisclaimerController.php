@@ -42,7 +42,7 @@ class DisclaimerController extends Controller
         // Get all disclaimer acceptances for the current user
       return  $acceptances = DisclaimerAcceptance::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(30);
         
         return view('disclaimer_history', compact('acceptances'));
     }

@@ -183,14 +183,6 @@ class WelcomeController extends Controller
     {
 
 
-        // // $data = Category::all();
-        // //$news_alert = News::all();
-
-        // $data = Category::where('status', 1)->get();
-        // $news_alert = News::orderBy('created_at', 'desc')->limit(2)->paginate(15);
-
-        // //$news_alert = News::paginate(15);
-
 
         return view('success');
     }

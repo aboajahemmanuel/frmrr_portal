@@ -44,7 +44,7 @@ class BrowseController extends Controller
             ->where('category_id', $category->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(30);
             
         // Load page count for each regulation
         $reg->each(function($regulation) {
@@ -57,7 +57,7 @@ class BrowseController extends Controller
             ->whereNotNull('ceased')
             ->where('category_id', $category->id)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(30);
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
@@ -196,7 +196,7 @@ class BrowseController extends Controller
             ->where('subcategory_id', $subcategory->id)
             ->whereNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate(30);
             
         // Load page count for each regulation
         $reg->each(function($regulation) {
@@ -209,7 +209,7 @@ class BrowseController extends Controller
             ->whereNotNull('ceased')
             ->where('subcategory_id', $subcategory->id)
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate(30);
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
@@ -379,12 +379,12 @@ class BrowseController extends Controller
         $regulations = Regulation::where('alpha_id', $alpha->id)
             ->where('status', 1)
             ->where('ceased', 0)
-            ->paginate(20);
+            ->paginate(30);
 
         $regulations_ceased = Regulation::where('alpha_id', $alpha->id)
             ->where('status', 1)
             ->where('ceased', 1)
-            ->paginate(20);
+            ->paginate(30);
 
         $data_cat = Category::where('slug', $slug)->first();
         if (! $data_cat) {
@@ -435,10 +435,10 @@ class BrowseController extends Controller
         $category = Category::where('slug', $slug)->first();
 
         $regulations = Regulation::where('year_id', $alpha->id)
-            ->where('status', 1)->paginate(10);
+            ->where('status', 1)->paginate(30);
 
         $regulations_ceased = Regulation::where('alpha_id', $alpha->id)
-            ->where('status', 1)->paginate(20);
+            ->where('status', 1)->paginate(30);
 
         $data_cat = Category::where('slug', $slug)->first();
 
@@ -528,7 +528,7 @@ class BrowseController extends Controller
         $title = $request['title'];
         //$category = $request['title'];
         $search = Regulation::where('title', 'like', '%' . $title . '%')
-            ->where('category_id', $category_id)->paginate(10);
+            ->where('category_id', $category_id)->paginate(30);
         $total = $search->count();
 
         if (count($search) == 0) {
@@ -541,7 +541,7 @@ class BrowseController extends Controller
     public function downloads()
     {
         $id   = Auth::user()->id;
-        $data = Transaction::where('user_id', $id)->where('reference', '!=', null)->where('status', '=', 'success')->paginate(10);
+        $data = Transaction::where('user_id', $id)->where('reference', '!=', null)->where('status', '=', 'success')->paginate(30);
         return view('categorypages.downloads', compact('data'));
         //return   view('categorypages.downloads');
     }

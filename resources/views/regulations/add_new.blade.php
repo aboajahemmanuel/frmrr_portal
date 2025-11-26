@@ -460,7 +460,7 @@
                                                        <div class="col-md-6">
   <div class="form-group">
     <label class="form-label" for="related-documents-select">
-        Select Related Documents <span style="color: red;">*</span>
+        Select Related Documents 
     </label>
     <div class="form-control-wrap">
         <select 

@@ -222,8 +222,8 @@
     }
 </style>
 
-<section class="main-container-home">
-    <div class="cards-container-info">
+<section class="main-container-home" style="flex-direction: column !important;">
+    <div class="cards-container-info" style="grid-template-columns: 1fr 1fr 1fr !important;">
         @foreach ($data as $category)
         
         <a href="{{ route('categorypages', $category->slug) }}">

@@ -18,7 +18,7 @@ class SearchController extends Controller
     {
         
 
-        $categories = Category::all();
+         $categories = Category::all();
         $categories = Category::where('status', 1)->get();
         $months     = DB::table('months')->get();
          $years      = DB::table('years')->get();
@@ -47,7 +47,7 @@ class SearchController extends Controller
 
     public function searchPost(Request $request)
     {
-        //  return $request;
+          //return $request;
 
         //return   $Form = $request->input('Form');
         $query = Regulation::query();
@@ -309,7 +309,7 @@ class SearchController extends Controller
 
     public function search_result(Request $request)
     {
-        $today = Carbon::now();
+         $today = Carbon::now();
 
         //return $search = $request->input('title');
         $title = $request['title'];
@@ -333,7 +333,7 @@ class SearchController extends Controller
             ->whereNull('ceased')
             ->where('status', 1)
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(30);
 
       
 
@@ -358,7 +358,7 @@ class SearchController extends Controller
         $formattedStatuses = implode('/', $statuses);
 
         if (count($reg) == 0) {
-            return view('search.index', ['reg' => null, 'years' => $years, 'title' => $title, 'total' => $total, 'isSubscribed', 'reg_ceased' => $search_ceased, 'formattedStatuses' => $formattedStatuses]);
+            return view('search.index', ['reg' => null, 'years' => $years, 'title' => $title, 'total' => $total, 'isSubscribed', 'formattedStatuses' => $formattedStatuses]);
         }
 
         return view('search.index', compact('reg', 'years', 'title', 'total', 'isSubscribed', 'reg_ceased', 'formattedStatuses'));

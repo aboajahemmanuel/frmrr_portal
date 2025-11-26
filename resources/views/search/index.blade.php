@@ -1,133 +1,43 @@
 @extends('layouts.headerexternal')
 
 @section('content')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-
-    <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
+ <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
     <script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
-
     <style>
-        .break-text {
-            max-width: 200px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
-        }
-
-        .filter-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            clear: both;
-            width: 100%;
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 4px;
-        }
-        
-        .dataTables_wrapper .dataTables_filter {
-            float: none !important;
-            text-align: left;
-            margin-bottom: 15px;
-        }
-        
-        .dataTables_wrapper .dataTables_length {
-            float: none !important;
-            margin-bottom: 10px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .filter-group label {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .filter-select,
-        .filter-input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #fff;
-            font-size: 14px;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .filter-select:focus,
-        .filter-input:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-
-        .clear-filters-btn {
-            padding: 10px 20px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            align-self: flex-end;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .clear-filters-btn:hover {
-            background-color: #5a6268;
-        }
-
-        .search-info {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #495057;
-        }
-        
-        /* PDF Preview Blur Effects */
-        .pdf-page {
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        
-        .pdf-page.blurred {
-            filter: blur(8px);
-            opacity: 0.5;
-        }
-        
-        .pdf-page.partial-page {
-            position: relative;
-        }
+        .filter-container { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; clear: both; width: 100%; }
+        .dataTables_wrapper .dataTables_filter { float: none !important; text-align: left; margin-bottom: 15px; }
+        .dataTables_wrapper .dataTables_length { float: none !important; margin-bottom: 10px; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-weight: 600; color: #333; font-size: 14px; }
+        .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff; font-size: 14px; min-width: 120px; cursor: pointer; }
+        .pdf-page { border: 1px solid #ddd; margin-bottom: 10px; width: 100%; }
+        .nested-related-docs { margin-left: 25px; padding-left: 15px; border-left: 2px solid #007bff; margin-top: 10px; }
+        .nested-doc-item { padding: 10px; background-color: #f8f9fa; border-radius: 4px; margin-bottom: 8px; }
+        .nested-doc-title { font-weight: 500; color: #555; font-size: 14px; margin-bottom: 4px; }
+        .nested-badge { display: inline-block; background-color: #17a2b8; color: white; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-left: 8px; }
+        .pdf-page.blurred { filter: blur(8px); opacity: 0.5; }
+        .pdf-page.partial-page { position: relative; }
+        .clear-filters-btn { padding: 8px 16px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; align-self: flex-end; }
+        .clear-filters-btn:hover { background-color: #5a6268; }
+        .search-info { margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 14px; color: #495057; }
+        /* Gradient button styles for ceased documents */
+        .button-container-sb { display: inline-block; }
+        .gradient-buttons { display: inline-block; }
+        .gradient-button-content { display: flex; align-items: center; }
     </style>
     <script>
         $(document).ready(function() {
             var years = @json($years);
             
-            // Initialize centralized table filter
+            // Initialize centralized table filter with pagination disabled
             window.tableFilter = initCentralizedTableFilter('example', {
                 years: years
             });
+            
+       
         });
     </script>
     <div class="info">

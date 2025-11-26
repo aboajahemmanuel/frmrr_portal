@@ -30,7 +30,7 @@
     </style>
     <script>
         $(document).ready(function() {
-            var years = @json($years);
+            var years = @json($years); 
             
             // Initialize centralized table filter with pagination disabled
             window.tableFilter = initCentralizedTableFilter('example', {
