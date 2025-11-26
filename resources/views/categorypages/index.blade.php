@@ -95,7 +95,7 @@
                             'showAlphabetFilter' => true,
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
-                            'showEffectiveDateFilter' => false,
+                            'showEffectiveDateFilter' => true,
                             'showVersionFilter' => true,
                             'years' => $years
                         ]

@@ -6,6 +6,8 @@
     <!-- Session timeout configuration -->
     <meta name="session-timeout-minutes" content="{{ \App\Models\SessionSetting::getCurrentTimeout() }}">
     <link rel="stylesheet" href="{{ asset('public/users/style.css') }}" />
+<link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>

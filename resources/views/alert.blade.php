@@ -1,6 +1,7 @@
 @extends('layouts.external')
 
 @section('content')
+
     <section class="main-container">
         <div class="np-container">
             <div class="np-content">

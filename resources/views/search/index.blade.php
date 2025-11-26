@@ -85,7 +85,7 @@
                             'filterOptions' => [
                                 'showAlphabetFilter' => true,
                                 'showYearFilter' => true,
-                                'showEntityFilter' => false,
+                                'showEntityFilter' => true,
                                 'showEffectiveDateFilter' => true,
                                 'showVersionFilter' => true,
                                 'years' => $years

@@ -36,7 +36,7 @@
     </div>
     @endif
 
-    @if($options['showEntityFilter'] ?? true)
+    @if($options['showEntityFilter'] ?? false)
     <div class="filter-group">
         <label for="entity-filter-{{ $tableId }}">Entity:</label>
         <select id="entity-filter-{{ $tableId }}" class="filter-select">
@@ -51,7 +51,7 @@
     </div>
     @endif
 
-    @if($options['showEffectiveDateFilter'] ?? false)
+    @if($options['showEffectiveDateFilter'] ?? true)
     <div class="filter-group">
         <label for="effective-date-filter-{{ $tableId }}">Effective Date:</label>
         <select id="effective-date-filter-{{ $tableId }}" class="filter-select">
@@ -86,8 +86,11 @@
         </select>
     </div>
     @endif
-
+   
     <div class="filter-group">
+         <br>
+    <br>
+    
         <button class="clear-filters-btn" id="clear-filters-{{ $tableId }}">Clear Filters</button>
     </div>
 </div>

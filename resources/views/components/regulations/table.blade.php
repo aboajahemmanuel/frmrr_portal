@@ -10,6 +10,29 @@
     $tableId = $tableId ?? 'example';
 @endphp
 
+<style>
+    /* Hide DataTables sorting arrows */
+    #{{ $tableId }} thead th {
+        background-image: none !important;
+        cursor: default !important;
+    }
+    
+    #{{ $tableId }} thead th::after,
+    #{{ $tableId }} thead th::before {
+        display: none !important;
+    }
+    
+    /* Additional CSS to override any DataTables default sorting styles */
+    #{{ $tableId }} thead .sorting,
+    #{{ $tableId }} thead .sorting_asc,
+    #{{ $tableId }} thead .sorting_desc,
+    #{{ $tableId }} thead .sorting_asc_disabled,
+    #{{ $tableId }} thead .sorting_desc_disabled {
+        background-image: none !important;
+        cursor: default !important;
+    }
+</style>
+
 @if($showFilters)
 <div class="filter-wrapper">
     @include('components.filters.table-filters', [
@@ -22,7 +45,7 @@
 
 @if (Auth::check())
     @if ($isSubscribed || Auth::user()->usertype == 'internal')
-        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%">
+        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-ordering="false">
             <thead>
                 <tr>
                     <th style="text-align: center;">Title</th>
@@ -337,7 +360,29 @@
             </tbody>
         </table>
     @else
-        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%">
+        <style>
+            /* Hide DataTables sorting arrows for this table instance */
+            #{{ $tableId }} thead th {
+                background-image: none !important;
+                cursor: default !important;
+            }
+            
+            #{{ $tableId }} thead th::after,
+            #{{ $tableId }} thead th::before {
+                display: none !important;
+            }
+            
+            /* Additional CSS to override any DataTables default sorting styles */
+            #{{ $tableId }} thead .sorting,
+            #{{ $tableId }} thead .sorting_asc,
+            #{{ $tableId }} thead .sorting_desc,
+            #{{ $tableId }} thead .sorting_asc_disabled,
+            #{{ $tableId }} thead .sorting_desc_disabled {
+                background-image: none !important;
+                cursor: default !important;
+            }
+        </style>
+        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-auto-responsive="false" data-ordering="false">
             <thead>
                 <tr>
                     <th style="text-align: center;">Title</th>
@@ -667,7 +712,29 @@
     @endif
 @else
     {{-- Guest view (no Auth user) --}}
-    <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%">
+    <style>
+        /* Hide DataTables sorting arrows for guest view table */
+        #{{ $tableId }} thead th {
+            background-image: none !important;
+            cursor: default !important;
+        }
+        
+        #{{ $tableId }} thead th::after,
+        #{{ $tableId }} thead th::before {
+            display: none !important;
+        }
+        
+        /* Additional CSS to override any DataTables default sorting styles */
+        #{{ $tableId }} thead .sorting,
+        #{{ $tableId }} thead .sorting_asc,
+        #{{ $tableId }} thead .sorting_desc,
+        #{{ $tableId }} thead .sorting_asc_disabled,
+        #{{ $tableId }} thead .sorting_desc_disabled {
+            background-image: none !important;
+            cursor: default !important;
+        }
+    </style>
+    <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-auto-responsive="false" data-ordering="false">
         <thead>
             <tr>
                 <th style="text-align: center;">Title</th>
