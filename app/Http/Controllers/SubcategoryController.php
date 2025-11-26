@@ -44,20 +44,35 @@ class SubcategoryController extends Controller
 
 
 
-        // Check if the user has the 'Super_Administrator_Authoriser' role
-        $hasSuperAdminRole = $user->hasRole($superAdminRole);
+        
+        // $hasSuperAdminRole = $user->hasRole($superAdminRole);
+
+        // // Fetch categories based on group_id or include all if the user has the Super Admin role
+        // $categories = Category::where('status', 1)->where(function ($query) use ($user, $hasSuperAdminRole) {
+        //     // Condition to filter categories by the user's group
+        //     $query->where('group_id', $user->group_id);
+
+        //     // If the user has the Super Admin role, include all categories
+        //     if ($hasSuperAdminRole) {
+        //         $query->orWhereNotNull('id'); // This will include all categories
+        //     }
+        // })
+        //     ->orderBy('created_at', 'desc')
+        //     ->get();
+
+
+
+
+        //      $superAdminRole = 'Super_Administrator_Authoriser';
+
+
+
+
+        
+        // $hasSuperAdminRole = $user->hasRole($superAdminRole);
 
         // Fetch categories based on group_id or include all if the user has the Super Admin role
-        $categories = Category::where('status', 1)->where(function ($query) use ($user, $hasSuperAdminRole) {
-            // Condition to filter categories by the user's group
-            $query->where('group_id', $user->group_id);
-
-            // If the user has the Super Admin role, include all categories
-            if ($hasSuperAdminRole) {
-                $query->orWhereNotNull('id'); // This will include all categories
-            }
-        })
-            ->orderBy('created_at', 'desc')
+        $categories = Category::where('status', 1)->orderBy('created_at', 'desc')
             ->get();
 
         // $categories = Category::where('status', 1)->get();

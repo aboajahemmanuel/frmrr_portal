@@ -166,19 +166,20 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        //return $request;
+       
         $this->validate($request, [
-            'name'  => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
-            //'password' => 'confirmed',
-            'roles' => 'required',
+            // 'name'  => 'required',
+            // 'email' => 'required|email|unique:users,email,' . $id,
+            // 'password' => 'confirmed',
+            // 'roles' => 'required',
         ]);
 
+         $name = $request->fname . ' ' . $request->lname;
         $user = User::find($id);
 
         $user_pending              = new UsersPending();
         $user_pending->user_id     = $user->id;
-        $user_pending->name        = $request->name;
+        $user_pending->name        = $name;
         $user_pending->email       = $request->email;
         $user_pending->group_id    = $request->group_id;
         $user_pending->roles       = json_encode($request->input('roles'));
@@ -325,7 +326,7 @@ class UserController extends Controller
         $request;
 
         $update_status         = User::find($id);
-        $update_status_pending = Userspending::where('status', 0)->where(
+         $update_status_pending = Userspending::where('status', 0)->where(
             'authorizer_id',
             null
         )->where('user_id', $id)->orderBy('created_at', 'desc')->first();
@@ -356,7 +357,7 @@ class UserController extends Controller
             $user = User::find($id);
 
             $user->name     = $update_status_pending->name;
-            $user->email    = $update_status_pending->email;
+            //$user->email    = $update_status_pending->email;
             $user->group_id = $update_status_pending->group_id;
 
             $user->status = 1;

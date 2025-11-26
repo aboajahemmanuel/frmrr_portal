@@ -411,9 +411,7 @@
                                                                                 <div class="form-control-wrap">
                                                                                     <select class="form-control"
                                                                                         name="status">
-                                                                                        {{-- <option value="1"
-                                                                                            {{ $user->status == 1 ? 'selected' : '' }}>
-                                                                                            Active</option> --}}
+                                                                                       
                                                                                         <option value="4"
                                                                                             {{ $user->status == 4 ? 'selected' : '' }}>
                                                                                             Inactive</option>
@@ -670,7 +668,8 @@
                                         <div class="row gy-4">
                                           <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="add-account">First Name</label>
+                                <label class="form-label" for="add-account">First Name <span
+                                                            style="color: red;">*</span></label>
                                 <div class="form-control-wrap">
 
                                     <input type="text" value="{{ $firstName }}"  name="fname" class="form-control" id="add-account"
@@ -681,7 +680,8 @@
 
                           <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="add-account">Last Name</label>
+                                <label class="form-label" for="add-account">Last Name <span
+                                                            style="color: red;">*</span></label>
                                 <div class="form-control-wrap">
 
                                     <input type="text" value="{{ $lastName }}" name="lname" class="form-control" id="add-account"
@@ -692,7 +692,8 @@
 
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label class="form-label">Group</label>
+                                                    <label class="form-label">Group <span
+                                                            style="color: red;">*</span></label>
                                                     <div class="form-control-wrap">
                                                         <select required name="group_id" class="form-select form-control"
                                                             data-placeholder="Select one">
@@ -710,7 +711,8 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label class="form-label" for="open-deal">Role</label>
+                                                    <label class="form-label" for="open-deal">Role <span
+                                                            style="color: red;">*</span></label>
                                                     <?php
                                                     $id = $user->id;
                                                     
