@@ -163,7 +163,7 @@
         </div>
       
         
-            
+             
                     
                     @include('components.regulations.ceasedtable', [
                         'records' => $reg, 

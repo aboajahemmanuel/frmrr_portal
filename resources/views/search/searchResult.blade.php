@@ -194,279 +194,37 @@
             @else
                     <div style="background-color: #fff; padding: 20px; width: 100%">
                         <!-- Filter Container -->
-                        <div class="filter-container">
-                            <div class="filter-group">
-                                <label for="search-input">Search:</label>
-                                <input type="text" id="search-input" class="filter-input" placeholder="Search...">
-                            </div>
-                            <div class="filter-group">
-                                <label for="letter-filter">First Letter:</label>
-                                <select id="letter-filter" class="filter-select">
-                                    <option value="">All Letters</option>
-                                    @foreach(range('A', 'Z') as $letter)
-                                        <option value="{{ $letter }}">{{ $letter }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label for="year-filter">Year:</label>
-                                <select id="year-filter" class="filter-select">
-                                    <option value="">All Years</option>
-                                    @php
-                                        $years = $results->pluck('year.name')->unique()->sort()->values();
-                                    @endphp
-                                    @foreach($years as $year)
-                                        <option value="{{ $year }}">{{ $year }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="filter-group" style="flex: 0 0 100%;">
-                                <button id="clear-filters-example" class="clear-filters-btn">Clear Filters</button>
-                            </div>
-                        </div>
+                     
 
                         <div class="row" style="width: 100%">
                             <div class="col-md-12">
-                                @if (Auth::check())
-                                    @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                        <table id="example" class="datatable-init responsive table table-striped"
-                                            style="width:100%">
-                                            <thead>
-                                                <tr>
-                                                    <th style="text-align: center;">Title</th>
-                                                    <th style="text-align: center;">Version Number</th>
-                                                    <th style="text-align: center;">Issue Date</th>
-                                                    <th style="text-align: center;">Year</th>
-                                                    <th style="text-align: center;">Effective Date</th>
-                                                    <th style="text-align: center;">Category</th>
-                                                    <th style="text-align: center;">Entity</th>
-                                                    <th style="text-align: center;">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($results as $result)
-                                                    <tr>
-                                                        <td>
-                                                            @php
-                                                                $abbr = optional($result->subcategory)->abbreviation ?? optional($result->category)->abbreviation;
-                                                                $abbrDesc = optional($result->subcategory)->abbreviation_description ?? optional($result->category)->abbreviation_description;
-                                                            @endphp
-                                                            @if(!empty($abbr))
-                                                                <span class="badge badge-info" style="margin-right:6px;" title="{{ $abbrDesc ?? 'Category abbreviation' }}">{{ $abbr }}</span>
-                                                            @endif
-                                                            @if ($result->doc_preview == 1)
-                                                                <a href="#" data-toggle="modal"
-                                                                    data-target="#pdfModal-{{ $result->id }}">
-                                                                    {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
-                                                                </a>
-                                                            @else
-                                                                {{ $result->formatted_title }}
-                                                            @endif
-                                                        </td>
-                                                        <td style="text-align: center">{{ $result->document_version }}</td>
-                                                        <td style="text-align: center">
-                                                            {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
-                                                        </td>
-                                                        <td style="text-align: center">{{ $result->year->name }}</td>
-                                                        <td style="text-align: center">
-                                                            {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
-                                                        </td>
-                                                        <td style="text-align: center">{{ $result->category->name }}</td>
-                                                        <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                                        <td class="tb-odr-action"
-                                                            style="display: flex !important; align-items: center; justify-content: center">
-                                                            <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
+                                  @include('components.regulations.table', [
+                        'records' => $results, 
+                        'isSubscribed' => $isSubscribed,
+                        'showFilters' => true,
+                        'tableId' => 'example',
+                        'filterOptions' => [
+                            'showAlphabetFilter' => true,
+                            'showYearFilter' => true,
+                            'showEntityFilter' => true,
+                            'showEffectiveDateFilter' => true,
+                            'showVersionFilter' => true,
+                            // Ensure years is properly formatted as an array of strings
+                            'years' => $years->map(function($year) { 
+                                return is_object($year) && isset($year->name) ? $year->name : $year; 
+                            })->toArray()
+                        ]
+                    ]) 
 
-                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                            <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
-                                                                target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-
-                                                            <a href="{{ route('download', $result->id) }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @else
-                                                            @if (Auth::check())
-                                                                <a href="{{ route('subscribe') }}" target="_blank"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                    <em class="icon ni ni-book-read"></em>
-                                                                </a>
-                                                                <a href="{{ route('subscribe') }}"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                        class="icon ni ni-download"></em></a>
-                                                            @else
-                                                                <a href="{{ route('login') }}" target="_blank"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                    <em class="icon ni ni-book-read"></em>
-                                                                </a>
-                                                                <a href="{{ route('login') }}"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                        class="icon ni ni-download"></em></a>
-                                                            @endif
-                                                        @endif
-
-
-
-
-                                                        <a href="#" id="submit"
-                                                            onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-save"></em></a>
-
-
-
-
-
-
-                                                        <form id="save-{{ $result->id }}"
-                                                            action="{{ route('save-document', $result->id) }}"
-                                                            method="POST" class="d-none" style="display: none">
-                                                            @csrf
-
-                                                        </form>
-
-
-
-
-                                                    </div>
-
-                                                </td>
-                                            </tr>
-
-                                            <!-- Modal for PDF Preview -->
-                                            <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"
-                                                role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-lg" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">Document Preview</h5>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div id="pdf-viewer-{{ $result->id }}">
-                                                                <!-- Canvas elements will be dynamically added based on page count -->
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-dismiss="modal">Close</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            @endif
-                        @else
-                            <table id="example" class="datatable-init responsive table table-striped"
-                                style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($results as $result)
-                                        <tr>
-                                            <td>
-                                                @php
-                                                    $abbr = optional($result->subcategory)->abbreviation ?? optional($result->category)->abbreviation;
-                                                    $abbrDesc = optional($result->subcategory)->abbreviation_description ?? optional($result->category)->abbreviation_description;
-                                                @endphp
-                                                @if(!empty($abbr))
-                                                    <span class="badge badge-info" style="margin-right:6px;" title="{{ $abbrDesc ?? 'Category abbreviation' }}">{{ $abbr }}</span>
-                                                @endif
-                                                @if ($result->doc_preview == 1)
-                                                    <a href="#" data-toggle="modal"
-                                                        data-target="#pdfModal-{{ $result->id }}">
-                                                        {{ $result->formatted_title }} <em class="icon ni ni-zoom-in"></em>
-                                                    </a>
-                                                @else
-                                                    {{ $result->formatted_title }}
-                                                @endif
-                                            </td>
-                                            <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
-                                            </td>
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td class="tb-odr-action"
-                                                style="display: flex !important; align-items: center; justify-content: center">
-                                                <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
-                                                    @if ($isSubscribed)
-                                                        <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
-                                                            target="_blank"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                            <em class="icon ni ni-book-read"></em>
-                                                        </a>
-
-                                                        <a href="{{ route('download', $result->id) }}"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-download"></em></a>
-                                                    @else
-                                                        @if (Auth::check())
-                                                            <a href="{{ route('subscribe') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('subscribe') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @else
-                                                            <a href="{{ route('login') }}" target="_blank"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                <em class="icon ni ni-book-read"></em>
-                                                            </a>
-                                                            <a href="{{ route('login') }}"
-                                                                class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                    class="icon ni ni-download"></em></a>
-                                                        @endif
-                                                    @endif
-
-                                                    <a href="#" id="submit"
-                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                            class="icon ni ni-save"></em></a>
-
-                                                    <form id="save-{{ $result->id }}"
-                                                        action="{{ route('save-document', $result->id) }}" method="POST"
-                                                        class="d-none" style="display: none">
-                                                        @csrf
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"
-                                            role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog modal-lg" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="pdfModalLabel-{{ $result->id }}">
-                                                            PDF Preview</h5>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div id="pdf-viewer-{{ $result->id }}">
-                                                            <!-- Canvas elements will be dynamically added based on page count -->
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                    {{-- Pagination Info --}}
+                          {{-- @if($results->hasPages())
+                        <div class="mt-4 d-flex justify-content-center">
+                            <nav aria-label="Regulations pagination">
+                                {{ $results->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                            </nav>
+                        </div>
+                        @endif --}}
+                          
                     </div>
                 </div>
             </div>

@@ -1,9 +1,62 @@
-  <div style="background-color: #fff; padding: 20px; width: 100%">
+<style>
+     #{{ $tableId }} thead th span {
+        display: none !important;
+    }
+    
+    /* Responsive table styles */
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 15px;
+    }
+    
+    .table-responsive-wrapper table {
+        min-width: 100%;
+        margin-bottom: 0;
+    }
+    
+    /* Ensure table cells don't force content to break */
+    .datatable-init th,
+    .datatable-init td {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Stack columns on small screens */
+    @media (max-width: 768px) {
+        .table-responsive-wrapper table {
+            font-size: 12px;
+        }
+        
+        .datatable-init th,
+        .datatable-init td {
+            padding: 0.5rem !important;
+            font-size: 11px;
+        }
+        
+        .btn-sm, .btn-icon {
+            padding: 0.25rem !important;
+            font-size: 10px !important;
+        }
+    }
+    
+    /* Ensure badge text doesn't overflow */
+    .badge {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<div style="background-color: #fff; padding: 20px; width: 100%">
             <div class="row" style="width: 100%">
                 <div class="col-md-12">
                     @if (Auth::check())
                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                            <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
+                            <div class="table-responsive-wrapper">
+                                <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
@@ -304,8 +357,10 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                         @else
-                            <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
+                            <div class="table-responsive-wrapper">
+                                <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
@@ -557,9 +612,11 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                         @endif
                     @else
-                        <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
+                        <div class="table-responsive-wrapper">
+                            <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th style="text-align: center;">Title</th>
@@ -809,6 +866,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     @endif
                 </div>
             </div>

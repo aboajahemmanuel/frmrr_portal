@@ -30,7 +30,17 @@
         <select id="year-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Years</option>
             @foreach($options['years'] as $year)
-                <option value="{{ $year }}">{{ $year }}</option>
+                @php
+                    // Ensure we're working with a string value, not an object or integer
+                    if (is_object($year)) {
+                        // If it's an object, extract the name property and convert to string
+                        $yearValue = isset($year->name) ? (string)$year->name : (string)$year;
+                    } else {
+                        // If it's not an object, convert to string directly
+                        $yearValue = (string)$year;
+                    }
+                @endphp
+                <option value="{{ $yearValue }}">{{ $yearValue }}</option>
             @endforeach
         </select>
     </div>
@@ -45,7 +55,17 @@
                 $entities = $records->pluck('entity.name')->unique()->filter()->sort()->values();
             @endphp
             @foreach($entities as $entity)
-                <option value="{{ $entity }}">{{ $entity }}</option>
+                @php
+                    // Ensure we're working with a string value, not an object
+                    if (is_object($entity)) {
+                        // If it's an object, convert to string
+                        $entityValue = (string)$entity;
+                    } else {
+                        // If it's not an object, use as is
+                        $entityValue = $entity;
+                    }
+                @endphp
+                <option value="{{ $entityValue }}">{{ $entityValue }}</option>
             @endforeach
         </select>
     </div>
@@ -61,7 +81,17 @@
             @endphp
             @foreach($effectiveDates as $date)
                 @if($date)
-                    <option value="{{ \Carbon\Carbon::parse($date)->format('M. j, Y') }}">{{ \Carbon\Carbon::parse($date)->format('M. j, Y') }}</option>
+                    @php
+                        // Ensure we're working with a string value
+                        if (is_object($date)) {
+                            // If it's an object, convert to string
+                            $dateValue = (string)$date;
+                        } else {
+                            // If it's not an object, use as is
+                            $dateValue = $date;
+                        }
+                    @endphp
+                    <option value="{{ \Carbon\Carbon::parse($dateValue)->format('M. j, Y') }}">{{ \Carbon\Carbon::parse($dateValue)->format('M. j, Y') }}</option>
                 @endif
             @endforeach
         </select>
@@ -80,7 +110,17 @@
             @endphp
             @foreach($versions as $version)
                 @if($version !== null && $version !== '')
-                    <option value="{{ $version }}">{{ $version }}</option>
+                    @php
+                        // Ensure we're working with a string value
+                        if (is_object($version)) {
+                            // If it's an object, convert to string
+                            $versionValue = (string)$version;
+                        } else {
+                            // If it's not an object, use as is
+                            $versionValue = $version;
+                        }
+                    @endphp
+                    <option value="{{ $versionValue }}">{{ $versionValue }}</option>
                 @endif
             @endforeach
         </select>

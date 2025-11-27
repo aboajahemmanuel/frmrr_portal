@@ -201,7 +201,7 @@
                         'showFilters' => true,
                         'tableId' => 'example',
                         'filterOptions' => [
-                            'showAlphabetFilter' => true,
+                            'showAlphabetFilter' => true, 
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
                             'showEffectiveDateFilter' => false,

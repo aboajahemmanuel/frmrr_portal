@@ -163,7 +163,7 @@
                                 'filterOptions' => [
                                     'showAlphabetFilter' => true,
                                     'showYearFilter' => true,
-                                    'showEntityFilter' => false,
+                                    'showEntityFilter' => true,
                                     'showEffectiveDateFilter' => true,
                                     'showVersionFilter' => true,
                                     'years' => $results->pluck('year.name')->unique()->sort()->values()

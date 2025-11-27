@@ -22,6 +22,11 @@
         display: none !important;
     }
     
+    /* Hide sorting arrow spans */
+    #{{ $tableId }} thead th span {
+        display: none !important;
+    }
+    
     /* Additional CSS to override any DataTables default sorting styles */
     #{{ $tableId }} thead .sorting,
     #{{ $tableId }} thead .sorting_asc,
@@ -31,6 +36,7 @@
         background-image: none !important;
         cursor: default !important;
     }
+    
 </style>
 
 @if($showFilters)
@@ -369,6 +375,11 @@
             
             #{{ $tableId }} thead th::after,
             #{{ $tableId }} thead th::before {
+                display: none !important;
+            }
+            
+            /* Hide sorting arrow spans */
+            #{{ $tableId }} thead th span {
                 display: none !important;
             }
             
@@ -721,6 +732,11 @@
         
         #{{ $tableId }} thead th::after,
         #{{ $tableId }} thead th::before {
+            display: none !important;
+        }
+        
+        /* Hide sorting arrow spans */
+        #{{ $tableId }} thead th span {
             display: none !important;
         }
         
