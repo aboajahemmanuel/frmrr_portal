@@ -66,7 +66,7 @@ class RegulationController extends Controller
      */
     public function create()
     {
-         $entities   = Entity::where('status', 1)->get();
+          $entities   = Entity::where('status', 1)->get();
         $categories = Category::where('status', 1)->get();
         $alpha      = DB::table('alpha')->get();
 
@@ -124,7 +124,21 @@ class RegulationController extends Controller
         $new_regulation->alpha_id         = $request['alpha_id'];
         $new_regulation->document_tag     = $request['document_tag'];
         $new_regulation->ceased_date      = $request['ceased_date'];
-        $new_regulation->ceased           = $request['ceased'];
+
+        // Normalize ceased: support single value or array (from multi-select)
+        // Filter out empty values and "NULL" strings
+        $ceasedValue = null;
+        if ($request->has('ceased')) {
+            $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+            // Filter out empty strings and "NULL" literal string
+            $ceasedArray = array_filter($ceasedArray, function($val) {
+                return !empty($val) && $val !== '' && $val !== 'NULL';
+            });
+            if (!empty($ceasedArray)) {
+                $ceasedValue = implode(',', $ceasedArray);
+            }
+        }
+        $new_regulation->ceased = $ceasedValue;
         $new_regulation->doc_preview      = $request['doc_preview'];
         $new_regulation->doc_preview_count = $request['doc_preview_count'];
         
@@ -183,7 +197,8 @@ class RegulationController extends Controller
         $regulation_approval->alpha_id         = $request['alpha_id'];
         $regulation_approval->document_tag     = $request['document_tag'];
         $regulation_approval->ceased_date      = $request['ceased_date'];
-        $regulation_approval->ceased           = $request['ceased'];
+    // Use the normalized ceased value (if set) for the approval record as well
+    $regulation_approval->ceased           = isset($ceasedValue) ? $ceasedValue : null;
         $regulation_approval->doc_preview      = $request['doc_preview'];
         $regulation_approval->regulation_doc   = $db_file;
         // Add related_docs to the approval record
@@ -294,7 +309,20 @@ class RegulationController extends Controller
 
 
         $regulation_approval->ceased_date    = $request['ceased_date'];
-        $regulation_approval->ceased         = $request['ceased'];
+        // Normalize ceased: support array or single value for edit approval
+        // Filter out empty strings and "NULL" literal string
+        $ceasedValueEdit = null;
+        if ($request->has('ceased')) {
+            $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+            // Filter out empty strings and "NULL" literal string
+            $ceasedArray = array_filter($ceasedArray, function($val) {
+                return !empty($val) && $val !== '' && $val !== 'NULL';
+            });
+            if (!empty($ceasedArray)) {
+                $ceasedValueEdit = implode(',', $ceasedArray);
+            }
+        }
+        $regulation_approval->ceased         = $ceasedValueEdit;
         $regulation_approval->slug           = $slug;
         $regulation_approval->group_id       = $user->group_id;
         $regulation_approval->regulation_doc = $regulation_update->regulation_doc;
@@ -438,8 +466,13 @@ class RegulationController extends Controller
         $regulation->subcategory_id = $request->subcategory_id;
         $regulation->alpha_id = $request->alpha_id;
         $regulation->document_tag = $request->document_tag;
-        $regulation->ceased_date = $request->ceased_date;
-        $regulation->ceased = $request->ceased;
+    $regulation->ceased_date = $request->ceased_date;
+    // Support multi-select input for ceased (normalize array to comma-separated string, filter empty and NULL)
+    $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+    $ceasedArray = array_filter($ceasedArray, function($val) {
+        return !empty($val) && $val !== '' && $val !== 'NULL';
+    });
+    $regulation->ceased = !empty($ceasedArray) ? implode(',', $ceasedArray) : null;
         $regulation->doc_preview = $request->doc_preview;
         $regulation->doc_preview_count = $request->doc_preview_count;
         
@@ -510,7 +543,7 @@ class RegulationController extends Controller
     {
 
        
-        $user = Auth::user();
+         $user = Auth::user();
         $role = 'Content_Owner_Authoriser';
 
         $authoriser = User::where('group_id', $user->group_id)
@@ -526,14 +559,6 @@ class RegulationController extends Controller
 
         $statuses = DB::table('doc_type')->get();
 
-        // Get related documents based on selected category
-        //  $relatedDocuments = collect();
-        // if ($selectedValue) {
-        //     $category = Category::where('slug', $selectedValue)->first();
-        //     if ($category) {
-              
-        //     }
-        // }
 
          $relatedDocuments = Regulation::where('category_id', $cate->id)
                     ->where('admin_status', 1) // Only approved documents
@@ -564,8 +589,7 @@ class RegulationController extends Controller
         ]);
     }
 
-    public function
-    regstatus(Request $request, $id) {
+    public function regstatus(Request $request, $id) {
 
         // return $request;
 
@@ -772,8 +796,22 @@ class RegulationController extends Controller
 
         $ceased_update = Regulation::find($id);
 
+        // Normalize ceased value: support array (from multi-select) or single value
+        // Filter out empty strings and "NULL" literal string
+        $ceasedValue = null;
+        if ($request->has('ceased')) {
+            $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+            // Filter out empty strings and "NULL" literal string
+            $ceasedArray = array_filter($ceasedArray, function($val) {
+                return !empty($val) && $val !== '' && $val !== 'NULL';
+            });
+            if (!empty($ceasedArray)) {
+                $ceasedValue = implode(',', $ceasedArray);
+            }
+        }
+
         // Proceed with updating the Category
-        $ceased_update->ceased = $request['ceased'];
+        $ceased_update->ceased = $ceasedValue;
         $ceased_update->save();
 
         return redirect()->back()->with('success', 'Document admin_status successfully updated.');

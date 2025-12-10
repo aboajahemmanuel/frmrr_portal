@@ -162,9 +162,16 @@ class SearchController extends Controller
             if ($filters['ceasedRepealed'] === 'Active') {
                 $query->whereNull('ceased');
             } else {
-                $query->where('ceased', $filters['ceasedRepealed']);
+                // Handle comma-separated values in ceased column
+                $query->where(function ($q) use ($filters) {
+                    $q->where('ceased', $filters['ceasedRepealed'])
+                      ->orWhere('ceased', 'like', '%' . $filters['ceasedRepealed'] . ',%')
+                      ->orWhere('ceased', 'like', '%,' . $filters['ceasedRepealed'] . '%');
+                });
             }
         }
+
+
 
         // Apply document version filter
         if (!empty($filters['document_version'])) {

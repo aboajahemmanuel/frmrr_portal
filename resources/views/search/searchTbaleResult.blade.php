@@ -364,7 +364,7 @@
                                                                     {{ trim($status->name) === trim($ceasedRepealed) ? 'selected' : '' }}>
                                                                     {{ trim($status->name) }}
                                                                 </option>
-                                                            @endforeach
+                                                            @endforeach 
 
 
                                                     {{-- <option value="Ceased"

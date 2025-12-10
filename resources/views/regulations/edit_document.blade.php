@@ -613,22 +613,31 @@
                                                                     for="event-title">{{$formattedStatuses}}
                                                                 </label>
                                                                 <div class="form-control-wrap">
-                                                            <select class="form-control" name="ceased" id="ceased-select">
-                                                            <option value="" {{ empty($regulation->ceased) ? 'selected' : '' }}>Active</option>
-
-                                                            @foreach ($statuses as $status)
-                                                                <option value="{{ trim($status->name) }}" 
-                                                                    {{ trim($status->name) === trim($regulation->ceased) ? 'selected' : '' }}>
-                                                                    {{ trim($status->name) }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-
-
-
+                                                                    @php
+                                                                        // Prepare existing values (support comma-separated string stored in DB)
+                                                                        $existingCeased = $regulation->ceased ?? '';
+                                                                        $existingCeasedArr = [];
+                                                                        if (is_string($existingCeased) && strlen($existingCeased) > 0) {
+                                                                            $existingCeasedArr = array_map('trim', explode(',', $existingCeased));
+                                                                        }
+                                                                    @endphp
+                                                                    <select class="form-control select2" name="ceased[]" id="ceased-select" multiple="multiple" data-placeholder="Select one or more statuses">
+                                                                        <option value="NULL">----</option>
+                                                                        @foreach ($statuses as $status)
+                                                                            @if (trim($status->name) === 'Active')
+                                                                                <option value="NULL" {{ in_array('NULL', $existingCeasedArr) ? 'selected' : '' }}>
+                                                                                    {{ trim($status->name) }}</option>
+                                                                            @else
+                                                                                <option value="{{ trim($status->name) }}" {{ in_array(trim($status->name), $existingCeasedArr) ? 'selected' : '' }}>
+                                                                                    {{ trim($status->name) }}
+                                                                                </option>
+                                                                            @endif
+                                                                        @endforeach
+                                                                    </select>
 
                                                                 </div>
                                                             </div>
+                                                        </div>
                                                         </div>
 
 
@@ -658,11 +667,30 @@
                                                         const statuses = @json($statuses);
                                                         const validStatuses = statuses.map(status => status.name.trim().toLowerCase());
 
-                                                        ceasedSelect.addEventListener('change', function () {
-                                                            // Normalize value: trim spaces & convert to lowercase
-                                                            const selectedValue = this.value.trim().toLowerCase();
+                                                        // For Select2 or native multiple select
+                                                        function getSelectedValues(selectEl) {
+                                                            if (!selectEl) return [];
+                                                            // If Select2 is used, jQuery val() returns array; try that first
+                                                            if (window.jQuery && jQuery(selectEl).data('select2')) {
+                                                                const val = jQuery(selectEl).val();
+                                                                return val ? (Array.isArray(val) ? val : [val]) : [];
+                                                            }
+                                                            return Array.from(selectEl.selectedOptions || []).map(o => o.value);
+                                                        }
 
-                                                            if (validStatuses.includes(selectedValue)) {
+                                                        function handleChange() {
+                                                            const selectedValues = getSelectedValues(ceasedSelect);
+                                                            
+                                                            // Check if NULL or Active (which has value "NULL") is selected
+                                                            const hasNullSelected = selectedValues.includes('NULL');
+                                                            
+                                                            // Check if any other valid status is selected (excluding NULL)
+                                                            const hasOtherValidStatus = selectedValues.some(v => {
+                                                                return v && v !== 'NULL' && validStatuses.includes(v.trim().toLowerCase());
+                                                            });
+
+                                                            // Enable date input only if there's a valid status other than NULL
+                                                            if (hasOtherValidStatus && !hasNullSelected) {
                                                                 ceasedDateInput.disabled = false;
                                                                 ceasedDateInput.required = true;
                                                             } else {
@@ -670,7 +698,24 @@
                                                                 ceasedDateInput.required = false;
                                                                 ceasedDateInput.value = ''; // Clear date input when disabled
                                                             }
-                                                        });
+                                                        }
+
+                                                        // Initialize Select2 if available
+                                                        if (window.jQuery && jQuery.fn && jQuery.fn.select2) {
+                                                            jQuery(ceasedSelect).select2({
+                                                                placeholder: jQuery(ceasedSelect).data('placeholder') || 'Select statuses',
+                                                                allowClear: true,
+                                                                width: '100%'
+                                                            });
+                                                            // Bind change event to Select2
+                                                            jQuery(ceasedSelect).on('change', handleChange);
+                                                        } else {
+                                                            // Fallback for native select
+                                                            ceasedSelect.addEventListener('change', handleChange);
+                                                        }
+
+                                                        // Trigger initial state check on page load
+                                                        handleChange();
                                                     });
                                                 </script>
 
