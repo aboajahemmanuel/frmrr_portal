@@ -289,8 +289,8 @@
                                                                         }
                                                                     @endphp
                                                                     <select class="form-control select2" name="ceased[]"
-                                                                        id="ceased-select" multiple="multiple" data-placeholder="Select one or more statuses">
-                                                                        <option value="NULL">----</option>
+                                                                        id="ceased-select" multiple="multiple" data-placeholder="Select one or more">
+                                                                        <option value="NULL">Select Status</option>
                                                                         @foreach ($statuses as $status)
                                                                             @if (trim($status->name) === 'Active')
                                                                                 <option value="NULL" {{ in_array('NULL', $oldCeased) ? 'selected' : '' }}>
