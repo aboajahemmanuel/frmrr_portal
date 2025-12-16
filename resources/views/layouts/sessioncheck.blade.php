@@ -14,7 +14,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" id="logoutNow" class="btn btn-danger" onclick="event.preventDefault(); document.getElementById('logout-form-modal').submit();">Logout</button>
-            <button type="button" id="continueSession" class="btn btn-primary">Continue Session</button>
+           <button type="button" id="continueSession" class="btn btn-primary" onclick="location.reload()">Continue Session</button>
           </div>
         </div>
       </div>

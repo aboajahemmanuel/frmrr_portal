@@ -50,6 +50,99 @@
     }
 </style>
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .modal-backdrop.show {
+      opacity: 0.5;
+    }
+    
+    .subscribe-modal .modal-content {
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    
+    .subscribe-modal .modal-header {
+      border-bottom: none;
+      padding: 2rem 2rem 1rem;
+    }
+    
+    .subscribe-modal .modal-body {
+      padding: 0 2rem 2rem;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.5rem 0;
+    }
+    
+    .feature-list li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .feature-list li::before {
+      content: "✓";
+      color: #198754;
+      font-weight: bold;
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+    }
+    
+        .btn-subscribe {
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            background-color: #1d326d; /* requested deep blue */
+            color: #ffffff !important; /* ensure white text */
+            border: none;
+            text-decoration: none;
+        }
+        .btn-subscribe:hover,
+        .btn-subscribe:focus {
+            background-color: #16284b; /* slightly darker on hover */
+            color: #ffffff !important;
+            text-decoration: none;
+        }
+        /* Force all text and icon elements inside the subscribe button to remain white in all states */
+        .btn-subscribe,
+        .btn-subscribe *,
+        .btn-subscribe em,
+        .btn-subscribe i,
+        .btn-subscribe .icon,
+        .btn-subscribe svg {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+        }
+        /* Ensure anchor/link state specificity so text is white even before hover */
+        a.btn-subscribe,
+        a.btn-subscribe:link,
+        a.btn-subscribe:visited,
+        a.btn-subscribe:active {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+        }
+        /* Make child elements inherit the color for safety */
+        a.btn-subscribe * {
+            color: inherit !important;
+            fill: inherit !important;
+        }
+    
+    .clickable-badge {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .clickable-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+  </style>
+
+
+
 <div style="background-color: #fff; padding: 20px; width: 100%">
             <div class="row" style="width: 100%">
                 <div class="col-md-12">
@@ -66,8 +159,8 @@
                                         <th style="text-align: center;">Issue Date</th>
                                         <th style="text-align: center;">Year</th>
                                         <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">{{$formattedStatuses}}</th>
-                                        <th style="text-align: center;">{{$formattedStatuses}} Date</th>
+                                        <th style="text-align: center;"> Ceased/Repealed/Amended/Superseded</th>
+                                        <th style="text-align: center;">Ceased/Repealed/Amended/Superseded Date</th>
                                         <th style="text-align: center;">Entity</th>
                                         <th style="text-align: center;">Market Product</th>
                                         <th style="text-align: center;">Related Docs</th>
@@ -413,7 +506,8 @@
                                                         $relatedDocuments = $result->related_documents;
                                                         $relatedCount = $relatedDocuments->count();
                                                     @endphp
-                                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
+                                                                                   <span class="badge badge-primary" title="View related documents and lineage" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#subscribeModal">{{ $relatedCount }} related</span>
+
                                                 @else
                                                     <span class="badge badge-secondary">None</span>
                                                 @endif
@@ -613,6 +707,36 @@
                                 </tbody>
                             </table>
                             </div>
+
+                            <div class="modal fade subscribe-modal" id="subscribeModal" tabindex="-1" aria-labelledby="subscribeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="subscribeModalLabel">🔒 Subscribe to Access This Document</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3">Upgrade your account to unlock premium documents and features.</p>
+          
+          <ul class="feature-list">
+            <li>Access to all premium documents</li>
+            <li>Unlimited downloads</li>
+           
+          </ul>
+          
+          <div class="d-grid gap-2">
+            <a href="{{ route('subscribe') }}" class="btn btn-primary btn-subscribe" style="">Subscribe Now</a>
+           
+          </div>
+          
+          
+        </div>
+        <br>
+        
+       
+      </div>
+    </div>
+  </div>
                         @endif
                     @else
                         <div class="table-responsive-wrapper">

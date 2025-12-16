@@ -625,7 +625,7 @@
                                                                         <option value="NULL">N/A</option>
                                                                         @foreach ($statuses as $status)
                                                                             @if (trim($status->name) === 'Active')
-                                                                                <option value="NULL" {{ in_array('NULL', $existingCeasedArr) ? 'selected' : '' }}>
+                                                                                <option value="Active" {{ in_array('Active', $existingCeasedArr) ? 'selected' : '' }}>
                                                                                     {{ trim($status->name) }}</option>
                                                                             @else
                                                                                 <option value="{{ trim($status->name) }}" {{ in_array(trim($status->name), $existingCeasedArr) ? 'selected' : '' }}>
@@ -637,7 +637,6 @@
 
                                                                 </div>
                                                             </div>
-                                                        </div>
                                                         </div>
 
 
@@ -679,21 +678,19 @@
                                                         }
 
                                                         function handleChange() {
-                                                            const selectedValues = getSelectedValues(ceasedSelect);
-                                                            
-                                                            // Check if NULL or Active (which has value "NULL") is selected
-                                                            const hasNullSelected = selectedValues.includes('NULL');
-                                                            
-                                                            // Check if any other valid status is selected (excluding NULL)
+                                                            const selectedValues = getSelectedValues(ceasedSelect) || [];
+
+                                                            // Check if any non-NULL/non-Active status is selected
                                                             const hasOtherValidStatus = selectedValues.some(v => {
-                                                                return v && v !== 'NULL' && validStatuses.includes(v.trim().toLowerCase());
+                                                                return v && v !== 'NULL' && v !== 'Active' && validStatuses.includes(v.trim().toLowerCase());
                                                             });
 
-                                                            // Enable date input only if there's a valid status other than NULL
-                                                            if (hasOtherValidStatus && !hasNullSelected) {
+                                                            // If there's at least one other valid status selected, enable the date
+                                                            if (hasOtherValidStatus) {
                                                                 ceasedDateInput.disabled = false;
                                                                 ceasedDateInput.required = true;
                                                             } else {
+                                                                // Otherwise (only Active/NULL or nothing selected) keep it disabled
                                                                 ceasedDateInput.disabled = true;
                                                                 ceasedDateInput.required = false;
                                                                 ceasedDateInput.value = ''; // Clear date input when disabled

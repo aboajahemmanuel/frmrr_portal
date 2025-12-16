@@ -323,7 +323,9 @@ entityBox.addEventListener("click", function (e) {
                                         </div>
 
                                         <div class="w-33">
-                                            <div class="si-title" style="margin-top: 4px;">{{{$formattedStatuses}}}</div>
+                                            <div class="si-title" style="margin-top: 4px;">{{{$formattedStatuses}}} 
+                                                
+                                            </div>
                                             <div class="autocomplete-wrapper">
                                                 <input type="text" id="statusInput" class="si-input-box-s" placeholder="Type to search statuses..." autocomplete="off">
                                                 <input type="hidden" name="ceasedRepealed" id="statusHidden">
@@ -403,7 +405,7 @@ entityBox.addEventListener("click", function (e) {
         
         // Create status data array
         const statuses = [
-            {name: "Active"},
+            // {name: "Active"},
             @foreach ($statuses as $status)
                 {name: "{{ $status->name }}"},
             @endforeach

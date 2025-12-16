@@ -338,7 +338,7 @@ class SearchController extends Controller
                 }
             });
         })
-            ->whereNull('ceased')
+            //->whereNull('ceased')
             ->where('status', 1)
             ->orderBy('created_at', 'desc');
             
