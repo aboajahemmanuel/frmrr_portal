@@ -190,7 +190,7 @@
                                             </td>
                                              <td style="text-align: center">
                                                 @if($result->ceased && $result->ceased !== 'Active')
-                                                    <span class="badge badge-primary">{{ str_replace([',','/'], [', ', ' '], $result->ceased) }}</span>
+                                                    <span class="badge badge-primary">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased), function($status) { return trim($status) !== 'Active'; }))) }}</span>
                                                 @endif
                                             </td>
 
@@ -376,7 +376,7 @@
                                                                                         </div>
                                                                                         <div style="width: 12%; min-width: 100px; text-align: center;">
                                                                                             @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
-                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $relatedDoc->ceased), function($status) { return trim($status) !== 'Active'; }))) }}</span>
                                                 @else
                                                 <span class="badge badge-secondary">Active</span>
                                                 @endif
@@ -638,7 +638,7 @@
                                                                                         </div>
                                                                                         <div style="width: 12%; min-width: 100px; text-align: center;">
                                                                                             @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
-                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $relatedDoc->ceased), function($status) { return trim($status) !== 'Active'; }))) }}</span>
                                                 @else
                                                 <span class="badge badge-secondary">Active</span>
                                                 @endif
@@ -926,7 +926,7 @@
                                                                                     </div>
                                                                                     <div style="width: 12%; min-width: 100px; text-align: center;">
                                                                                         @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
-                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $relatedDoc->ceased), function($status) { return trim($status) !== 'Active'; }))) }}</span>
                                                 @else
                                                 <span class="badge badge-secondary">Active</span>
                                                 @endif

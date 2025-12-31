@@ -115,11 +115,11 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNotNull('ceased')
-            ->where('ceased', '!=', 'Active')
-            ->where('ceased', 'NOT LIKE', 'Active,%')
-            ->where('ceased', 'NOT LIKE', '%,Active')
-            ->where('ceased', 'NOT LIKE', '%,Active,%')
-            ->where('ceased', 'NOT LIKE', '%Active%')
+            // ->where('ceased', '!=', 'Active')
+            // ->where('ceased', 'NOT LIKE', 'Active,%')
+            // ->where('ceased', 'NOT LIKE', '%,Active')
+            // ->where('ceased', 'NOT LIKE', '%,Active,%')
+            // ->where('ceased', 'NOT LIKE', '%Active%')
             ->get();
             
         // Load page count for each regulation

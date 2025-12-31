@@ -292,11 +292,11 @@
                                                     
                                                     <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</span>
                                                 </div>
-                                                <div style="margin-top: 8px;">
-                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                <div style="margin-top: 8px; ">
+                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm">
                                                         <em class="icon ni ni-book-read"></em> View
                                                     </a>
-                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-primary">
+                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm">
                                                         <em class="icon ni ni-download"></em> Download
                                                     </a>
                                                 </div>
@@ -326,10 +326,10 @@
                                                                     @endif
                                                                 </div>
                                                                 <div style="margin-top: 5px;">
-                                                                    <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary">
+                                                                    <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs">
                                                                         <em class="icon ni ni-book-read"></em> View
                                                                     </a>
-                                                                    <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary">
+                                                                    <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs">
                                                                         <em class="icon ni ni-download"></em> Download
                                                                     </a>
                                                                 </div>
