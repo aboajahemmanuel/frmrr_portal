@@ -189,7 +189,9 @@
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
                                              <td style="text-align: center">
-                                                <span class="badge fmdq_Blue">{{$result->ceased}}</span>
+                                                @if($result->ceased && $result->ceased !== 'Active')
+                                                    <span class="badge badge-primary">{{ str_replace([',','/'], [', ', ' '], $result->ceased) }}</span>
+                                                @endif
                                             </td>
 
                                              <td style="text-align: center">
@@ -373,7 +375,11 @@
                                                                                             {{ $relatedDoc->issue_date ? \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
                                                                                         </div>
                                                                                         <div style="width: 12%; min-width: 100px; text-align: center;">
-                                                                                            <span class="badge badge-success">{{ $relatedDoc->ceased ?? 'Active' }}</span>
+                                                                                            @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
+                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                @else
+                                                <span class="badge badge-secondary">Active</span>
+                                                @endif
                                                                                         </div>
                                                                                         <div style="width: 10%; min-width: 120px; text-align: center;">
                                                                                             <div class="d-flex gap-1 justify-content-center">
@@ -631,7 +637,11 @@
                                                                                             {{ $relatedDoc->issue_date ? \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
                                                                                         </div>
                                                                                         <div style="width: 12%; min-width: 100px; text-align: center;">
-                                                                                            <span class="badge badge-success">{{ $relatedDoc->ceased ?? 'Active' }}</span>
+                                                                                            @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
+                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                @else
+                                                <span class="badge badge-secondary">Active</span>
+                                                @endif
                                                                                         </div>
                                                                                         <div style="width: 10%; min-width: 120px; text-align: center;">
                                                                                             <div class="d-flex gap-1 justify-content-center">
@@ -915,7 +925,11 @@
                                                                                         {{ $relatedDoc->issue_date ? \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
                                                                                     </div>
                                                                                     <div style="width: 12%; min-width: 100px; text-align: center;">
-                                                                                        <span class="badge badge-success">{{ $relatedDoc->ceased ?? 'Active' }}</span>
+                                                                                        @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
+                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                @else
+                                                <span class="badge badge-secondary">Active</span>
+                                                @endif
                                                                                     </div>
                                                                                     <div style="width: 10%; min-width: 120px; text-align: center;">
                                                                                         <div class="d-flex gap-1 justify-content-center">

@@ -55,8 +55,9 @@ class RegulationController extends Controller
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
 
+        $regulation_pending = DocumentApproval::all();
         $categories = Category::where('status', 1)->get();
-        return view('regulations.index', compact('data', 'categories', 'authoriser', 'formattedStatuses'));
+        return view('regulations.index', compact('data', 'categories', 'authoriser', 'formattedStatuses', 'regulation_pending'));
     }
 
     /**
@@ -417,25 +418,36 @@ class RegulationController extends Controller
     public function view_doc($id)
     {
         $regulation = Regulation::where('id', $id)->first();
-        $entities   = Entity::all();
-        $categories = Category::all();
+        $entities   = Entity::where('status', 1)->get();
+        $categories = Category::where('status', 1)->get();
         $alpha      = DB::table('alpha')->get();
         $years      = DB::table('years')->get();
         $months     = DB::table('months')->get();
 
-        $user  = Auth::user();
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
+        $user = Auth::user();
+        $role = 'Content_Owner_Authoriser';
 
-        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+        $authoriser = User::where('group_id', $user->group_id)
+            ->role($role)
+            ->get();
+        $statuses = DB::table('doc_type')->get();
+
+        $statua            = DB::table('doc_type')->pluck('name')->toArray();
+        $formattedStatuses = implode('/', $statua);
+
+        // Get related documents for the same category
+        $relatedDocuments = Regulation::where('category_id', $regulation->category_id)
+            ->where('admin_status', 1) // Only approved documents
+            ->where('id', '!=', $regulation->id) // Exclude current document
+            ->orderBy('title')
             ->get();
 
-        // Get related documents for display
-        $relatedDocuments = $regulation->relatedDocuments;
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
 
-        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'relatedDocuments'));
+        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'marketProductTags'));
     }
 
     /**
@@ -628,7 +640,8 @@ class RegulationController extends Controller
             $inputter_title = 'Please be advised that Document (' . $action . ') Insert request approved.';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
-            return Redirect::to('regulations')->with('success', 'Request approved successfully.');
+            // Redirect back to the previous page instead of regulations page
+            return redirect()->back()->with('success', 'Request approved successfully.');
         }
 
         if ($regulation_approval->action_type == 'Edit' && $request->status == 1) {
@@ -672,7 +685,8 @@ class RegulationController extends Controller
             $inputter_title = 'Please be advised that Document (' . $action . ') Update request approved.';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
-            return Redirect::to('regulations')->with('success', 'Request approved successfully.');
+            // Redirect back to the previous page instead of regulations page
+            return redirect()->back()->with('success', 'Request approved successfully.');
         }
 
         if ($regulation_approval->action_type == 'Delete' && $request->status == 1) {
@@ -697,7 +711,8 @@ class RegulationController extends Controller
 
             Regulation::find($id)->delete();
 
-            return Redirect::to('regulations')->with('success', 'Request approved successfully.');
+            // Redirect back to the previous page instead of regulations page
+            return redirect()->back()->with('success', 'Request approved successfully.');
         }
 
         if ($regulation_approval->action_type == 'Edit' && $request->status == 2) {
@@ -725,7 +740,8 @@ class RegulationController extends Controller
             LogActivity::addToLog(' Document (' . $update_admin_status->title . ') Request rejected by ' . Auth::user()->name);
 
             // $this->notifyUsersOfRejection($update_admin_status->name, $request->note);
-            return Redirect::to('regulations')->with('success', 'Request rejected.');
+            // Redirect back to the previous page instead of regulations page
+            return redirect()->back()->with('success', 'Request rejected.');
         }
 
         if ($regulation_approval->action_type == 'Insert' && $request->status == 2) {
@@ -754,7 +770,8 @@ class RegulationController extends Controller
             LogActivity::addToLog(' Document (' . $update_admin_status->title . ') Request rejected by ' . Auth::user()->name);
 
             // $this->notifyUsersOfRejection($update_admin_status->name, $request->note);
-            return Redirect::to('regulations')->with('success', 'Request rejected.');
+            // Redirect back to the previous page instead of regulations page
+            return redirect()->back()->with('success', 'Request rejected.');
         }
 
         if ($regulation_approval->action_type == 'Delete' && $request->status == 2) {
@@ -783,7 +800,8 @@ class RegulationController extends Controller
             LogActivity::addToLog(' Document (' . $update_admin_status->title . ') Request rejected by ' . Auth::user()->name);
 
             // $this->notifyUsersOfRejection($update_admin_status->name, $request->note);
-            return Redirect::to('regulations')->with('success', 'Request rejected.');
+            // Redirect back to the previous page instead of regulations page
+            return redirect()->back()->with('success', 'Request rejected.');
         }
     }
 

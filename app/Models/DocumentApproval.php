@@ -38,32 +38,32 @@ class DocumentApproval extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
 
     public function entity()
     {
-        return $this->belongsTo(Entity::class);
+        return $this->belongsTo(Entity::class, 'entity_id');
     }
 
 
     public function subcategory()
     {
-        return $this->belongsTo(SubCategory::class);
+        return $this->belongsTo(SubCategory::class, 'subcategory_id');
     }
 
 
     public function year()
     {
-        return $this->belongsTo(Year::class);
+        return $this->belongsTo(Year::class, 'year_id');
     }
 
 
 
     public function month()
     {
-        return $this->belongsTo(Month::class);
+        return $this->belongsTo(Month::class, 'month_id');
     }
 
     public function usersWhoSaved()

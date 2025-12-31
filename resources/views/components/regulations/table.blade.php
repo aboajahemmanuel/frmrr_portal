@@ -269,14 +269,14 @@
                                         @foreach($relatedDocs as $relatedDoc)
                                             <div class="related-doc-item">
                                                 <div class="related-doc-title">
-                                                    {{ $relatedDoc->title }}
+                                                    {{ $relatedDoc->title }} 
                                                     @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                         <span class="nested-badge">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
                                                     @endif
                                                 </div>
                                                 <div class="related-doc-meta">
                                                     @if($relatedDoc->ceased)
-                                                        <span class="badge badge-danger">{{ $relatedDoc->ceased }}</span>
+                                                        <span class="badge badge-danger"> {{ str_replace([',','/'], [', ',  ' '], $relatedDoc->ceased) }}</span>
                                                     @else
                                                         <span class="badge badge-primary">Active</span>
                                                     @endif
@@ -311,7 +311,7 @@
                                                                 </div>
                                                                 <div class="related-doc-meta">
                                                                     @if($nestedDoc->ceased)
-                                                                        <span class="badge badge-danger">{{ $nestedDoc->ceased }}</span>
+                                                                        <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
                                                                     @else
                                                                         <span class="badge badge-primary">Active</span>
                                                                     @endif
@@ -645,7 +645,7 @@
                                                             $ceasedStatuses = array_map('trim', explode(',', $relatedDoc->ceased));
                                                         @endphp
                                                         @foreach($ceasedStatuses as $status)
-                                                            <span class="badge badge-danger">{{ $status }}</span>
+                                                            <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $status) }}</span>
                                                         @endforeach
                                                     @else
                                                         <span class="badge badge-primary">Active</span>

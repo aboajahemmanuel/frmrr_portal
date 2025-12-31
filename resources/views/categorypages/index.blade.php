@@ -128,7 +128,7 @@
                     @foreach ($reg as $result)
                         (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
-                            var pageCount = {{ $result->page_count ?? 0 }};
+                            var pageCount = 0;
                             var pdfjsLib = window['pdfjs-dist/build/pdf'];
                             pdfjsLib.GlobalWorkerOptions.workerSrc =
                                 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
@@ -143,39 +143,30 @@
                                 var actualPageCount = pageCount > 0 ? pageCount : pdfDoc.numPages;
                                 
                                 // Implement page-based blur logic (only for non-privileged users)
-                                if (actualPageCount === 1) {
-                                    if (!isPrivileged) {
+                                if (!isPrivileged) {
+                                    // For non-privileged users, implement the preview restrictions
+                                    if (actualPageCount === 1) {
+                                        // 1-page document: Show first 3 lines or 50% and blur the rest
                                         renderPartialPage(pdfDoc, 1, viewer, 0.5);
-                                    } else {
+                                    } else if (actualPageCount === 2) {
+                                        // 2-page document: Show 1 full page and blur entire second page
                                         renderFullPage(pdfDoc, 1, viewer, false);
-                                    }
-                                } else if (actualPageCount === 2) {
-                                    renderFullPage(pdfDoc, 1, viewer, false);
-                                    if (!isPrivileged) {
                                         renderFullPage(pdfDoc, 2, viewer, true);
-                                    } else {
-                                        renderFullPage(pdfDoc, 2, viewer, false);
-                                    }
-                                } else if (actualPageCount >= 3) {
-                                    renderFullPage(pdfDoc, 1, viewer, false);
-                                    if (!isPrivileged) {
-                                        renderPartialPage(pdfDoc, 2, viewer, 0.5);
+                                    } else if (actualPageCount >= 3) {
+                                        // 3+ page document: Show first 1.5 pages and blur all remaining pages
+                                        renderFullPage(pdfDoc, 1, viewer, false); // Full first page
+                                        renderPartialPage(pdfDoc, 2, viewer, 0.5); // 50% of second page
+                                        // Blur all remaining pages (up to 5 pages max)
                                         for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
                                             renderFullPage(pdfDoc, i, viewer, true);
                                         }
-                                    } else {
-                                        if (pdfDoc.numPages >= 2) {
-                                            renderFullPage(pdfDoc, 2, viewer, false);
-                                        }
-                                        for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
-                                            renderFullPage(pdfDoc, i, viewer, false);
-                                        }
                                     }
                                 } else {
-                                    // Fallback: show first 2 pages
-                                    renderFullPage(pdfDoc, 1, viewer, false);
-                                    if (pdfDoc.numPages >= 2) {
-                                        renderFullPage(pdfDoc, 2, viewer, false);
+                                    // For privileged users, show full pages without restrictions
+                                    // Show up to 5 pages maximum
+                                    var maxPagesToShow = Math.min(actualPageCount, 5);
+                                    for (var i = 1; i <= maxPagesToShow; i++) {
+                                        renderFullPage(pdfDoc, i, viewer, false);
                                     }
                                 }
                             }).catch(function(error) {

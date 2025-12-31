@@ -64,7 +64,11 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where(function ($query) {
                 $query->whereNotNull('ceased')
-                      ->where('ceased', '!=', 'Active');
+                      ->where('ceased', '!=', 'Active')
+                      ->where('ceased', 'NOT LIKE', 'Active,%')
+                      ->where('ceased', 'NOT LIKE', '%,Active')
+                      ->where('ceased', 'NOT LIKE', '%,Active,%')
+                      ->where('ceased', 'NOT LIKE', '%Active%');
             })
             ->where('category_id', $category->id)
             ->orderBy('created_at', 'desc')
@@ -97,15 +101,7 @@ class BrowseController extends Controller
             ->groupBy('alpha.id', 'alpha.name')
             ->get();
 
-        $years = Year::pluck('name'); // Assuming 'year' is the column name
-                                      // $years = DB::table('regulations')
-                                      //     ->join('years', 'regulations.year_id', '=', 'years.id')
-                                      //     ->select('years.id', 'years.name')
-                                      //     ->where('category_id', '=', $category->id)
-                                      //     ->where('regulations.status', 1)
-                                      //     ->groupBy('years.id', 'years.name')
-                                      //     ->get();
-
+        $years = Year::pluck('name'); 
         $userId = Auth::id();
 
         $today = Carbon::now();
@@ -119,6 +115,11 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->whereNotNull('ceased')
+            ->where('ceased', '!=', 'Active')
+            ->where('ceased', 'NOT LIKE', 'Active,%')
+            ->where('ceased', 'NOT LIKE', '%,Active')
+            ->where('ceased', 'NOT LIKE', '%,Active,%')
+            ->where('ceased', 'NOT LIKE', '%Active%')
             ->get();
             
         // Load page count for each regulation
@@ -165,6 +166,12 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->whereNotNull('ceased')
             ->where('subcategory_id', $subcategory->id)
+            
+            ->where('ceased', '!=', 'Active')
+            ->where('ceased', 'NOT LIKE', 'Active,%')
+            ->where('ceased', 'NOT LIKE', '%,Active')
+            ->where('ceased', 'NOT LIKE', '%,Active,%')
+            ->where('ceased', 'NOT LIKE', '%Active%')
             ->get();
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
@@ -404,7 +411,11 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where(function ($query) {
                 $query->whereNotNull('ceased')
-                      ->where('ceased', '!=', 'Active');
+                      ->where('ceased', '!=', 'Active')
+                      ->where('ceased', 'NOT LIKE', 'Active,%')
+                      ->where('ceased', 'NOT LIKE', '%,Active')
+                      ->where('ceased', 'NOT LIKE', '%,Active,%')
+                      ->where('ceased', 'NOT LIKE', '%Active%');
             })
             ->where('category_id', $category->id)
             ->orderBy('created_at', 'desc')

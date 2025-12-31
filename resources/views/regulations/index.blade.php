@@ -237,7 +237,7 @@
 
                                                     <td class="nk-tb-col">
                                                         {{-- @if ($regulation->ceased == 'Ceased') --}}
-                                                            <span class="badge fmdq_Blue">{{$regulation->ceased}}</span>
+                                                            <span class="badge fmdq_Blue"> {{ str_replace([',','/'], [', ', ' '], $regulation->ceased) }}</span>
                                                         {{-- @endif --}}
                                                         {{-- @if ($regulation->ceased == 'Repealed')
                                                             <span class="badge fmdq_Blue">Repealed</span>
@@ -706,7 +706,7 @@
                                                                     <label for="lead-name" class="form-label">Title</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending)->title ?? 'N/A' }}"
+                                                                        value="{{ $regulation_pending->title ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -716,7 +716,7 @@
                                                                     <label for="lead-name" class="form-label">Category</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending->category)->name ?? 'N/A' }}"
+                                                                        value="{{ optional(optional($regulation_pending)->category)->name ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -729,7 +729,7 @@
                                                                         class="form-label">Subcategory</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending->subcategory)->name ?? 'N/A' }}"
+                                                                        value="{{ optional(optional($regulation_pending)->subcategory)->name ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -742,7 +742,7 @@
                                                                         Date</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending)->effective_date ?? 'N/A' }}"
+                                                                        value="{{ $regulation_pending->effective_date ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -755,7 +755,7 @@
                                                                         Date</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending)->issue_date ?? 'N/A' }}"
+                                                                        value="{{ $regulation_pending->issue_date ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -768,7 +768,7 @@
                                                                         Version</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending)->document_version ?? 'N/A' }}"
+                                                                        value="{{ $regulation_pending->document_version ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -780,7 +780,7 @@
                                                                     <label for="lead-name" class="form-label">Year</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending->year)->name ?? 'N/A' }}"
+                                                                        value="{{ optional(optional($regulation_pending)->year)->name ?? 'N/A' }}"
                                                                         required />
                                                                 </div>
                                                             </div>
@@ -791,8 +791,21 @@
                                                                     <label for="lead-name" class="form-label">Month</label>
                                                                     <input disabled type="text" class="form-control"
                                                                         id="lead-name" name="name"
-                                                                        value="{{ optional($regulation_pending->month)->name ?? 'N/A' }}"
+                                                                        value="{{ optional(optional($regulation_pending)->month)->name ?? 'N/A' }}"
                                                                         required />
+                                                                </div>
+                                                            </div>
+
+
+                                                             <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Status</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ optional($regulation_pending)->ceased ? str_replace([',','/'], [', ', ' '], optional($regulation_pending)->ceased) : 'N/A' }}  "
+                                                                        required />
+
+                                                                        
                                                                 </div>
                                                             </div>
 
@@ -801,9 +814,9 @@
                                                                 <div class="form-group">
                                                                     <label class="form-label">Related Documents</label>
                                                                     <div class="form-control-wrap">
-                                                                        @if(!empty($regulation_pending->related_docs))
+                                                                        @if(!empty(optional($regulation_pending)->related_docs))
                                                                             @php
-                                                                                $relatedIds = explode(',', $regulation_pending->related_docs);
+                                                                                $relatedIds = explode(',', optional($regulation_pending)->related_docs);
                                                                                 $relatedDocs = \App\Models\Regulation::whereIn('id', $relatedIds)->get();
                                                                             @endphp
                                                                             @if($relatedDocs->count() > 0)
@@ -829,9 +842,9 @@
 
                                                             <div class="col-md-12">
 
-                                                                @if (!empty($regulation_pending->regulation_doc))
-                                                                    <a href="public/pdf_documents/{{ $regulation_pending->regulation_doc }}"
-                                                                        download="{{ $regulation_pending->regulation_doc }}">
+                                                                @if (!empty(optional($regulation_pending)->regulation_doc))
+                                                                    <a href="public/pdf_documents/{{ optional($regulation_pending)->regulation_doc }}"
+                                                                        download="{{ optional($regulation_pending)->regulation_doc }}">
                                                                         <h5>
                                                                             <br>
                                                                             <center>Click to download document</center>

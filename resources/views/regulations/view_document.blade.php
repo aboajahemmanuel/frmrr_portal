@@ -3,12 +3,6 @@
 @section('content')
 
 
-
-
-
-    <!-- main header @e -->
-    <!-- content @s
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                -->
         <div class="nk-content ">
             <div class="container-fluid">
                 <div class="nk-content-inner">
@@ -71,557 +65,729 @@
 
                                     <div class="modal-body modal-body-md">
 
-
-                                        <div class="tab-content">
-                                            <div class="tab-pane active" id="infomation">
-                                                <div class="row gy-4">
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name">Title</label>
-                                                            <div class="form-control-wrap">
-                                                                <input disabled name="title" value="{{ $regulation->title }}"
-                                                                    type="text" class="form-control" id="lead-name">
+                                        <form method="POST" action="{{ route('update_doc', $regulation->id) }}"
+                                            enctype="multipart/form-data" id="editForm-{{ $regulation->id }}">
+                                            @csrf
+                                            <div class="tab-content">
+                                                <div class="tab-pane active" id="infomation">
+                                                    <div class="row gy-4">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="lead-name">Title</label>
+                                                                <div class="form-control-wrap">
+                                                                    <input disabled name="title"  value="{{ $regulation->title }}"
+                                                                        type="text" class="form-control" id="lead-name">
+                                                                </div>
                                                             </div>
+
+
+
                                                         </div>
 
 
 
-                                                    </div>
-
-
-
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name">Effective Date</label>
-                                                            <div class="form-control-wrap">
-                                                                <input name="effective_date"
-                                                                    value="{{ $regulation->effective_date }}" disabled
-                                                                    type="date" class="form-control">
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name">Issue Date</label>
-                                                            <div class="form-control-wrap">
-                                                                <input name="issue_date" value="{{ $regulation->issue_date }}"
-                                                                    disabled type="date" class="form-control">
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-
-
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name"> Documents
-                                                                Version</label>
-                                                            <div class="form-control-wrap">
-                                                                <input name="document_version"
-                                                                    value="{{ $regulation->document_version }}" disabled
-                                                                    type="number" class="form-control">
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name">Year</label>
-                                                            <div class="form-control-wrap">
-                                                                <select class="form-select" name="year_id" disabled>
-                                                                    <option selected disabled value="">Choose...
-                                                                    </option>
-
-
-
-                                                                    @foreach ($years as $year)
-                                                                        <option value="{{ $regulation->year_id }}"
-                                                                            @if ($year->id == $regulation->year_id) selected @endif>
-                                                                            {{ $year->name }}
-                                                                        </option>
-                                                                    @endforeach
-
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name">Month</label>
-                                                            <div class="form-control-wrap">
-                                                                <select class="form-select" name="month_id" disabled>
-                                                                    <option selected disabled value="">Choose...
-                                                                    </option>
-
-
-                                                                    @foreach ($months as $month)
-                                                                        <option value="{{ $regulation->month_id }}"
-                                                                            @if ($month->id == $regulation->month_id) selected @endif>
-                                                                            {{ $month->name }}
-                                                                        </option>
-                                                                    @endforeach
-
-
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-
-                                                    @php
-                                                        $categoryslug = $regulation->category->slug;
-                                                    @endphp
-
-                                                    @if ($regulation->category->slug == 'rules-regulations' || $regulation->category->slug == 'guidelines')
                                                         <div class="col-md-4">
                                                             <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Entity</label>
+                                                                <label class="form-label" for="lead-name">Effective Date</label>
                                                                 <div class="form-control-wrap">
-                                                                    <select class="form-select" name="entity_id" disabled>
+                                                                    <input disabled name="effective_date"
+                                                                        value="{{ $regulation->effective_date }}" required
+                                                                        type="date" class="form-control">
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="lead-name">Issue Date</label>
+                                                                <div class="form-control-wrap">
+                                                                    <input disabled name="issue_date"
+                                                                        value="{{ $regulation->issue_date }}" required
+                                                                        type="date" class="form-control">
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="lead-name"> Document
+                                                                    Version</label>
+                                                                <div class="form-control-wrap">
+                                                                    <input disabled name="document_version"
+                                                                        value="{{ $regulation->document_version }}"
+                                                                        type="number" class="form-control">
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="lead-name">Year</label>
+                                                                <div class="form-control-wrap">
+                                                                    <select disabled class="form-select" name="year_id" required>
+                                                                        <option selected disabled value="">Choose...
+                                                                        </option>
 
 
 
+                                                                        @foreach ($years as $year)
+                                                                            <option value="{{ $regulation->year_id }}"
+                                                                                @if ($year->id == $regulation->year_id) selected @endif>
+                                                                                {{ $year->name }}
+                                                                            </option>
+                                                                        @endforeach
 
-                                                                        @foreach ($entities as $entity)
-                                                                            <option value="{{ $regulation->entity_id }}"
-                                                                                @if ($entity->id == $regulation->entity_id) selected @endif>
-                                                                                {{ $entity->name }}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="lead-name">Month</label>
+                                                                <div class="form-control-wrap">
+                                                                    <select disabled class="form-select" name="month_id" required>
+                                                                        <option selected disabled value="">Choose...
+                                                                        </option>
+
+
+                                                                        @foreach ($months as $month)
+                                                                            <option value="{{ $regulation->month_id }}"
+                                                                                @if ($month->id == $regulation->month_id) selected @endif>
+                                                                                {{ $month->name }}
                                                                             </option>
                                                                         @endforeach
 
 
-
                                                                     </select>
                                                                 </div>
                                                             </div>
 
                                                         </div>
 
-
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Category</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select class="form-select" name="category_id" disabled>
-
-                                                                        @php
-                                                                            $categorieslist = \App\Models\Category::where(
-                                                                                'slug',
-                                                                                '=',
-                                                                                $categoryslug,
-                                                                            )->get();
-
-                                                                        @endphp
-
-                                                                        @foreach ($categorieslist as $category)
-                                                                            <option selected readonly
-                                                                                value="{{ $category->id }}">
-                                                                                {{ $category->slug }}</option>
-                                                                        @endforeach
-                                                                    </select>
-
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-
-
-
-
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Sub
-                                                                    Category</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select name="subcategory_id" class="form-select"
-                                                                        disabled>
-                                                                        @php
-                                                                            $categorieslist = \App\Models\Category::where(
-                                                                                'slug',
-                                                                                '=',
-                                                                                $categoryslug,
-                                                                            )->first();
-                                                                            $subcategorieslist = \App\Models\Subcategory::where(
-                                                                                'category_id',
-                                                                                '=',
-                                                                                $categorieslist->id,
-                                                                            )->get();
-
-                                                                        @endphp
-                                                                        <option selected
-                                                                            value="{{ $regulation->subcategory_id }}">
-                                                                            {{ optional($regulation->subcategory)->name }}
-                                                                        </option>
-                                                                        @foreach ($subcategorieslist as $subcate)
-                                                                            <option readonly value="{{ $subcate->id }}">
-                                                                                {{ $subcate->name }}</option>
-                                                                        @endforeach
-                                                                    </select>
-
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    @endif
-
-
-                                                    @if ($regulation->category->slug == 'market-notices' || $regulation->category->slug == 'market-bulletins')
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Category</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select class="form-select" name="category_id" disabled>
-
-                                                                        @php
-                                                                            $categorieslist = \App\Models\Category::where(
-                                                                                'slug',
-                                                                                '=',
-                                                                                $categoryslug,
-                                                                            )->get();
-
-                                                                        @endphp
-
-                                                                        @foreach ($categorieslist as $category)
-                                                                            <option selected readonly
-                                                                                value="{{ $category->id }}">
-                                                                                {{ $category->slug }}</option>
-                                                                        @endforeach
-                                                                    </select>
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    @endif
-
-
-                                                    @if ($regulation->category->slug == 'market-circulars')
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Entity</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select class="form-select" name="entity_id" disabled>
-
-
-
-
-                                                                        @foreach ($entities as $entity)
-                                                                            <option value="{{ $regulation->entity_id }}"
-                                                                                @if ($entity->id == $regulation->entity_id) selected @endif>
-                                                                                {{ $entity->name }}
-                                                                            </option>
-                                                                        @endforeach
-
-
-
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-
-
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Category</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select class="form-select" name="category_id" disabled>
-
-                                                                        @php
-                                                                            $categorieslist = \App\Models\Category::where(
-                                                                                'slug',
-                                                                                '=',
-                                                                                $categoryslug,
-                                                                            )->get();
-
-                                                                        @endphp
-
-                                                                        @foreach ($categorieslist as $category)
-                                                                            <option selected readonly
-                                                                                value="{{ $category->id }}">
-                                                                                {{ $category->slug }}</option>
-                                                                        @endforeach
-                                                                    </select>
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    @endif
-
-                                                    @if (
-                                                        !in_array($regulation->category->slug, [
-                                                            'market-circulars',
-                                                            'market-notices',
-                                                            'market-bulletins',
-                                                            'rules-regulations',
-                                                            'guidelines',
-                                                        ]))
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Entity</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select class="form-select" name="entity_id" disabled>
-
-
-
-
-                                                                        @foreach ($entities as $entity)
-                                                                            <option value="{{ $regulation->entity_id }}"
-                                                                                @if ($entity->id == $regulation->entity_id) selected @endif>
-                                                                                {{ $entity->name }}
-                                                                            </option>
-                                                                        @endforeach
-
-
-
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-
-
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Category</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select class="form-select" name="category_id" disabled>
-
-                                                                        @php
-                                                                            $categorieslist = \App\Models\Category::where(
-                                                                                'slug',
-                                                                                '=',
-                                                                                $categoryslug,
-                                                                            )->get();
-
-                                                                        @endphp
-
-                                                                        @foreach ($categorieslist as $category)
-                                                                            <option selected readonly
-                                                                                value="{{ $category->id }}">
-                                                                                {{ $category->slug }}</option>
-                                                                        @endforeach
-                                                                    </select>
-
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-
-
-
-
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Sub
-                                                                    Category</label>
-                                                                <div class="form-control-wrap">
-                                                                    <select name="subcategory_id" class="form-select"
-                                                                        disabled>
-                                                                        @php
-                                                                            $categorieslist = \App\Models\Category::where(
-                                                                                'slug',
-                                                                                '=',
-                                                                                $categoryslug,
-                                                                            )->first();
-                                                                            $subcategorieslist = \App\Models\Subcategory::where(
-                                                                                'category_id',
-                                                                                '=',
-                                                                                $categorieslist->id,
-                                                                            )->get();
-
-                                                                        @endphp
-                                                                        <option selected
-                                                                            value="{{ $regulation->subcategory_id }}">
-                                                                            {{ $regulation->subcategory->name }}</option>
-                                                                        @foreach ($subcategorieslist as $subcate)
-                                                                            <option readonly value="{{ $subcate->id }}">
-                                                                                {{ $subcate->name }}</option>
-                                                                        @endforeach
-                                                                    </select>
-
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    @endif
-
-
-
-
-
-
-
-                                                    <div class="col-md-12">
-                                                        <br>
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="lead-name">Alphabet
-                                                                Indexing</label>
-                                                            <div class="form-control-wrap">
+                                                        @php
+                                                            $categoryslug = $regulation->category->slug;
+                                                        @endphp
+
+                                                        @if ($regulation->category->slug == 'rules-regulations' || $regulation->category->slug == 'guidelines')
+                                                            <div class="col-md-4">
                                                                 <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Entity</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-select" name="entity_id" required>
 
 
-                                                                    @foreach ($alpha as $val)
-                                                                        <div class="form-check form-check-inline"
-                                                                            style="margin-right: 10px;">
-                                                                            <input class="form-check-input" disabled
-                                                                                type="radio" name="alpha_id"
-                                                                                value="{{ $val->id }}"
-                                                                                style="margin-right: 10px;"
-                                                                                <?php if ($regulation->alpha_id == $val->id) {
-                                                                                    echo 'checked="checked"';
-                                                                                } ?>>
 
-                                                                            <label
-                                                                                class="btn btn-success waves-effect waves-light"
-                                                                                style="margin-right: 10px;">{{ $val->name }}</label>
-                                                                        </div>
-                                                                    @endforeach
+
+                                                                            @foreach ($entities as $entity)
+                                                                                <option value="{{ $entity->id ?? '' }}"
+                                                                                    @if ($entity->id == $regulation->entity_id) selected @endif>
+                                                                                    {{ $entity->name ?? 'Unnamed Entity' }}
+                                                                                </option>
+                                                                            @endforeach
+
+
+
+                                                                        </select>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-
-
-
-
-
-                                                    <div class="col-6">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="event-title">Ceased/Repealed
-                                                            </label>
-                                                            <div class="form-control-wrap">
-                                                                <select disabled class="form-control" name="ceased">
-                                                                    @if ($regulation->ceased == '')
-                                                                        <option>Active</option>
-                                                                    @elseif ($regulation->ceased == 'Ceased')
-                                                                        <option>Ceased</option>
-                                                                    @elseif ($regulation->ceased == 'Repealed')
-                                                                        <option>Repealed</option>
-                                                                    @endif
-
-
-
-                                                                    {{-- <option value="Repealed"
-                                                                        {{ $regulation->ceased == 'Repealed' ? 'selected' : '' }}>
-                                                                        Ceased</option>
-                                                                    <option value="Repealed"
-                                                                        {{ $regulation->ceased == 'Repealed' ? 'selected' : '' }}>
-                                                                        Repealed</option> --}}
-
-                                                                </select>
-
 
                                                             </div>
-                                                        </div>
-                                                    </div>
 
 
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled required name="category_id"
+                                                                            id="Category-dropdown" class="form-control"
+                                                                            required>
 
-                                                    <div class="col-6">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="event-title">Ceased/Repealed
-                                                                Date</label>
-                                                            <div class="form-control-wrap">
-                                                                <input disabled class="form-control"
-                                                                    value="{{ $regulation->ceased_date }}" type="date"
-                                                                    name="ceased_date">
-
-
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-
+                                                                            @foreach ($categories as $category)
+                                                                                <option value="{{ $category->id }}"
+                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
+                                                                                    {{ $category->name }}
+                                                                                </option>
+                                                                            @endforeach
 
 
-                                                    <div class="col-md-6">
-                                                        <br>
+                                                                        </select>
 
-                                                        <div class="form-group">
-                                                            <center>
-                                                                <label class="form-label" for="customFileLabel">PDF
-                                                                    Document
-                                                                    Upload</label>
-                                                            </center>
-                                                            <div class="form-control-wrap">
-                                                                <div class="custom-file">
-                                                                    <input name="pdf_file" type="file"
-                                                                        class="custom-file-input" />
-                                                                    @if (!empty($regulation->regulation_doc))
-                                                                        <a href="../public/pdf_documents/{{ $regulation->regulation_doc }}"
-                                                                            download="{{ $regulation->regulation_doc }}">
-                                                                            <h5>
-                                                                                <br>
-                                                                                <center>Click to download document</center>
-                                                                        </a></h5>
-                                                                    @endif
-                                                                    {{-- <input type="file" name="pdf_file"
-                                                                            class="custom-file-input"> --}}
 
+                                                                    </div>
                                                                 </div>
+
                                                             </div>
-                                                        </div>
-                                                    </div>
 
 
-                                                    <div class="col-md-6">
-                                                        <br>
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="customFileLabel">Document
-                                                                Index</label>
-                                                            <small style="color: brown">Seperate with comas</small>
-                                                            <div class="form-control-wrap">
-                                                                <div class="custom-file">
-                                                                    <textarea disabled name="document_tag" class="form-control">
-                                                                            {{ $regulation->document_tag }}
-                                                                            </textarea>
+
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Sub
+                                                                        Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-control" name="subcategory_id"
+                                                                            id="CategoryName-dropdown" required>
+                                                                            @php
+                                                                                $categorieslist = \App\Models\Category::where(
+                                                                                    'slug',
+                                                                                    '=',
+                                                                                    $categoryslug,
+                                                                                )->first();
+                                                                                $subcategorieslist = \App\Models\Subcategory::where(
+                                                                                    'category_id',
+                                                                                    '=',
+                                                                                    $categorieslist->id,
+                                                                                )->get();
+
+                                                                            @endphp
+                                                                            <option selected
+                                                                                value="{{ $regulation->subcategory_id }}">
+                                                                                {{ optional($regulation->subcategory)->name }}
+                                                                            </option>
+                                                                            @foreach ($subcategorieslist as $subcate)
+                                                                                <option readonly value="{{ $subcate->id }}">
+                                                                                    {{ $subcate->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
+
+
+
+
+
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
 
-                                                    {{-- Related Documents Section --}}
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label class="form-label">Related Documents</label>
-                                                            <div class="form-control-wrap">
-                                                                @if($relatedDocuments && $relatedDocuments->count() > 0)
-                                                                    <ul class="list-unstyled">
-                                                                        @foreach($relatedDocuments as $relatedDoc)
-                                                                            <li>
-                                                                                <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank">
-                                                                                    {{ $relatedDoc->title }}
-                                                                                </a>
-                                                                            </li>
+                                                            </div>
+
+                                                         
+                                                        @endif
+
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="market-product-tags-edit">Market Product Tags</label>
+                                                                <div class="form-control-wrap">
+                                                                    <select disabled class="form-control" name="market_product_tags[]" id="market-product-tags-edit" multiple>
+                                                                        @foreach ($marketProductTags as $tag)
+                                                                            <option value="{{ $tag->id }}" 
+                                                                                @if($regulation->marketProductTags->contains($tag->id)) selected @endif>
+                                                                                {{ $tag->name }}
+                                                                            </option>
                                                                         @endforeach
-                                                                    </ul>
-                                                                @else
-                                                                    <p class="text-muted">No related documents found.</p>
-                                                                @endif
+                                                                    </select>
+                                                                    <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple tags</small>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    {{-- End Related Documents Section --}}
 
-                                                    <div class="col-md-6">
+
+                                                        @if ($regulation->category->slug == 'market-notices' || $regulation->category->slug == 'market-bulletins')
+                                                        <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Entity  </label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-select" name="entity_id" required>
+
+                                                       <option value="" @if (empty($regulation->entity_id)) selected @endif>-- Select an Entity --</option>
+                                        @foreach ($entities as $entity)
+                                            <option value="{{ $entity->id ?? '' }}"
+                                                @if (!empty($regulation->entity_id) && $entity->id == $regulation->entity_id) selected @endif>
+                                                {{ $entity->name ?? 'Unnamed Entity' }}
+                                            </option>
+                                        @endforeach
+
+
+
+
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+                                                            
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled required name="category_id"
+                                                                            id="Category-dropdown" class="form-control"
+                                                                            required>
+
+                                                                            @foreach ($categories as $category)
+                                                                                <option value="{{ $category->id }}"
+                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
+                                                                                    {{ $category->name }}
+                                                                                </option>
+                                                                            @endforeach
+
+
+                                                                        </select>
+
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+                                                             <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Sub
+                                                                        Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-control" name="subcategory_id"
+                                                                            id="CategoryName-dropdown" required>
+                                                                            @php
+                                                                                $categorieslist = \App\Models\Category::where(
+                                                                                    'slug',
+                                                                                    '=',
+                                                                                    $categoryslug,
+                                                                                )->first();
+                                                                                $subcategorieslist = \App\Models\Subcategory::where(
+                                                                                    'category_id',
+                                                                                    '=',
+                                                                                    $categorieslist->id,
+                                                                                )->get();
+
+                                                                            @endphp
+                                                                            <option selected
+                                                                                value="{{ $regulation->subcategory_id }}">
+                                                                                {{ optional($regulation->subcategory)->name }}
+                                                                            </option>
+                                                                            @foreach ($subcategorieslist as $subcate)
+                                                                                <option readonly value="{{ $subcate->id }}">
+                                                                                    {{ $subcate->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
+
+
+
+
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+
+                                                        @endif
+
+
+                                                        @if ($regulation->category->slug == 'market-circulars')
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Entity</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-select" name="entity_id" required>
+
+
+
+
+                                                                            @foreach ($entities as $entity)
+                                                                                <option value="{{ $entity->id ?? '' }}"
+                                                                                    @if ($entity->id == $regulation->entity_id) selected @endif>
+                                                                                    {{ $entity->name ?? 'Unnamed Entity' }}
+                                                                                </option>
+                                                                            @endforeach
+
+
+
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled required name="category_id"
+                                                                            id="Category-dropdown" class="form-control"
+                                                                            required>
+
+                                                                            @foreach ($categories as $category)
+                                                                                <option value="{{ $category->id }}"
+                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
+                                                                                    {{ $category->name }}
+                                                                                </option>
+                                                                            @endforeach
+
+
+                                                                        </select>
+
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                             <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Sub
+                                                                        Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-control" name="subcategory_id"
+                                                                            id="CategoryName-dropdown" required>
+                                                                            @php
+                                                                                $categorieslist = \App\Models\Category::where(
+                                                                                    'slug',
+                                                                                    '=',
+                                                                                    $categoryslug,
+                                                                                )->first();
+                                                                                $subcategorieslist = \App\Models\Subcategory::where(
+                                                                                    'category_id',
+                                                                                    '=',
+                                                                                    $categorieslist->id,
+                                                                                )->get();
+
+                                                                            @endphp
+                                                                            <option selected
+                                                                                value="{{ $regulation->subcategory_id }}">
+                                                                                {{ optional($regulation->subcategory)->name }}
+                                                                            </option>
+                                                                            @foreach ($subcategorieslist as $subcate)
+                                                                                <option readonly value="{{ $subcate->id }}">
+                                                                                    {{ $subcate->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
+
+
+
+
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        @endif
+
+                                                        @if (
+                                                            !in_array($regulation->category->slug, [
+                                                                'market-circulars',
+                                                                'market-notices',
+                                                                'market-bulletins',
+                                                                'rules-regulations',
+                                                                'guidelines',
+                                                            ]))
+
+                                                            
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Entity</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-select" name="entity_id" required>
+
+                                                                            @foreach ($entities as $entity)
+                                                                                <option value="{{ $entity->id ?? '' }}"
+                                                                                    @if ($entity->id == $regulation->entity_id) selected @endif>
+                                                                                    {{ $entity->name ?? 'Unnamed Entity' }}
+                                                                                </option>
+                                                                            @endforeach
+
+
+
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled required name="category_id"
+                                                                            id="Category-dropdown" class="form-control"
+                                                                            required>
+
+                                                                            @foreach ($categories as $category)
+                                                                                <option value="{{ $category->id }}"
+                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
+                                                                                    {{ $category->name }}
+                                                                                </option>
+                                                                            @endforeach
+
+
+                                                                        </select>
+
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+
+
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="lead-name">Sub
+                                                                        Category</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select disabled class="form-control" name="category_name"
+                                                                            id="CategoryName-dropdown" required>
+                                                                            @php
+                                                                                $categorieslist = \App\Models\Category::where(
+                                                                                    'slug',
+                                                                                    '=',
+                                                                                    $categoryslug,
+                                                                                )->first();
+                                                                                $subcategorieslist = \App\Models\Subcategory::where(
+                                                                                    'category_id',
+                                                                                    '=',
+                                                                                    $categorieslist->id,
+                                                                                )->get();
+
+                                                                            @endphp
+                                                                            <option selected
+                                                                                value="{{ $regulation->subcategory_id }}">
+                                                                                {{ optional($regulation->subcategory)->name }}
+                                                                            </option>
+                                                                            @foreach ($subcategorieslist as $subcate)
+                                                                                <option readonly value="{{ $subcate->id }}">
+                                                                                    {{ $subcate->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
+
+
+
+
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        @endif
+
+
+
+
+
+
+
+                                                        <div class="col-md-12">
+                                                            <br>
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="lead-name">Alphabet
+                                                                    Indexing</label>
+                                                                <div class="form-control-wrap">
+                                                                    <div class="form-group">
+
+
+                                                                        @foreach ($alpha as $val)
+                                                                            <div class="form-check form-check-inline"
+                                                                                style="margin-right: 10px;">
+                                                                                <input disabled class="form-check-input" required
+                                                                                    type="radio" name="alpha_id"
+                                                                                    value="{{ $val->id }}"
+                                                                                    style="margin-right: 10px;"
+                                                                                    <?php if ($regulation->alpha_id == $val->id) {
+                                                                                        echo 'checked="checked"';
+                                                                                    } ?>>
+
+                                                                                <label
+                                                                                    class="btn btn-success waves-effect waves-light"
+                                                                                    style="margin-right: 10px;">{{ $val->name }}</label>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+
+
+
+
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label"
+                                                                    for="event-title">{{$formattedStatuses}}
+                                                                </label>
+                                                                <div class="form-control-wrap">
+                                                                    @php
+                                                                        // Prepare existing values (support comma-separated string stored in DB)
+                                                                        $existingCeased = $regulation->ceased ?? '';
+                                                                        $existingCeasedArr = [];
+                                                                        if (is_string($existingCeased) && strlen($existingCeased) > 0) {
+                                                                            $existingCeasedArr = array_map('trim', explode(',', $existingCeased));
+                                                                        }
+                                                                    @endphp
+                                                                    <select disabled class="form-control select2" name="ceased[]" id="ceased-select" multiple="multiple" data-placeholder="Select status(es)">
+                                                                        <option value="NULL">N/A</option>
+                                                                        @foreach ($statuses as $status)
+                                                                            @if (trim($status->name) === 'Active')
+                                                                                <option value="Active" {{ in_array('Active', $existingCeasedArr) ? 'selected' : '' }}>
+                                                                                    {{ trim($status->name) }}</option>
+                                                                            @else
+                                                                                <option value="{{ trim($status->name) }}" {{ in_array(trim($status->name), $existingCeasedArr) ? 'selected' : '' }}>
+                                                                                    {{ trim($status->name) }}
+                                                                                </option>
+                                                                            @endif
+                                                                        @endforeach
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label"
+                                                                    for="event-title">{{$formattedStatuses}}
+                                                                    Date</label>
+                                                                <div class="form-control-wrap">
+                                                                    <input disabled class="form-control"
+                                                                        value="{{ $regulation->ceased_date }}" id="ceased-date" type="date"
+                                                                        name="ceased_date">
+
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+                                                        <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        const ceasedSelect = document.getElementById('ceased-select');
+                                                        const ceasedDateInput = document.getElementById('ceased-date');
+
+                                                        // Convert PHP array to JSON
+                                                        const statuses = @json($statuses);
+                                                        const validStatuses = statuses.map(status => status.name.trim().toLowerCase());
+
+                                                        // For Select2 or native multiple select
+                                                        function getSelectedValues(selectEl) {
+                                                            if (!selectEl) return [];
+                                                            // If Select2 is used, jQuery val() returns array; try that first
+                                                            if (window.jQuery && jQuery(selectEl).data('select2')) {
+                                                                const val = jQuery(selectEl).val();
+                                                                return val ? (Array.isArray(val) ? val : [val]) : [];
+                                                            }
+                                                            return Array.from(selectEl.selectedOptions || []).map(o => o.value);
+                                                        }
+
+                                                        function handleChange() {
+                                                            const selectedValues = getSelectedValues(ceasedSelect) || [];
+
+                                                            // Check if any non-NULL/non-Active status is selected
+                                                            const hasOtherValidStatus = selectedValues.some(v => {
+                                                                return v && v !== 'NULL' && v !== 'Active' && validStatuses.includes(v.trim().toLowerCase());
+                                                            });
+
+                                                            // If there's at least one other valid status selected, enable the date
+                                                            if (hasOtherValidStatus) {
+                                                                ceasedDateInput.disabled = false;
+                                                                ceasedDateInput.required = true;
+                                                            } else {
+                                                                // Otherwise (only Active/NULL or nothing selected) keep it disabled
+                                                                ceasedDateInput.disabled = true;
+                                                                ceasedDateInput.required = false;
+                                                                ceasedDateInput.value = ''; // Clear date input when disabled
+                                                            }
+                                                        }
+
+                                                        // Initialize Select2 if available
+                                                        if (window.jQuery && jQuery.fn && jQuery.fn.select2) {
+                                                            jQuery(ceasedSelect).select2({
+                                                                placeholder: jQuery(ceasedSelect).data('placeholder') || 'Select statuses',
+                                                                allowClear: true,
+                                                                width: '100%'
+                                                            });
+                                                            // Bind change event to Select2
+                                                            jQuery(ceasedSelect).on('change', handleChange);
+                                                        } else {
+                                                            // Fallback for native select
+                                                            ceasedSelect.addEventListener('change', handleChange);
+                                                        }
+
+                                                        // Trigger initial state check on page load
+                                                        handleChange();
+                                                    });
+                                                </script>
+
+
+                                                        <div class="col-md-6">
+                                                            <br>
+
+                                                            <div class="form-group">
+                                                                
+                                                                <div class="form-control-wrap">
+                                                                    <div class="custom-file">
+                                                                        
+                                                                        @if (!empty($regulation->regulation_doc))
+                                                                            <a href="../public/pdf_documents/{{ $regulation->regulation_doc }}"
+                                                                                download="{{ $regulation->regulation_doc }}">
+                                                                                <h5>
+                                                                                    <br>
+                                                                                    <center>Click to download document</center>
+                                                                            </a></h5>
+                                                                        @endif
+                                                                     
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+                                                        <div class="col-md-6">
+                                                            <br>
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="customFileLabel">Document
+                                                                    Index</label>
+                                                                <small style="color: brown">Seperate with comas</small>
+                                                                <div class="form-control-wrap">
+                                                                    <div class="custom-file">
+                                                                        <textarea name="document_tag" required type="text" class="summernote-minimal"> {{ $regulation->document_tag }} </textarea>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label" for="add-account">Select Authoriser
+                                                                    <span style="color: red;">*</span></label>
+                                                                <div class="form-control-wrap">
+
+                                                                    <select disabled required name="authorizer_id"
+                                                                        class="form-select form-control"
+                                                                        data-placeholder="Select one">
+                                                                        <option value="">---</option>
+                                                                        @foreach ($authoriser as $auth)
+                                                                            <option value="{{ $auth->id }}">
+                                                                                {{ $auth->name }}</option>
+                                                                        @endforeach
+
+
+                                                                    </select>
+
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-6">
 
                                                         <div class="form-group">
                                                             <label class="form-label" for="add-account">Preview Document
                                                                 <span style="color: red;">*</span></label>
                                                             <div class="form-control-wrap">
 
-                                                                <select disabled required id="doc-preview" name="doc_preview"
+                                                                <select disabled  required id="doc-preview" name="doc_preview"
                                                                     class="form-select form-control"
                                                                     data-placeholder="Select an option">
                                                                     <option value="">---</option>
@@ -643,11 +809,12 @@
                                                     
                                                     <div class="col-md-6">
                                                         <div class="form-group">
-                                                            <label class="form-label">Preview Page Count</label>
+                                                            <label class="form-label" for="doc_preview_count">Preview Page Count</label>
                                                             <div class="form-control-wrap">
-                                                                <input type="number" name="doc_preview_count" id="doc_preview_count"
+                                                                <input disabled type="number" name="doc_preview_count" id="doc_preview_count"
                                                                     class="form-control" min="0" max="10" 
-                                                                    value="{{ $regulation->doc_preview_count ?? 2 }}" disabled>
+                                                                    value="{{ $regulation->doc_preview_count ?? 2 }}"
+                                                                    placeholder="Enter number of pages to preview (0 for default behavior)">
                                                                 <div class="form-note">
                                                                     Number of pages users can preview (0 = use default logic)
                                                                 </div>
@@ -655,57 +822,43 @@
                                                         </div>
                                                     </div>
 
-
-
-
-
-                                                    @if ($regulation->status == 0 || $regulation->status == 3)
-                                                        <div class="col-12">
-                                                            <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
-                                                                <li class="d-inline-flex">
-                                                                    @can('regulation-approve')
-                                                                        <button
-                                                                            onclick="document.getElementById('approve-{{ $regulation->id }}').submit();"
-                                                                            class="btn btn-lg btn-primary custom-space"
-                                                                            id="deleteSubmitBtn-{{ $regulation->id }}"
-                                                                            type="submit">
-                                                                            <i class="fas fa-spinner fa-spin"
-                                                                                style="display:none;"></i>
-                                                                            <span class="btn-text">Approve</span>
-                                                                        </button>
-                                                                    @endcan
-
-
-                                                                    @can('regulation-reject')
-                                                                        <button class="btn btn-lg btn-primary" data-toggle="modal"
-                                                                            data-target="#rejectdocument-{{ $regulation->id }}">
-
-                                                                            Reject
-                                                                        </button>
-                                                                    @endcan
-                                                                </li>
-                                                            </ul>
+                                                    {{-- Related Documents Section --}}
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label class="form-label" for="related-documents-select">
+                                                                Select Related Documents
+                                                            </label>
+                                                            <div class="form-control-wrap">
+                                                                <select disabled 
+                                                                    name="related_docs[]" 
+                                                                    id="related-documents-select"
+                                                                    class="form-select form-control select2"
+                                                                    multiple="multiple"
+                                                                    data-placeholder="Select one or more documents">
+                                                                    
+                                                                    @foreach ($relatedDocuments as $doc)
+                                                                        <option value="{{ $doc->id }}" 
+                                                                            {{ $regulation->relatedDocuments->contains('id', $doc->id) ? 'selected' : '' }}>
+                                                                            {{ $doc->title }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
                                                         </div>
-                                                    @endif
+                                                    </div>
 
-                                                    <style>
-                                                        .custom-space {
-                                                            margin-right: 10px;
-                                                            /* Adjust this value as needed */
-                                                        }
-                                                    </style>
+                                                    <script>
+                                                        $(document).ready(function() {
+                                                            $('#related-documents-select').select2();
+                                                        });
+                                                    </script>
+                                                    {{-- End Related Documents Section --}}
 
-                                                    <form id="approve-{{ $regulation->id }}"
-                                                        action="{{ route('RegStatus', $regulation->id) }}" method="POST"
-                                                        class="d-none">
-                                                        @csrf
-                                                        <input name="status" value="1">
-                                                    </form>
-                                                </div>
-                                            </div><!-- .tab-pane -->
+                                                  
+                                                </div><!-- .tab-pane -->
 
-                                        </div><!-- .tab-content -->
-
+                                            </div><!-- .tab-content -->
+                                        </form>
                                     </div><!-- .modal-body -->
                                 </div>
                             </div><!-- .card-preview -->
@@ -716,84 +869,104 @@
         </div>
 
 
-
-        <div class="modal fade" role="dialog" id="rejectdocument-{{ $regulation->id }}">
-            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content">
-                    <a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a>
-                    <div class="modal-body modal-body-md">
-                        <h5 class="title">{{ $regulation->title }}</h5>
-                        <form method="POST" action="{{ route('RegStatus', $regulation->id) }}"
-                            id="rejectForm-{{ $regulation->id }}">
-                            @csrf
-                            <div class="tab-content">
-                                <div class="tab-pane active" id="infomation">
-                                    <div class="row gy-4">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-
-                                                <label>Rejection Note</label>
-                                                <input hidden name="status" value="2">
-                                                <textarea required class="form-control" name="note"></textarea>
-
-
-                                            </div>
-                                        </div>
-
-
-
-
-                                        <div class="col-12">
-                                            <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
-                                                <li>
-                                                    <br>
-
-                                                    <button class="btn btn-lg btn-primary btn-block"
-                                                        id="rejectSubmitBtn-{{ $regulation->id }}" type="submit">
-                                                        <i class="fas fa-spinner fa-spin" style="display:none;"></i>
-                                                        Submit
-                                                    </button>
-
-
-                                                    <script>
-                                                        function loading(buttonId) {
-                                                            $("#" + buttonId + " .fa-spinner").show();
-                                                            $("#" + buttonId + " .btn-text").html("Processing...");
-                                                        }
-
-                                                        document.addEventListener('DOMContentLoaded', function() {
-                                                            document.getElementById('rejectForm-{{ $regulation->id }}').addEventListener('submit', function(
-                                                                event) {
-                                                                if (this.checkValidity() === false) {
-                                                                    event.preventDefault();
-                                                                    event.stopPropagation();
-                                                                } else {
-                                                                    loading('rejectSubmitBtn-{{ $regulation->id }}');
-                                                                    document.getElementById('rejectSubmitBtn-{{ $regulation->id }}').disabled = true;
-                                                                }
-                                                                this.classList.add('was-validated');
-                                                            }, false);
-                                                        });
-                                                    </script>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div><!-- .tab-pane -->
-
-                            </div><!-- .tab-content -->
-                        </form>
-                    </div><!-- .modal-body -->
-                </div><!-- .modal-content -->
-            </div><!-- .modal-dialog -->
-        </div><!-- .modal -->
-
         <script>
-            document.getElementById('deleteSubmitBtn-{{ $regulation->id }}').addEventListener('click', function() {
-                loading('deleteSubmitBtn-{{ $regulation->id }}');
-                setTimeout(() => {
-                    document.getElementById('deleteSubmitBtn-{{ $regulation->id }}').disabled = true;
-                }, 50);
+            function loading(buttonId) {
+                $("#" + buttonId + " .fa-spinner").show();
+                $("#" + buttonId + " .btn-text").html("Processing...");
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('editForm-{{ $regulation->id }}').addEventListener('submit', function(event) {
+                    if (this.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        loading('editSubmitBtn-{{ $regulation->id }}');
+                        document.getElementById('editSubmitBtn-{{ $regulation->id }}').disabled = true;
+                    }
+                    this.classList.add('was-validated');
+                }, false);
             });
         </script>
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            $(document).ready(function() {
+
+
+
+
+
+
+
+
+                /*------------------------------------------
+                --------------------------------------------
+                Category Dropdown Change Event
+                --------------------------------------------
+                --------------------------------------------*/
+                $('#Category-dropdown').on('change', function() {
+                    var idCategory = this.value;
+                    $("#CategoryName-dropdown").html('');
+                    $.ajax({
+                        url: "{{ url('fetch-category') }}",
+                        type: "POST",
+                        data: {
+                            category_id: idCategory,
+                            _token: '{{ csrf_token() }}'
+                        },
+                        dataType: 'json',
+                        success: function(result) {
+                            $('#CategoryName-dropdown').html();
+                            $.each(result, function(key, value) {
+                                $("#CategoryName-dropdown").append('<option value="' + value
+                                    .name + '">' + value.name + '</option>');
+                            });
+
+                        }
+                    });
+                });
+
+                /*------------------------------------------
+                --------------------------------------------
+                State Dropdown Change Event
+                --------------------------------------------
+                --------------------------------------------*/
+                $('#Category-dropdown').on('change', function() {
+                    var idColor = this.value;
+                    $("#CategoryColor-dropdown").html('');
+                    $.ajax({
+                        url: "{{ url('fetch-sub') }}",
+                        type: "POST",
+                        data: {
+                            category_id: idColor,
+                            _token: '{{ csrf_token() }}'
+                        },
+                        dataType: 'json',
+                        success: function(res) {
+                            $('#CategoryColor-dropdown').html(
+                                '');
+                            $.each(res, function(key, value) {
+                                $("#CategoryColor-dropdown").append('<option value="' +
+                                    value
+                                    .color + '">' + value.color + '</option>');
+                            });
+                        }
+                    });
+                });
+
+
+
+
+
+
+
+
+
+
+            });
+        </script>
+        <!-- content @e -->
+        <!-- @@ Group Add Modal @e -->
     @endsection
