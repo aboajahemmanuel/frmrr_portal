@@ -249,7 +249,7 @@
     </div>
     <br>
 
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize centralized table filter after DOM is ready
             setTimeout(function() {
@@ -396,7 +396,7 @@
                 })({{ $result->id }});
             @endforeach
         });
-    </script>
+    </script> --}}
 
     <div class="gda-cards-container">
     </div>
