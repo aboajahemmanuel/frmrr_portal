@@ -223,26 +223,23 @@
                                     
                                     viewer.appendChild(canvas);
                                     page.render(renderContext).promise.then(function() {
-                                        // Apply blur effect to the hidden portion
+                                        // Completely hide the hidden portion
                                         if (visibleRatio < 1) {
                                             var ctx = canvas.getContext('2d');
                                             var height = canvas.height;
                                             var hiddenStart = height * visibleRatio;
                                             
-                                            // Apply blur to the hidden portion
-                                            ctx.filter = 'blur(5px)';
-                                            ctx.globalAlpha = 0.7;
-                                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                                            // Draw a solid white rectangle to completely hide the content
+                                            ctx.fillStyle = 'white';
+                                            ctx.globalAlpha = 1;
                                             ctx.fillRect(0, hiddenStart, canvas.width, height - hiddenStart);
                                             
                                             // Add gradient mask for smoother transition
-                                            var gradient = ctx.createLinearGradient(0, hiddenStart - 50, 0, hiddenStart);
+                                            var gradient = ctx.createLinearGradient(0, hiddenStart - 20, 0, hiddenStart);
                                             gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
                                             gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
-                                            ctx.filter = 'none';
-                                            ctx.globalAlpha = 1;
                                             ctx.fillStyle = gradient;
-                                            ctx.fillRect(0, hiddenStart - 50, canvas.width, 50);
+                                            ctx.fillRect(0, hiddenStart - 20, canvas.width, 20);
                                         }
                                     });
                                 });
