@@ -7,7 +7,6 @@
         position: relative;
         width: 100%;
         height: fit-content;
-        max-width: 420px;
         min-height: 520px;
         background: linear-gradient(135deg, #f8f9fd 0%, #eef1f8 100%);
         border-radius: 20px;
@@ -17,6 +16,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        margin: 20px 0;
     }
 
     /* Decorative Elements */
@@ -220,6 +220,23 @@
         font-size: 12px;
         text-align: center;
     }
+
+    /* Center button content */
+    .gradient-button-content {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+
+    .gradient-button-content div {
+        flex: 1;
+        text-align: center;
+    }
+
+    .gradient-button-content img {
+        margin-left: auto;
+    }
 </style>
 
 <section class="main-container-home" style="flex-direction: column !important;">
@@ -227,7 +244,7 @@
         @foreach ($data as $category)
         
         <a href="{{ route('categorypages', $category->slug) }}">
-            <div class="card-info js-card">
+            <div class="card-info js-card" style="width: 100% !important;">
                 <div class="card__wrapper">
                     <div class="card__side-info is-active"
                         style="background-image: url('{{ asset('public/categories/' . $category->category_image . '') }}');  background-position: center;

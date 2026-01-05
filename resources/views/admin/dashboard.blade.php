@@ -505,154 +505,193 @@
 
 
                                 @php
-                                    $regulation_pending = \App\Models\DocumentApproval::where(
-                                        'regulation_id',
-                                        $regulation->id,
-                                    )
-                                        // ->where('action_type', '=', 'Edit')
-                                        ->latest()
-                                        ->first();
-                                @endphp
+                                $regulation_pending = \App\Models\DocumentApproval::where(
+                                    'regulation_id',
+                                    $regulation->id,
+                                )
+                                    // ->where('action_type', '=', 'Edit')
+                                    ->latest()
+                                    ->first();
+                            @endphp
 
-                                <div class="modal fade" id="viewChanges-{{ $regulation->id }}" role="dialog">
-                                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                                        <div class="modal-content">
-                                            <a href="#" class="close" data-dismiss="modal">
-                                                <em class="icon ni ni-cross-sm"></em>
-                                            </a>
-                                            <div class="modal-body modal-body-md">
-                                                <h5 class="title">View Changes</h5>
+                            <div class="modal fade" id="viewChanges-{{ $regulation->id }}" role="dialog">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <a href="#" class="close" data-dismiss="modal">
+                                            <em class="icon ni ni-cross-sm"></em>
+                                        </a>
+                                        <div class="modal-body modal-body-md">
+                                            <h5 class="title">View Changes</h5>
 
-                                                <form id="editForm-" method="POST" action=""
-                                                    enctype="multipart/form-data">
-                                                    @csrf
-                                                    <div class="tab-content">
-                                                        <div class="tab-pane active" id="infomation">
-                                                            <div class="row gy-4">
-                                                                <!-- Name Field -->
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name"
-                                                                            class="form-label">Title</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending)->title ?? 'N/A' }}"
-                                                                            required />
+                                            <form id="editForm-" method="POST" action=""
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                <div class="tab-content">
+                                                    <div class="tab-pane active" id="infomation">
+                                                        <div class="row gy-4">
+                                                            <!-- Name Field -->
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Title</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ $regulation_pending->title ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Category</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ optional(optional($regulation_pending)->category)->name ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name"
+                                                                        class="form-label">Subcategory</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ optional(optional($regulation_pending)->subcategory)->name ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Effective
+                                                                        Date</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ $regulation_pending->effective_date ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Issue
+                                                                        Date</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ $regulation_pending->issue_date ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Document
+                                                                        Version</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ $regulation_pending->document_version ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Year</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ optional(optional($regulation_pending)->year)->name ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Month</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ optional(optional($regulation_pending)->month)->name ?? 'N/A' }}"
+                                                                        required />
+                                                                </div>
+                                                            </div>
+
+
+                                                             <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="lead-name" class="form-label">Status</label>
+                                                                    <input disabled type="text" class="form-control"
+                                                                        id="lead-name" name="name"
+                                                                        value="{{ optional($regulation_pending)->ceased ? str_replace([',','/'], [', ', ' '], optional($regulation_pending)->ceased) : 'N/A' }}  "
+                                                                        required />
+
+                                                                        
+                                                                </div>
+                                                            </div>
+
+                                                            {{-- Related Documents Section --}}
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label">Related Documents</label>
+                                                                    <div class="form-control-wrap">
+                                                                        @if(!empty(optional($regulation_pending)->related_docs))
+                                                                            @php
+                                                                                $relatedIds = explode(',', optional($regulation_pending)->related_docs);
+                                                                                $relatedDocs = \App\Models\Regulation::whereIn('id', $relatedIds)->get();
+                                                                            @endphp
+                                                                            @if($relatedDocs->count() > 0)
+                                                                                <ul class="list-unstyled">
+                                                                                    @foreach($relatedDocs as $relatedDoc)
+                                                                                        <li>
+                                                                                            <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank">
+                                                                                                {{ $relatedDoc->title }}
+                                                                                            </a>
+                                                                                        </li>
+                                                                                    @endforeach
+                                                                                </ul>
+                                                                            @else
+                                                                                <p class="text-muted">No related documents found.</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="text-muted">No related documents selected.</p>
+                                                                        @endif
                                                                     </div>
                                                                 </div>
+                                                            </div>
+                                                            {{-- End Related Documents Section --}}
 
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name"
-                                                                            class="form-label">Category</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending->category)->name ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
+                                                            <div class="col-md-12">
 
-
-
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name"
-                                                                            class="form-label">Subcategory</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending->subcategory)->name ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
-
-
-
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name" class="form-label">Effective
-                                                                            Date</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending)->effective_date ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
-
-
-
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name" class="form-label">Issue
-                                                                            Date</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending)->issue_date ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
-
-
-
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name" class="form-label">Document
-                                                                            Version</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending)->document_version ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
-
-
-
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name" class="form-label">Year</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending->year)->name ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
-
-
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group">
-                                                                        <label for="lead-name"
-                                                                            class="form-label">Month</label>
-                                                                        <input disabled type="text" class="form-control"
-                                                                            id="lead-name" name="name"
-                                                                            value="{{ optional($regulation_pending->month)->name ?? 'N/A' }}"
-                                                                            required />
-                                                                    </div>
-                                                                </div>
-
-
-
-                                                                <div class="col-md-12">
-
-                                                                    @if (!empty($regulation_pending->regulation_doc))
-                                                                        <a href="public/pdf_documents/{{ $regulation_pending->regulation_doc }}"
-                                                                            download="{{ $regulation_pending->regulation_doc }}">
-                                                                            <h5>
-                                                                                <br>
-                                                                                <center>Click to download document</center>
-                                                                        </a></h5>
-                                                                    @endif
-
-                                                                </div>
-
+                                                                @if (!empty(optional($regulation_pending)->regulation_doc))
+                                                                    <a href="public/pdf_documents/{{ optional($regulation_pending)->regulation_doc }}"
+                                                                        download="{{ optional($regulation_pending)->regulation_doc }}">
+                                                                        <h5>
+                                                                            <br>
+                                                                            <center>Click to download document</center>
+                                                                    </a></h5>
+                                                                @endif
 
                                                             </div>
+
+
                                                         </div>
                                                     </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
-                    @endforeach
+                            </div>
+                            @endforeach
 
                     </tbody>
                     </table>
