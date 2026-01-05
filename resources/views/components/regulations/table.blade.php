@@ -1022,10 +1022,13 @@
 
 
 
-            <script>
+   
+@endif
+
+    <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     var isPrivileged = {!! ($isSubscribed || (Auth::check() && Auth::user()->usertype == 'internal')) ? 'true' : 'false' !!};
-                    @foreach ($reg as $result)
+                    @foreach ($records as $result)
                         (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
                             var pageCount = 0;
@@ -1148,5 +1151,3 @@
                     @endforeach
                 });
             </script>
-   
-@endif

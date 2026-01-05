@@ -102,157 +102,7 @@
             showEntityFilter: false
         });
         
-        /*
-        var table = $('#example').DataTable({
-            columnDefs: [
-                {
-                    targets: 0, // Title column
-                    render: function (data, type, row) {
-                        if (type === 'filter' || type === 'sort') {
-                            return $('<div>').html(data).text(); // Strips HTML for filtering/sorting
-                        }
-                        return data; // Keep HTML for display
-                    }
-                }
-            ],
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            order: [[0, 'asc']], // Default sort by title
-            responsive: true,
-            language: {
-                search: "Search documents:",
-                lengthMenu: "Show _MENU_ documents per page",
-                info: "Showing _START_ to _END_ of _TOTAL_ documents",
-                infoFiltered: "(filtered from _MAX_ total documents)"
-            }
-        });
-
-        // Detect table structure and get column indices
-        var headers = [];
-        $('#example thead th').each(function(index) {
-            headers.push($(this).text().trim());
-        });
-        
-        var titleColIndex = 0; // Title is always first
-        var yearColIndex = headers.indexOf('Year');
-
-        // Create enhanced filter container
-        var filterHtml = '<div class="filter-container">';
-        
-        // Alphabet filter dropdown
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="alphabet-filter">Filter by First Letter:</label>';
-        filterHtml += '<select id="alphabet-filter" class="filter-select">';
-        filterHtml += '<option value="">All Letters</option>';
-        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        alphabet.forEach(function (letter) {
-            filterHtml += '<option value="' + letter + '">' + letter + '</option>';
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Year filter dropdown (always show since both tables have year)
-        filterHtml += '<div class="filter-group">';
-        filterHtml += '<label for="year-filter">Filter by Year:</label>';
-        filterHtml += '<select id="year-filter" class="filter-select">';
-        filterHtml += '<option value="">All Years</option>';
-        years.forEach(function (year) {
-            filterHtml += '<option value="' + year + '">' + year + '</option>';
-        });
-        filterHtml += '</select>';
-        filterHtml += '</div>';
-
-        // Clear filters button
-        filterHtml += '<button class="clear-filters-btn" id="clear-filters">Clear All Filters</button>';
-        filterHtml += '</div>';
-
-        // Add search info container
-        filterHtml += '<div id="search-info" class="search-info" style="display: none;"></div>';
-
-        $('#example_wrapper').prepend(filterHtml);
-
-        // Custom search function for first letter and year filtering
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var selectedLetter = $('#alphabet-filter').val();
-                var selectedYear = $('#year-filter').val();
-                
-                // If no filters are selected, show all rows
-                if (!selectedLetter && !selectedYear) {
-                    return true;
-                }
-                
-                var match = true;
-                
-                // Check alphabet filter
-                if (selectedLetter) {
-                    var titleText = $('<div>').html(data[titleColIndex]).text().trim();
-                    var firstLetter = titleText.charAt(0).toUpperCase();
-                    if (firstLetter !== selectedLetter.toUpperCase()) {
-                        match = false;
-                    }
-                }
-                
-                // Check year filter - find year column dynamically
-                if (match && selectedYear) {
-                    var currentYearColIndex = yearColIndex;
-                    // For tables without explicit year column, try index 3
-                    if (currentYearColIndex === -1) {
-                        currentYearColIndex = 3;
-                    }
-                    
-                    var yearText = $('<div>').html(data[currentYearColIndex]).text().trim();
-                    if (yearText !== selectedYear) {
-                        match = false;
-                    }
-                }
-                
-                return match;
-            }
-        );
-
-        // Alphabet filter functionality
-        $('#alphabet-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
-        });
-
-        // Year filter functionality
-        $('#year-filter').on('change', function () {
-            table.draw();
-            updateSearchInfo();
-        });
-
-        // Clear all filters
-        $('#clear-filters').on('click', function () {
-            $('#alphabet-filter').val('');
-            $('#year-filter').val('');
-            table.draw();
-            $('#search-info').hide();
-        });
-
-        // Update search info
-        function updateSearchInfo() {
-            var info = table.page.info();
-            var activeFilters = [];
-            
-            if ($('#alphabet-filter').val()) {
-                activeFilters.push('Letter: ' + $('#alphabet-filter').val());
-            }
-            if ($('#year-filter').val()) {
-                activeFilters.push('Year: ' + $('#year-filter').val());
-            }
-            
-            if (activeFilters.length > 0) {
-                var infoText = 'Active filters: ' + activeFilters.join(', ') + 
-                              ' | Showing ' + info.recordsDisplay + ' of ' + info.recordsTotal + ' documents';
-                $('#search-info').text(infoText).show();
-            } else {
-                $('#search-info').hide();
-            }
-        }
-
-        */
+      
     });
 </script>
     <section class="gd-main-container">
@@ -609,43 +459,134 @@
             <br>
 
 
+            
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
+                    var isPrivileged = {!! ($isSubscribed || (Auth::check() && Auth::user()->usertype == 'internal')) ? 'true' : 'false' !!};
                     @foreach ($search as $result)
                         (function(id) {
                             var url = '{{ asset("public/pdf_documents/$result->regulation_doc") }}';
+                            var pageCount = 0;
                             var pdfjsLib = window['pdfjs-dist/build/pdf'];
                             pdfjsLib.GlobalWorkerOptions.workerSrc =
                                 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
                             pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
-                                function renderPage(pageNum, canvasId) {
-                                    pdfDoc.getPage(pageNum).then(function(page) {
-                                        var viewport = page.getViewport({
-                                            scale: 1.5
-                                        });
-                                        var canvas = document.getElementById(canvasId);
-                                        var context = canvas.getContext('2d');
-                                        canvas.height = viewport.height;
-                                        canvas.width = viewport.width;
-
-                                        var renderContext = {
-                                            canvasContext: context,
-                                            viewport: viewport
-                                        };
-                                        page.render(renderContext);
-                                    });
+                                // Clear existing content
+                                var viewer = document.getElementById('pdf-viewer-' + id);
+                                if (!viewer) return;
+                                viewer.innerHTML = '';
+                                
+                                // Use actual page count from PDF if backend didn't provide it
+                                var actualPageCount = pageCount > 0 ? pageCount : pdfDoc.numPages;
+                                
+                                // Implement page-based blur logic (only for non-privileged users)
+                                if (!isPrivileged) {
+                                    // For non-privileged users, implement the preview restrictions
+                                    if (actualPageCount === 1) {
+                                        // 1-page document: Show first 3 lines or 50% and blur the rest
+                                        renderPartialPage(pdfDoc, 1, viewer, 0.5);
+                                    } else if (actualPageCount === 2) {
+                                        // 2-page document: Show 1 full page and blur entire second page
+                                        renderFullPage(pdfDoc, 1, viewer, false);
+                                        renderFullPage(pdfDoc, 2, viewer, true);
+                                    } else if (actualPageCount >= 3) {
+                                        // 3+ page document: Show first 1.5 pages and blur all remaining pages
+                                        renderFullPage(pdfDoc, 1, viewer, false); // Full first page
+                                        renderPartialPage(pdfDoc, 2, viewer, 0.5); // 50% of second page
+                                        // Blur all remaining pages (up to 5 pages max)
+                                        for (var i = 3; i <= Math.min(actualPageCount, 5); i++) {
+                                            renderFullPage(pdfDoc, i, viewer, true);
+                                        }
+                                    }
+                                } else {
+                                    // For privileged users, show full pages without restrictions
+                                    // Show up to 5 pages maximum
+                                    var maxPagesToShow = Math.min(actualPageCount, 5);
+                                    for (var i = 1; i <= maxPagesToShow; i++) {
+                                        renderFullPage(pdfDoc, i, viewer, false);
+                                    }
                                 }
-
-                                renderPage(1, 'canvas-page1-' + id);
-                                renderPage(2, 'canvas-page2-' + id);
                             }).catch(function(error) {
                                 console.error('Error loading PDF:', error);
+                                var viewer = document.getElementById('pdf-viewer-' + id);
+                                if (viewer) {
+                                    viewer.innerHTML = '<p class="text-center text-muted">Error loading PDF preview.</p>';
+                                }
                             });
+                            
+                            // Function to render a full page
+                            function renderFullPage(pdfDoc, pageNum, viewer, blurred) {
+                                if (pageNum > pdfDoc.numPages) return;
+                                
+                                pdfDoc.getPage(pageNum).then(function(page) {
+                                    var viewport = page.getViewport({ scale: 1.5 });
+                                    var canvas = document.createElement('canvas');
+                                    canvas.className = 'pdf-page';
+                                    if (blurred) {
+                                        canvas.className += ' blurred';
+                                    }
+                                    canvas.id = 'canvas-page' + pageNum + '-' + id;
+                                    var context = canvas.getContext('2d');
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+
+                                    var renderContext = {
+                                        canvasContext: context,
+                                        viewport: viewport
+                                    };
+                                    
+                                    viewer.appendChild(canvas);
+                                    page.render(renderContext);
+                                });
+                            }
+                            
+                            // Function to render a partial page with blur effect
+                            function renderPartialPage(pdfDoc, pageNum, viewer, visibleRatio) {
+                                if (pageNum > pdfDoc.numPages) return;
+                                
+                                pdfDoc.getPage(pageNum).then(function(page) {
+                                    var viewport = page.getViewport({ scale: 1.5 });
+                                    var canvas = document.createElement('canvas');
+                                    canvas.className = 'pdf-page partial-page';
+                                    canvas.id = 'canvas-page' + pageNum + '-' + id;
+                                    var context = canvas.getContext('2d');
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+
+                                    var renderContext = {
+                                        canvasContext: context,
+                                        viewport: viewport
+                                    };
+                                    
+                                    viewer.appendChild(canvas);
+                                    page.render(renderContext).promise.then(function() {
+                                        // Completely hide the hidden portion
+                                        if (visibleRatio < 1) {
+                                            var ctx = canvas.getContext('2d');
+                                            var height = canvas.height;
+                                            var hiddenStart = height * visibleRatio;
+                                            
+                                            // Draw a solid white rectangle to completely hide the content
+                                            ctx.fillStyle = 'white';
+                                            ctx.globalAlpha = 1;
+                                            ctx.fillRect(0, hiddenStart, canvas.width, height - hiddenStart);
+                                            
+                                            // Add gradient mask for smoother transition
+                                            var gradient = ctx.createLinearGradient(0, hiddenStart - 20, 0, hiddenStart);
+                                            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                                            gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                                            ctx.fillStyle = gradient;
+                                            ctx.fillRect(0, hiddenStart - 20, canvas.width, 20);
+                                        }
+                                    });
+                                });
+                            }
                         })({{ $result->id }});
                     @endforeach
                 });
             </script>
+          
         @endif
 
         <div class="gda-cards-container">
