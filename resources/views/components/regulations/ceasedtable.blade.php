@@ -536,13 +536,17 @@
                                                                 class="icon ni ni-download"></em></a>
                                                     @else
                                                         @if (Auth::check())
-                                                            <a href="{{ route('subscribe') }}" target="_blank"
+                                                            <a href="#"  data-bs-toggle="modal" data-bs-target="#subscribeModal"
                                                                 class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
                                                                 <em class="icon ni ni-book-read"></em>
                                                             </a>
-                                                            <a href="{{ route('subscribe') }}"
+                                                            <a href="#"  data-bs-toggle="modal" data-bs-target="#subscribeModal"
                                                                 class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
                                                                     class="icon ni ni-download"></em></a>
+
+                                                                     <a href="#"  data-bs-toggle="modal" data-bs-target="#subscribeModal"
+                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                            class="icon ni ni-save"></em></a>
                                                         @else
                                                             <a href="{{ route('login') }}" target="_blank"
                                                                 class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
@@ -553,15 +557,7 @@
                                                                     class="icon ni ni-download"></em></a>
                                                         @endif
                                                     @endif
-                                                    <a href="#" id="submit"
-                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                            class="icon ni ni-save"></em></a>
-                                                    <form id="save-{{ $result->id }}"
-                                                        action="{{ route('save-document', $result->id) }}" method="POST"
-                                                        class="d-none" style="display: none">
-                                                        @csrf
-                                                    </form>
+                                                 
                                                 </div>
                                             </td>
                                         </tr>
