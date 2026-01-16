@@ -97,7 +97,7 @@ class AuthController extends Controller
                 'regex:/[0-9]/',      // must contain at least one digit
                 'regex:/[@$!.%*#?&]/', // must contain a special character
             ],
-            // 'password' => 'required|string|min:6|confirmed',
+           
             'password_confirmation' => 'required'
         ]);
 

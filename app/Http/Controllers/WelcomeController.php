@@ -16,6 +16,7 @@ class WelcomeController extends Controller
 {
     public function index(Request $request)
     {
+           $plans = SubscriptionPlan::where('status', 1)->get();
         $data = Category::where('status', 1)->get();
         $subscriptionPlans = SubscriptionPlan::all();
         $news_alert = News::orderBy('created_at', 'desc')->where('status', 1)->get();
@@ -39,7 +40,7 @@ class WelcomeController extends Controller
             // $userSubscription = Subscription::where('user_id', $user->id)->latest('created_at')->first();
         }
 
-        return view('welcome', compact('data', 'news_alert', 'subscriptionPlans', 'userSubscription', 'marketProductTags'));
+        return view('welcome', compact('data', 'news_alert', 'subscriptionPlans', 'plans', 'userSubscription', 'marketProductTags'));
     }
 
 

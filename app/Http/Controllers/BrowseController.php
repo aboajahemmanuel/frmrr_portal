@@ -262,7 +262,8 @@ class BrowseController extends Controller
 
     public function search_category(Request $request)
     {
-
+        
+         
          $years         = Year::pluck('name'); // Assuming 'year' is the column name
         $title         = $request['title'];
         $category_slug = $request['category_slug'];
@@ -274,9 +275,13 @@ class BrowseController extends Controller
 
             $search = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where('status', 1)
-            ->where('category_id', $category->id)
+            ->when($category, function ($query, $category) {
+                return $query->where('category_id', $category->id);
+            })
+            ->when($request->title, function ($query, $title) {
+                return $query->where('title', 'LIKE', "%{$title}%");
+            })
             ->where(function ($query) {
-                // Treat actual NULL, the string 'NULL', empty string, or any CSV containing 'Active' as active
                 $query->whereNull('ceased')
                       ->orWhere('ceased', 'Active')
                       ->orWhere('ceased', 'NULL')

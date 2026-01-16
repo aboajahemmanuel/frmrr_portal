@@ -78,7 +78,7 @@
             <div style="background-color: #fff; padding: 20px; width: 100%">
                 <div class="row" style="width: 100%">
                     <div class="col-md-12">
-                        @include('components.regulations.table', [
+                        @include('components.regulations.searchtable', [
                             'records' => $reg, 
                             'isSubscribed' => $isSubscribed,
                             'showFilters' => true,
