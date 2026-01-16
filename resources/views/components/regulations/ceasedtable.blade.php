@@ -153,8 +153,8 @@
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
-                                        {{-- <th style="text-align: center;">Category</th>
-                                        <th style="text-align: center;">Subcategory</th> --}}
+                                        {{-- <th style="text-align: center;">Category</th>--}}
+                                        <th style="text-align: center;">Subcategory</th> 
                                         <th style="text-align: center;">Version Number</th>
                                         <th style="text-align: center;">Issue Date</th>
                                         <th style="text-align: center;">Year</th>
@@ -177,8 +177,8 @@
 
                                                 </a>
                                             </td>
-                                            {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td>
-                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td> --}}
+                                            {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td>--}}
+                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td> 
                                             
                                             <td style="text-align: center">{{ $result->document_version }}</td>
                                             <td style="text-align: center">
@@ -463,7 +463,7 @@
                                 <thead>
                                     <tr>
                                         <th style="text-align: center;">Title</th>
-                                        <th style="text-align: center;">Category</th>
+                                        {{-- <th style="text-align: center;">Category</th> --}}
                                         <th style="text-align: center;">Subcategory</th>
                                         <th style="text-align: center;">Effective Date</th>
                                         <th style="text-align: center;">Entity</th>
@@ -481,7 +481,7 @@
                                                     {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
                                                 </a>
                                             </td>
-                                            <td style="text-align: center">{{ optional($result->category)->name }}</td>
+                                            {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td> --}}
                                             <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
                                             <td style="text-align: center">
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
