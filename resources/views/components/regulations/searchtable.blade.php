@@ -127,6 +127,33 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
+    
+    /* Accordion styles for related documents */
+    .accordion-button:not(.collapsed) {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 500;
+    }
+    
+    .accordion-button:focus {
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      border-color: #86b7fe;
+    }
+    
+    .related-doc-details p {
+      margin-bottom: 0.5rem;
+    }
+    
+    .nested-related-docs .card {
+      border-left: 3px solid #0d6efd;
+    }
+    
+    .nested-related-docs h6 {
+      color: #495057;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
   </style>
 
 @if($showFilters)
@@ -145,9 +172,9 @@
             <thead>
                 <tr>
                     <th style="text-align: center;">Title</th>
-                    <th style="text-align: center;">Category</th>
-                    <th style="text-align: center;">Subcategory</th>
-                    <th style="text-align: center;">Status</th>
+                  
+                    <th style="text-align: center;">Subcategory</th> 
+                     <th style="text-align: center;">Status</th>
                     <th style="text-align: center;">Version Number</th>
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Year</th>
@@ -170,10 +197,8 @@
                                 {{ $result->formatted_title ?? $result->title }}
                             @endif
                         </td>
-                        <td style="text-align: center">{{ optional($result->category)->name }}</td>
                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
-                        <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'Active' }}</span></td>
-
+                          <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'Active' }}</span></td>
                         <td style="text-align: center">{{ $result->document_version }}</td>
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
@@ -231,6 +256,7 @@
                             </div>
                         </td>
                     </tr>
+                
 
                     <!-- PDF Preview Modal -->
                     <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel-{{ $result->id }}" aria-hidden="true">
@@ -268,80 +294,103 @@
                                             });
                                         }
                                     @endphp
+                                    
                                     @if($relatedDocs->count() > 0)
-                                        @foreach($relatedDocs as $relatedDoc)
-                                            <div class="related-doc-item">
-                                                <div class="related-doc-title">
-                                                    {{ $relatedDoc->title }} 
-                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                        <span class="nested-badge">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
-                                                    @endif
-                                                </div>
-                                                <div class="related-doc-meta">
-                                                    @if($relatedDoc->ceased)
-                                                        <span class="badge badge-danger"> {{ str_replace([',','/'], [', ',  ' '], $relatedDoc->ceased) }}</span>
-                                                    @else
-                                                        <span class="badge badge-primary">Active</span>
-                                                    @endif
-                                                    @if($relatedDoc->document_version)
-                                                        <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
-                                                    @endif
-                                                    @if($relatedDoc->effective_date)
-                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
-                                                    @endif
-                                                    @if($relatedDoc->entity)
-                                                        <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
-                                                    @endif
-                                                    
-                                                    <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</span>
-                                                </div>
-                                                <div style="margin-top: 8px; ">
-                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm">
-                                                        <em class="icon ni ni-book-read"></em> View
-                                                    </a>
-                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm">
-                                                        <em class="icon ni ni-download"></em> Download
-                                                    </a>
-                                                </div>
-
-                                                @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                    <div class="nested-related-docs">
-                                                        <small><strong>Related Documents:</strong></small>
-                                                        @foreach($relatedDoc->nested_related_documents as $nestedDoc)
-                                                            <div class="nested-doc-item">
-                                                                <div class="nested-doc-title">
-                                                                    <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
-                                                                </div>
-                                                                <div class="related-doc-meta">
-                                                                    @if($nestedDoc->ceased)
-                                                                        <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
+                                        <div class="accordion" id="relatedDocsAccordion-{{ $result->id }}">
+                                            @foreach($relatedDocs as $index => $relatedDoc)
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="heading-{{ $result->id }}-{{ $index }}">
+                                                        <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $result->id }}-{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse-{{ $result->id }}-{{ $index }}">
+                                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                                <span>{{ $relatedDoc->title }}</span>
+                                                                <div>
+                                                                    @if($relatedDoc->ceased)
+                                                                        <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
                                                                     @else
-                                                                        <span class="badge badge-primary">Active</span>
+                                                                        <span class="badge badge-primary ms-2">Active</span>
                                                                     @endif
-                                                                    @if($nestedDoc->document_version)
-                                                                        <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
-                                                                    @endif
-                                                                    @if($nestedDoc->effective_date)
-                                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
-                                                                    @endif
-                                                                    @if($nestedDoc->issue_date)
-                                                                        <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                        <span class="badge bg-secondary ms-2">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
                                                                     @endif
                                                                 </div>
-                                                                <div style="margin-top: 5px;">
-                                                                    <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs">
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapse-{{ $result->id }}-{{ $index }}" class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading-{{ $result->id }}-{{ $index }}" data-bs-parent="#relatedDocsAccordion-{{ $result->id }}">
+                                                        <div class="accordion-body">
+                                                            <div class="related-doc-details">
+                                                                <div class="row mb-3">
+                                                                    <div class="col-md-6">
+                                                                        @if($relatedDoc->document_version)
+                                                                            <p><strong>Version:</strong> {{ $relatedDoc->document_version }}</p>
+                                                                        @endif
+                                                                        @if($relatedDoc->effective_date)
+                                                                            <p><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        @if($relatedDoc->entity)
+                                                                            <p><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</p>
+                                                                        @endif
+                                                                        <p><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary me-2">
                                                                         <em class="icon ni ni-book-read"></em> View
                                                                     </a>
-                                                                    <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs">
+                                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-outline-primary">
                                                                         <em class="icon ni ni-download"></em> Download
                                                                     </a>
                                                                 </div>
+
+                                                                @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                    <div class="nested-related-docs mt-4">
+                                                                        <h6>Related Documents:</h6>
+                                                                        @foreach($relatedDoc->nested_related_documents as $nestedIndex => $nestedDoc)
+                                                                            <div class="card mb-2">
+                                                                                <div class="card-body py-2">
+                                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                                        <div>
+                                                                                            <h6 class="mb-1">{{ $nestedDoc->title }}</h6>
+                                                                                            <div class="small text-muted">
+                                                                                                @if($nestedDoc->ceased)
+                                                                                                    <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
+                                                                                                @else
+                                                                                                    <span class="badge badge-primary">Active</span>
+                                                                                                @endif
+                                                                                                @if($nestedDoc->document_version)
+                                                                                                    <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                                                                                                @endif
+                                                                                                @if($nestedDoc->effective_date)
+                                                                                                    <span class="ms-2"><strong>Effective:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                                                @endif
+                                                                                                @if($nestedDoc->issue_date)
+                                                                                                    <span class="ms-2"><strong>Issue:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                                                @endif
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary me-1">
+                                                                                                <em class="icon ni ni-book-read"></em>
+                                                                                            </a>
+                                                                                            <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary">
+                                                                                                <em class="icon ni ni-download"></em>
+                                                                                            </a>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
                                                             </div>
-                                                        @endforeach
+                                                        </div>
                                                     </div>
-                                                @endif
-                                            </div>
-                                        @endforeach
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     @else
                                         <p class="text-center text-muted">No related documents found.</p>
                                     @endif
@@ -490,9 +539,8 @@
             <thead>
                 <tr>
                     <th style="text-align: center;">Title</th>
-                    <th style="text-align: center;">Category</th>
+                    <th style="text-align: center;">Category</th> 
                     <th style="text-align: center;">Subcategory</th>
-                     <th style="text-align: center;">Status</th>
                     <th style="text-align: center;">Version Number</th>
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Year</th>
@@ -517,12 +565,10 @@
                         </td>
                          <td style="text-align: center">
                             {{ optional($result->category)->name }}
-                        </td>
+                        </td> 
                         <td style="text-align: center">
                             {{ optional($result->subcategory)->name }}
                         </td>
-                                                <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'Active' }}</span></td>
-
                         <td style="text-align: center">{{ $result->document_version }}</td>
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>

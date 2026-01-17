@@ -139,6 +139,33 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
+    
+    /* Accordion styles for related documents */
+    .accordion-button:not(.collapsed) {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 500;
+    }
+    
+    .accordion-button:focus {
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      border-color: #86b7fe;
+    }
+    
+    .related-doc-details p {
+      margin-bottom: 0.5rem;
+    }
+    
+    .nested-related-docs .card {
+      border-left: 3px solid #0d6efd;
+    }
+    
+    .nested-related-docs h6 {
+      color: #495057;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
   </style>
 
 
@@ -322,128 +349,151 @@
                                         </div>
                                         
                                         <!-- Modal for Related Documents -->
-                                        <div class="modal fade" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-xl" role="document">
+                                        <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">Related Documents</h5>
+                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        @php
-                                                            $relatedDocuments = $result->related_documents;
+                                                        @php 
+                                                            $relatedDocs = $result->relatedDocuments;
+                                                            // Sort related documents by issue_date in descending order
+                                                            if ($relatedDocs instanceof \Illuminate\Support\Collection) {
+                                                                $relatedDocs = $relatedDocs->sortByDesc(function($doc) {
+                                                                    return \Carbon\Carbon::parse($doc->issue_date);
+                                                                });
+                                                            }
                                                         @endphp
-                            
-                                                        @if($relatedDocuments && $relatedDocuments->count() > 0)
-                                                            <div class="card w-100 border-0 shadow-sm">
-                                                                <div class="card-header bg-light">
-                                                                    <h5 class="mb-0 fw-bold">Related Documents</h5>
-                                                                </div>
-                                
-                                                                <div class="card-body p-0">
-                                                                    <!-- Header Row -->
-                                                                    <div class="d-flex bg-light border-bottom p-3 fw-bold text-center" style="font-size: 14px;">
-                                                                        <div style="width: 8%; min-width: 50px;">S/N</div>
-                                                                        <div style="width: 30%; min-width: 200px;">Title</div>
-                                                                        <div style="width: 10%; min-width: 80px;">Year</div>
-                                                                        <div style="width: 15%; min-width: 120px;">Effective Date</div>
-                                                                        <div style="width: 15%; min-width: 120px;">Issued Date</div>
-                                                                        <div style="width: 12%; min-width: 100px;">Status</div>
-                                                                        <div style="width: 10%; min-width: 120px;">Action</div>
-                                                                    </div>
-                                                                    
-                                                                    <div class="list-group w-100">
-                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item border-0 border-bottom">
-                                                                                    <div class="d-flex align-items-center p-2" style="font-size: 14px;">
-                                                                                        <div style="width: 8%; min-width: 50px; text-align: center;">
-                                                                                            <strong>{{ $index + 1 }}</strong>
+                                                        
+                                                        @if($relatedDocs->count() > 0)
+                                                            <div class="accordion" id="relatedDocsAccordion-{{ $result->id }}">
+                                                                @foreach($relatedDocs as $index => $relatedDoc)
+                                                                    <div class="accordion-item">
+                                                                        <h2 class="accordion-header" id="heading-{{ $result->id }}-{{ $index }}">
+                                                                            <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $result->id }}-{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse-{{ $result->id }}-{{ $index }}">
+                                                                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                                                                    <span>{{ $relatedDoc->title }}</span>
+                                                                                    <div>
+                                                                                        @if($relatedDoc->ceased)
+                                                                                            <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                                                        @else
+                                                                                            <span class="badge badge-primary ms-2">Active</span>
+                                                                                        @endif
+                                                                                        @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                            <span class="badge bg-secondary ms-2">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
+                                                                                        @endif
+                                                                                    </div>
+                                                                                </div>
+                                                                            </button>
+                                                                        </h2>
+                                                                        <div id="collapse-{{ $result->id }}-{{ $index }}" class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading-{{ $result->id }}-{{ $index }}" data-bs-parent="#relatedDocsAccordion-{{ $result->id }}">
+                                                                            <div class="accordion-body">
+                                                                                <div class="related-doc-details">
+                                                                                    <div class="row mb-3">
+                                                                                        <div class="col-md-6">
+                                                                                            @if($relatedDoc->document_version)
+                                                                                                <p><strong>Version:</strong> {{ $relatedDoc->document_version }}</p>
+                                                                                            @endif
+                                                                                            @if($relatedDoc->effective_date)
+                                                                                                <p><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</p>
+                                                                                            @endif
+                                                                                            @if($relatedDoc->year)
+                                                                                                <p><strong>Year:</strong> {{ $relatedDoc->year->name }}</p>
+                                                                                            @endif
                                                                                         </div>
-                                                                                        <div style="width: 30%; min-width: 200px;" class="text-truncate">
-                                                                                            {{ $relatedDoc->title }}
-                                                                                        </div>
-                                                                                        <div style="width: 10%; min-width: 80px; text-align: center;">
-                                                                                            {{ optional($relatedDoc->year)->name ?? 'N/A' }}
-                                                                                        </div>
-                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
-                                                                                            {{ $relatedDoc->effective_date ? \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') : 'N/A' }}
-                                                                                        </div>
-                                                                                        <div style="width: 15%; min-width: 120px; text-align: center;">
-                                                                                            {{ $relatedDoc->issue_date ? \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
-                                                                                        </div>
-                                                                                        <div style="width: 12%; min-width: 100px; text-align: center;">
-                                                                                            @if($relatedDoc->ceased && $relatedDoc->ceased !== 'Active')
-                                                <span class="badge badge-success">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $relatedDoc->ceased), function($status) { return trim($status) !== 'Active'; }))) }}</span>
-                                                @else
-                                                <span class="badge badge-secondary">Active</span>
-                                                @endif
-                                                                                        </div>
-                                                                                        <div style="width: 10%; min-width: 120px; text-align: center;">
-                                                                                            <div class="d-flex gap-1 justify-content-center">
-                                                                                                <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                    <em class="icon ni ni-book-read"></em>
-                                                                                                </a>
-                                                                                                <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                    <em class="icon ni ni-download"></em>
-                                                                                                </a>
-                                                                                                <a href="#" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                                                                    <em class="icon ni ni-save"></em>
-                                                                                                </a>
-                                                                                                <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                                    @csrf
-                                                                                                </form>
-                                                                                            </div>
+                                                                                        <div class="col-md-6">
+                                                                                            @if($relatedDoc->entity)
+                                                                                                <p><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</p>
+                                                                                            @endif
+                                                                                            <p><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</p>
                                                                                         </div>
                                                                                     </div>
                                                                                     
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1,
-                                                                                            'isSubscribed' => $isSubscribed || Auth::user()->usertype == 'internal'
-                                                                                        ])
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        @else
-                                                                            @foreach($relatedDocuments as $index => $relatedDoc)
-                                                                                <div class="list-group-item border-0 border-bottom">
-                                                                                    <div class="d-flex align-items-center p-2" style="font-size: 14px;">
-                                                                                        <div style="width: 8%; min-width: 50px; text-align: center;">
-                                                                                            <strong>{{ $index + 1 }}</strong>
-                                                                                        </div>
-                                                                                        <div style="width: 72%; min-width: 400px;" class="text-muted">
-                                                                                            Restricted - Upgrade to view document details
-                                                                                        </div>
-                                                                                        <div style="width: 20%; min-width: 120px; text-align: center;">
-                                                                                            <a href="{{ route('subscribe') }}" target="_blank" class="btn btn-sm btn-warning">
-                                                                                                Upgrade to Access
+                                                                                    <div class="mb-3">
+                                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                                                                            <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary me-2">
+                                                                                                <em class="icon ni ni-book-read"></em> View
                                                                                             </a>
-                                                                                        </div>
+                                                                                            <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-outline-primary me-2">
+                                                                                                <em class="icon ni ni-download"></em> Download
+                                                                                            </a>
+                                                                                            <a href="#" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-sm btn-outline-primary">
+                                                                                                <em class="icon ni ni-save"></em> Save
+                                                                                            </a>
+                                                                                            <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
+                                                                                                @csrf
+                                                                                            </form>
+                                                                                        @else
+                                                                                            <a href="{{ route('subscribe') }}" class="btn btn-sm btn-warning">
+                                                                                                <em class="icon ni ni-lock"></em> Restricted - Subscribe to Access
+                                                                                            </a>
+                                                                                        @endif
                                                                                     </div>
-                                                                                    
-                                                                                    {{-- Check if this related document has its own related documents --}}
-                                                                                    @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
-                                                                                            'parentIndex' => $index + 1,
-                                                                                            'level' => 1,
-                                                                                            'isSubscribed' => false
-                                                                                        ])
+
+                                                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                        <div class="nested-related-docs mt-4">
+                                                                                            <h6>Related Documents:</h6>
+                                                                                            @foreach($relatedDoc->nested_related_documents as $nestedIndex => $nestedDoc)
+                                                                                                <div class="card mb-2">
+                                                                                                    <div class="card-body py-2">
+                                                                                                        <div class="d-flex justify-content-between align-items-start">
+                                                                                                            <div>
+                                                                                                                <h6 class="mb-1">{{ $nestedDoc->title }}</h6>
+                                                                                                                <div class="small text-muted">
+                                                                                                                    @if($nestedDoc->ceased)
+                                                                                                                        <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
+                                                                                                                    @else
+                                                                                                                        <span class="badge badge-primary">Active</span>
+                                                                                                                    @endif
+                                                                                                                    @if($nestedDoc->document_version)
+                                                                                                                        <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                                                                                                                    @endif
+                                                                                                                    @if($nestedDoc->effective_date)
+                                                                                                                        <span class="ms-2"><strong>Effective:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                                                                    @endif
+                                                                                                                    @if($nestedDoc->issue_date)
+                                                                                                                        <span class="ms-2"><strong>Issue:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                                                                    @endif
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div>
+                                                                                                                @if ($isSubscribed || Auth::user()->usertype == 'internal')
+                                                                                                                    <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary me-1">
+                                                                                                                        <em class="icon ni ni-book-read"></em>
+                                                                                                                    </a>
+                                                                                                                    <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary me-1">
+                                                                                                                        <em class="icon ni ni-download"></em>
+                                                                                                                    </a>
+                                                                                                                    <a href="#" onclick="document.getElementById('save-nested-{{ $nestedDoc->id }}').submit();" class="btn btn-xs btn-outline-primary">
+                                                                                                                        <em class="icon ni ni-save"></em>
+                                                                                                                    </a>
+                                                                                                                    <form id="save-nested-{{ $nestedDoc->id }}" action="{{ route('save-document', $nestedDoc->id) }}" method="POST" class="d-none">
+                                                                                                                        @csrf
+                                                                                                                    </form>
+                                                                                                                @else
+                                                                                                                    <a href="{{ route('subscribe') }}" class="btn btn-xs btn-warning">
+                                                                                                                        <em class="icon ni ni-lock"></em>
+                                                                                                                    </a>
+                                                                                                                @endif
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            @endforeach
+                                                                                        </div>
                                                                                     @endif
                                                                                 </div>
-                                                                            @endforeach
-                                                                        @endif
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                @endforeach
                                                             </div>
                                                         @else
-                                                            <p>No related documents found.</p>
+                                                            <p class="text-center text-muted">No related documents found.</p>
                                                         @endif
                                                     </div>
                                                     <div class="modal-footer">
