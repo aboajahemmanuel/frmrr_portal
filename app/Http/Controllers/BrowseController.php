@@ -43,14 +43,13 @@ class BrowseController extends Controller
             ->where('status', 1)
             ->where('category_id', $category->id)
             ->where(function ($query) {
-                // Treat actual NULL, the string 'NULL', empty string, or any CSV containing 'Active' as active
-                $query->whereNull('ceased')
+                $query->where(function($q) {
+                    $q->whereNull('ceased')
                       ->orWhere('ceased', 'Active')
                       ->orWhere('ceased', 'NULL')
                       ->orWhere('ceased', '')
-                      ->orWhere('ceased', 'LIKE', 'Active,%')
-                      ->orWhere('ceased', 'LIKE', '%,Active')
-                      ->orWhere('ceased', 'LIKE', '%,Active,%');
+                      ->orWhere('ceased', 'LIKE', '%Active%');
+                });
             })
             ->orderBy('created_at', 'desc')
             ->paginate(30);

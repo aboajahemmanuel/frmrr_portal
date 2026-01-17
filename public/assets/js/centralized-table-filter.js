@@ -4,11 +4,18 @@
  */
 
 function initCentralizedTableFilter(tableId, options = {}) {
+    console.log('Initializing centralized table filter for table:', tableId);
+    console.log('Options:', options);
+    
     const table = document.getElementById(tableId);
     if (!table) {
         console.error(`Table with id "${tableId}" not found`);
         return;
     }
+    
+    console.log('Table found:', table);
+    console.log('Table headers:', table.querySelectorAll('thead th').length);
+    console.log('Table rows:', table.querySelectorAll('tbody tr').length);
     
     const tbody = table.querySelector('tbody');
     const thead = table.querySelector('thead');
@@ -23,6 +30,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
         entity: '',
         effectiveDate: '',
         version: '',
+        status: '',
         custom: {}
     };
     
@@ -35,17 +43,32 @@ function initCentralizedTableFilter(tableId, options = {}) {
         headers.push(th.textContent.trim());
     });
     
+    console.log('Table headers found:', headers);
+    
     const titleColIndex = 0;
     const yearColIndex = headers.indexOf('Year');
     const entityColIndex = headers.indexOf('Entity');
     const effectiveDateColIndex = headers.indexOf('Effective Date');
     const versionColIndex = headers.indexOf('Version Number');
     
+    // Find status column - look for any header containing 'Status' (case insensitive)
+    let statusColIndex = -1;
+    for (let i = 0; i < headers.length; i++) {
+        if (headers[i].toLowerCase().includes('status')) {
+            statusColIndex = i;
+            break;
+        }
+    }
+    
+    console.log('Status column index found:', statusColIndex);
+    
+    console.log('Column indices - Title:', titleColIndex, 'Year:', yearColIndex, 'Entity:', entityColIndex, 'Effective Date:', effectiveDateColIndex, 'Version:', versionColIndex, 'Status:', statusColIndex);
+    
     // Filter and display rows
     function filterAndDisplayRows() {
         let visibleCount = 0;
         
-        rows.forEach(row => {
+        rows.forEach((row, rowIndex) => {
             let visible = true;
             const cells = row.querySelectorAll('td');
             
@@ -54,6 +77,12 @@ function initCentralizedTableFilter(tableId, options = {}) {
             const entityText = entityColIndex >= 0 ? cells[entityColIndex]?.textContent.trim() || '' : '';
             const effectiveDateText = effectiveDateColIndex >= 0 ? cells[effectiveDateColIndex]?.textContent.trim() || '' : '';
             const versionText = versionColIndex >= 0 ? cells[versionColIndex]?.textContent.trim() || '' : '';
+            const statusText = statusColIndex >= 0 ? cells[statusColIndex]?.textContent.trim() || '' : '';
+            
+            // Log first few rows for debugging
+            if (rowIndex < 3) {
+                console.log(`Row ${rowIndex} status text:`, statusText);
+            }
             
             // Search filter
             if (currentFilters.search) {
@@ -86,6 +115,29 @@ function initCentralizedTableFilter(tableId, options = {}) {
             // Version filter
             if (visible && currentFilters.version) {
                 visible = visible && versionText.includes(currentFilters.version);
+            }
+            
+            // Status filter
+            if (visible && currentFilters.status) {
+                console.log('Applying status filter:', currentFilters.status);
+                console.log('Status column index:', statusColIndex);
+                
+                // Get the status cell content
+                const statusCell = cells[statusColIndex];
+                const statusText = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+                
+                console.log('Status cell content:', statusText);
+                
+                if (currentFilters.status === 'Active') {
+                    // For Active, check if the status text is exactly 'active' (meaning ceased field is null/empty)
+                    visible = visible && (statusText === 'active');
+                    console.log('Active filter result:', visible);
+                } else {
+                    // For other statuses, check if the status text contains the selected status
+                    const selectedStatus = currentFilters.status.toLowerCase();
+                    visible = visible && statusText.includes(selectedStatus);
+                    console.log('Status filter result for', selectedStatus, ':', visible);
+                }
             }
             
             // Custom filters
@@ -121,6 +173,10 @@ function initCentralizedTableFilter(tableId, options = {}) {
         }
         if (currentFilters.version) {
             activeFilters.push('Version: ' + currentFilters.version);
+        }
+        
+        if (currentFilters.status) {
+            activeFilters.push('Status: ' + currentFilters.status);
         }
         
         // Add custom filters to info
@@ -278,6 +334,21 @@ function initCentralizedTableFilter(tableId, options = {}) {
             });
         }
         
+        // Status filter
+        const statusFilter = document.getElementById('status-filter-' + tableId);
+        console.log('Looking for status filter:', 'status-filter-' + tableId);
+        console.log('Status filter element found:', statusFilter);
+        if (statusFilter) {
+            console.log('Attaching event listener to status filter');
+            statusFilter.addEventListener('change', function(e) {
+                console.log('Status filter changed to:', e.target.value);
+                currentFilters.status = e.target.value;
+                filterAndDisplayRows();
+            });
+        } else {
+            console.warn('Status filter element not found');
+        }
+        
         // Clear filters button
         const clearButton = document.getElementById('clear-filters-' + tableId);
         if (clearButton) {
@@ -288,6 +359,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 if (entityFilter) entityFilter.value = '';
                 if (effectiveDateFilter) effectiveDateFilter.value = '';
                 if (versionFilter) versionFilter.value = '';
+                if (statusFilter) statusFilter.value = '';
                 
                 currentFilters = {
                     alphabet: '',
@@ -296,6 +368,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
                     entity: '',
                     effectiveDate: '',
                     version: '',
+                    status: '',
                     custom: {}
                 };
                 
@@ -364,6 +437,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
             const entityFilter = document.getElementById('entity-filter-' + tableId);
             const effectiveDateFilter = document.getElementById('effective-date-filter-' + tableId);
             const versionFilter = document.getElementById('version-filter-' + tableId);
+            const statusFilter = document.getElementById('status-filter-' + tableId);
             
             if (searchInput) searchInput.value = '';
             if (alphabetFilter) alphabetFilter.value = '';
@@ -371,6 +445,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
             if (entityFilter) entityFilter.value = '';
             if (effectiveDateFilter) effectiveDateFilter.value = '';
             if (versionFilter) versionFilter.value = '';
+            if (statusFilter) statusFilter.value = '';
             
             currentFilters = {
                 alphabet: '',
@@ -379,6 +454,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 entity: '',
                 effectiveDate: '',
                 version: '',
+                status: '',
                 custom: {}
             };
             

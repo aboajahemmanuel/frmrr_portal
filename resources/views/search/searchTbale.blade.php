@@ -323,7 +323,7 @@ entityBox.addEventListener("click", function (e) {
                                         </div>
 
                                         <div class="w-33">
-                                            <div class="si-title" style="margin-top: 4px;">{{{$formattedStatuses}}} 
+                                            <div class="si-title" style="margin-top: 4px;">Status
                                                 
                                             </div>
                                             <div class="autocomplete-wrapper">

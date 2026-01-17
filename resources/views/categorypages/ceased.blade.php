@@ -168,7 +168,7 @@
                     @include('components.regulations.ceasedtable', [
                         'records' => $reg, 
                         'isSubscribed' => $isSubscribed,
-                        'showFilters' => true,
+                        'showFilters' => false,
                         'tableId' => 'example',
                         'filterOptions' => [
                             'showAlphabetFilter' => true,

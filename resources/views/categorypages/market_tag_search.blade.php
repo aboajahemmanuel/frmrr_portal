@@ -220,20 +220,22 @@
     <div style="background-color: #fff; padding: 20px; width: 100%">
         <div class="row" style="width: 100%">
             <div class="col-md-12">
-                @include('components.regulations.searchtable', [
-                    'records' =>$search, 
-                    'isSubscribed' => $isSubscribed,
-                    'showFilters' => true,
-                    'tableId' => 'example',
-                    'filterOptions' => [
-                        'showAlphabetFilter' => true,
-                        'showYearFilter' => true,
-                        'showEntityFilter' => true,
-                        'showEffectiveDateFilter' => false,
-                        'showVersionFilter' => true,
-                        'years' => $years
-                    ]
-                ])
+                 @include('components.regulations.searchtable', [
+                        'records' =>$search, 
+                        'isSubscribed' => $isSubscribed,
+                        'showFilters' => true,
+                        'tableId' => 'example',
+                        'filterOptions' => [
+                            'showAlphabetFilter' => true,
+                            'showYearFilter' => true,
+                            'showEntityFilter' => true,
+                            'showEffectiveDateFilter' => true,
+                            'showVersionFilter' => true,
+                            'showSearchBar' => true,
+                            'showStatusFilter' => false,
+                            'years' => $years
+                        ]
+                    ]) 
 
                 {{-- @if($search->hasPages())
                 <div class="mt-4 d-flex justify-content-center">

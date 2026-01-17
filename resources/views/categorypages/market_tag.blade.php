@@ -221,19 +221,21 @@
         <div class="row" style="width: 100%">
             <div class="col-md-12">
                 @include('components.regulations.searchtable', [
-                    'records' => $reg, 
-                    'isSubscribed' => $isSubscribed,
-                    'showFilters' => true,
-                    'tableId' => 'example',
-                    'filterOptions' => [
-                        'showAlphabetFilter' => true,
-                        'showYearFilter' => true,
-                        'showEntityFilter' => true,
-                        'showEffectiveDateFilter' => false,
-                        'showVersionFilter' => true,
-                        'years' => $years
-                    ]
-                ])
+                        'records' => $reg, 
+                        'isSubscribed' => $isSubscribed,
+                        'showFilters' => true,
+                        'tableId' => 'example',
+                        'filterOptions' => [
+                            'showAlphabetFilter' => true,
+                            'showYearFilter' => true,
+                            'showEntityFilter' => true,
+                            'showEffectiveDateFilter' => true,
+                            'showVersionFilter' => true,
+                            'showSearchBar' => true,
+                            'showStatusFilter' => false,
+                            'years' => $years
+                        ]
+                    ]) 
 
                 @if($reg->hasPages())
                 <div class="mt-4 d-flex justify-content-center">

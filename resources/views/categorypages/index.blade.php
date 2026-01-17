@@ -30,12 +30,24 @@
     </style>
     <script>
         $(document).ready(function() {
-            var years = @json($years); 
+            console.log('Document ready, initializing table filter');
             
-            // Initialize centralized table filter with pagination disabled
-            window.tableFilter = initCentralizedTableFilter('example', {
-                years: years
-            });
+            // Small delay to ensure DOM is fully loaded
+            setTimeout(function() {
+                // Check if table exists
+                var tableElement = document.getElementById('example');
+                console.log('Table element found:', tableElement);
+                
+                var years = @json($years); 
+                console.log('Years data:', years);
+                
+                // Initialize centralized table filter with pagination disabled
+                console.log('Calling initCentralizedTableFilter');
+                window.tableFilter = initCentralizedTableFilter('example', {
+                    years: years
+                });
+                console.log('Table filter initialized:', window.tableFilter);
+            }, 100);
             
             // Add ceased button to filter container (after Clear Filters button)
             @if ($regulations_ceased->count() > 0)
@@ -97,6 +109,8 @@
                             'showEntityFilter' => true,
                             'showEffectiveDateFilter' => true,
                             'showVersionFilter' => true,
+                            'showSearchBar' => true,
+                            'showStatusFilter' => false,
                             'years' => $years
                         ]
                     ]) 

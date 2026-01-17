@@ -12,6 +12,13 @@
 @endphp
 
 <div class="filter-container">
+    @if($options['showSearchBar'] ?? false)
+    <div class="filter-group">
+        <label for="table-search-{{ $tableId }}">Search:</label>
+        <input type="text" id="table-search-{{ $tableId }}" class="filter-select" placeholder="Search documents...">
+    </div>
+    @endif
+
     @if($options['showAlphabetFilter'] ?? true)
     <div class="filter-group">
         <label for="alphabet-filter-{{ $tableId }}">First Letter :</label>
@@ -123,6 +130,20 @@
                     <option value="{{ $versionValue }}">{{ $versionValue }}</option>
                 @endif
             @endforeach
+        </select>
+    </div>
+    @endif
+    
+    @if($options['showStatusFilter'] ?? false)
+    <div class="filter-group">
+        <label for="status-filter-{{ $tableId }}">Status:</label>
+        <select id="status-filter-{{ $tableId }}" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Ceased">Ceased</option>
+            <option value="Repealed">Repealed</option>
+            <option value="Amended">Amended</option>
+            <option value="Superseded">Superseded</option>
         </select>
     </div>
     @endif
