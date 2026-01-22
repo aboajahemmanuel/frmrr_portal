@@ -28,7 +28,8 @@ function initCentralizedTableFilter(tableId, options = {}) {
         year: '',
         search: '',
         entity: '',
-        effectiveDate: '',
+        effectiveDateStart: '',
+        effectiveDateEnd: '',
         version: '',
         status: '',
         custom: {}
@@ -48,7 +49,14 @@ function initCentralizedTableFilter(tableId, options = {}) {
     const titleColIndex = 0;
     const yearColIndex = headers.indexOf('Year');
     const entityColIndex = headers.indexOf('Entity');
-    const effectiveDateColIndex = headers.indexOf('Effective Date');
+    // More flexible detection for Effective Date column
+    let effectiveDateColIndex = -1;
+    for (let i = 0; i < headers.length; i++) {
+        if (headers[i].toLowerCase().includes('effective date')) {
+            effectiveDateColIndex = i;
+            break;
+        }
+    }
     const versionColIndex = headers.indexOf('Version Number');
     
     // Find status column - look for any header containing 'Status' (case insensitive)
@@ -66,6 +74,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
     
     // Filter and display rows
     function filterAndDisplayRows() {
+        console.log('Current filters:', currentFilters);
         let visibleCount = 0;
         
         rows.forEach((row, rowIndex) => {
@@ -76,6 +85,9 @@ function initCentralizedTableFilter(tableId, options = {}) {
             const yearText = cells[yearColIndex >= 0 ? yearColIndex : 2]?.textContent.trim() || '';
             const entityText = entityColIndex >= 0 ? cells[entityColIndex]?.textContent.trim() || '' : '';
             const effectiveDateText = effectiveDateColIndex >= 0 ? cells[effectiveDateColIndex]?.textContent.trim() || '' : '';
+            if (rowIndex < 3) {
+                console.log(`Row ${rowIndex} effective date text:`, effectiveDateText, 'Column index:', effectiveDateColIndex);
+            }
             const versionText = versionColIndex >= 0 ? cells[versionColIndex]?.textContent.trim() || '' : '';
             const statusText = statusColIndex >= 0 ? cells[statusColIndex]?.textContent.trim() || '' : '';
             
@@ -107,9 +119,68 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 visible = visible && entityText.includes(currentFilters.entity);
             }
             
-            // Effective Date filter
-            if (visible && currentFilters.effectiveDate) {
-                visible = visible && effectiveDateText.includes(currentFilters.effectiveDate);
+            // Effective Date range filter
+            if (visible && (currentFilters.effectiveDateStart || currentFilters.effectiveDateEnd)) {
+                console.log('Effective date filter - Start:', currentFilters.effectiveDateStart, 'End:', currentFilters.effectiveDateEnd);
+                console.log('Effective date text from cell:', effectiveDateText);
+                
+                // Convert the effective date text to a proper date format for comparison
+                let effectiveDateValue = null;
+                
+                // Extract date from the text (e.g., "Jan. 1, 2023")
+                const dateRegex = /([A-Za-z]{3})\.?\s*(\d{1,2}),?\s*(\d{4})/;
+                const dateMatch = effectiveDateText.match(dateRegex);
+                
+                if (dateMatch) {
+                    const monthAbbr = dateMatch[1];
+                    const day = dateMatch[2];
+                    const year = dateMatch[3];
+                    
+                    // Create a proper date string
+                    const monthMap = {
+                        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                    };
+                    
+                    const monthNum = monthMap[monthAbbr];
+                    effectiveDateValue = new Date(`${year}-${monthNum}-${day}`);
+                    console.log('Parsed date from regex:', effectiveDateValue);
+                } else {
+                    // If the format doesn't match, try direct parsing
+                    effectiveDateValue = new Date(effectiveDateText);
+                    console.log('Direct parsed date:', effectiveDateValue);
+                }
+                
+                // If the date couldn't be parsed, hide the row
+                if (isNaN(effectiveDateValue.getTime())) {
+                    console.log('Date could not be parsed, hiding row');
+                    visible = false;
+                } else {
+                    // Apply date range filter
+                    // Convert to same timezone to avoid date comparison issues
+                    const effectiveDateMidnight = new Date(effectiveDateValue.getFullYear(), effectiveDateValue.getMonth(), effectiveDateValue.getDate());
+                    
+                    if (currentFilters.effectiveDateStart) {
+                        // Parse start date (YYYY-MM-DD format from date input)
+                        const startDate = new Date(currentFilters.effectiveDateStart);
+                        // Set to midnight for comparison
+                        const startMidnight = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                        console.log('Start filter date:', startMidnight, 'Row date:', effectiveDateMidnight);
+                        visible = visible && effectiveDateMidnight >= startMidnight;
+                        console.log('After start date check, visible:', visible);
+                    }
+                    
+                    if (currentFilters.effectiveDateEnd) {
+                        // Parse end date (YYYY-MM-DD format from date input)
+                        const endDate = new Date(currentFilters.effectiveDateEnd);
+                        // Set to midnight for comparison
+                        const endMidnight = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                        console.log('End filter date:', endMidnight, 'Row date:', effectiveDateMidnight);
+                        visible = visible && effectiveDateMidnight <= endMidnight;
+                        console.log('After end date check, visible:', visible);
+                    }
+                }
             }
             
             // Version filter
@@ -168,8 +239,18 @@ function initCentralizedTableFilter(tableId, options = {}) {
         if (currentFilters.entity) {
             activeFilters.push('Entity: ' + currentFilters.entity);
         }
-        if (currentFilters.effectiveDate) {
-            activeFilters.push('Effective Date: ' + currentFilters.effectiveDate);
+        if (currentFilters.effectiveDateStart || currentFilters.effectiveDateEnd) {
+            let dateFilterText = 'Effective Date: ';
+            if (currentFilters.effectiveDateStart) {
+                dateFilterText += 'From ' + currentFilters.effectiveDateStart;
+            }
+            if (currentFilters.effectiveDateEnd) {
+                if (currentFilters.effectiveDateStart) {
+                    dateFilterText += ' to ';
+                }
+                dateFilterText += currentFilters.effectiveDateEnd;
+            }
+            activeFilters.push(dateFilterText);
         }
         if (currentFilters.version) {
             activeFilters.push('Version: ' + currentFilters.version);
@@ -316,11 +397,22 @@ function initCentralizedTableFilter(tableId, options = {}) {
             });
         }
         
-        // Effective Date filter
-        const effectiveDateFilter = document.getElementById('effective-date-filter-' + tableId);
-        if (effectiveDateFilter) {
-            effectiveDateFilter.addEventListener('change', function(e) {
-                currentFilters.effectiveDate = e.target.value;
+        // Effective Date range filters
+        const effectiveDateStartFilter = document.getElementById('effective-date-start-filter-' + tableId);
+        const effectiveDateEndFilter = document.getElementById('effective-date-end-filter-' + tableId);
+        
+        if (effectiveDateStartFilter) {
+            effectiveDateStartFilter.addEventListener('change', function(e) {
+                currentFilters.effectiveDateStart = e.target.value;
+                console.log('Effective date start changed to:', e.target.value);
+                filterAndDisplayRows();
+            });
+        }
+        
+        if (effectiveDateEndFilter) {
+            effectiveDateEndFilter.addEventListener('change', function(e) {
+                currentFilters.effectiveDateEnd = e.target.value;
+                console.log('Effective date end changed to:', e.target.value);
                 filterAndDisplayRows();
             });
         }
@@ -357,7 +449,18 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 if (alphabetFilter) alphabetFilter.value = '';
                 if (yearFilter) yearFilter.value = '';
                 if (entityFilter) entityFilter.value = '';
-                if (effectiveDateFilter) effectiveDateFilter.value = '';
+                if (effectiveDateStartFilter) {
+                    effectiveDateStartFilter.value = '';
+                    console.log('Cleared effective date start filter');
+                }
+                if (effectiveDateEndFilter) {
+                    effectiveDateEndFilter.value = '';
+                    console.log('Cleared effective date end filter');
+                }
+                
+                // Also explicitly clear the filter values in the state
+                currentFilters.effectiveDateStart = '';
+                currentFilters.effectiveDateEnd = '';
                 if (versionFilter) versionFilter.value = '';
                 if (statusFilter) statusFilter.value = '';
                 
@@ -366,11 +469,16 @@ function initCentralizedTableFilter(tableId, options = {}) {
                     year: '',
                     search: '',
                     entity: '',
-                    effectiveDate: '',
+                    effectiveDateStart: '',
+                    effectiveDateEnd: '',
                     version: '',
                     status: '',
                     custom: {}
                 };
+                
+                // Explicitly clear the date input values
+                if (effectiveDateStartFilter) effectiveDateStartFilter.value = '';
+                if (effectiveDateEndFilter) effectiveDateEndFilter.value = '';
                 
                 filterAndDisplayRows();
             });
@@ -435,7 +543,8 @@ function initCentralizedTableFilter(tableId, options = {}) {
             const alphabetFilter = document.getElementById('alphabet-filter-' + tableId);
             const yearFilter = document.getElementById('year-filter-' + tableId);
             const entityFilter = document.getElementById('entity-filter-' + tableId);
-            const effectiveDateFilter = document.getElementById('effective-date-filter-' + tableId);
+            const effectiveDateStartFilter = document.getElementById('effective-date-start-filter-' + tableId);
+            const effectiveDateEndFilter = document.getElementById('effective-date-end-filter-' + tableId);
             const versionFilter = document.getElementById('version-filter-' + tableId);
             const statusFilter = document.getElementById('status-filter-' + tableId);
             
@@ -443,7 +552,8 @@ function initCentralizedTableFilter(tableId, options = {}) {
             if (alphabetFilter) alphabetFilter.value = '';
             if (yearFilter) yearFilter.value = '';
             if (entityFilter) entityFilter.value = '';
-            if (effectiveDateFilter) effectiveDateFilter.value = '';
+            if (effectiveDateStartFilter) effectiveDateStartFilter.value = '';
+            if (effectiveDateEndFilter) effectiveDateEndFilter.value = '';
             if (versionFilter) versionFilter.value = '';
             if (statusFilter) statusFilter.value = '';
             
@@ -452,11 +562,16 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 year: '',
                 search: '',
                 entity: '',
-                effectiveDate: '',
+                effectiveDateStart: '',
+                effectiveDateEnd: '',
                 version: '',
                 status: '',
                 custom: {}
             };
+            
+            // Explicitly clear the date input values
+            if (effectiveDateStartFilter) effectiveDateStartFilter.value = '';
+            if (effectiveDateEndFilter) effectiveDateEndFilter.value = '';
             
             filterAndDisplayRows();
         }

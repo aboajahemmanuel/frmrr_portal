@@ -487,7 +487,7 @@
                                                             </div>
                                                         </div>
                                                         
-                                                        <div class="col-md-6">
+                                                        {{-- <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label class="form-label" for="doc_preview_count">Preview Page Count</label>
                                                                 <div class="form-control-wrap">
@@ -499,7 +499,7 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                        </div> --}}
                                                         
 
                                                        <div class="col-md-6">

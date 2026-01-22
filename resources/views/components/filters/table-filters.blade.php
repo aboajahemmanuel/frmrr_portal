@@ -11,6 +11,35 @@
     // $years: array of years for year filter (optional)
 @endphp
 
+<style>
+    .filter-container .filter-group.date-range-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .filter-container .date-range-container {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    
+    .filter-container .date-range-container input[type="date"] {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #fff;
+        font-size: 14px;
+        min-width: 120px;
+        flex: 1;
+    }
+    
+    .filter-container .date-range-container span {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+</style>
+
 <div class="filter-container">
     @if($options['showSearchBar'] ?? false)
     <div class="filter-group">
@@ -79,29 +108,13 @@
     @endif
 
     @if($options['showEffectiveDateFilter'] ?? true)
-    <div class="filter-group">
-        <label for="effective-date-filter-{{ $tableId }}">Effective Date:</label>
-        <select id="effective-date-filter-{{ $tableId }}" class="filter-select">
-            <option value="">All Dates</option>
-            @php
-                $effectiveDates = $records->pluck('effective_date')->unique()->filter()->sort()->values();
-            @endphp
-            @foreach($effectiveDates as $date)
-                @if($date)
-                    @php
-                        // Ensure we're working with a string value
-                        if (is_object($date)) {
-                            // If it's an object, convert to string
-                            $dateValue = (string)$date;
-                        } else {
-                            // If it's not an object, use as is
-                            $dateValue = $date;
-                        }
-                    @endphp
-                    <option value="{{ \Carbon\Carbon::parse($dateValue)->format('M. j, Y') }}">{{ \Carbon\Carbon::parse($dateValue)->format('M. j, Y') }}</option>
-                @endif
-            @endforeach
-        </select>
+    <div class="filter-group date-range-group">
+        <label for="effective-date-start-filter-{{ $tableId }}">Effective Date Range:</label>
+        <div class="date-range-container">
+            <input type="date" id="effective-date-start-filter-{{ $tableId }}" class="filter-select" placeholder="Start date">
+            <span>to</span>
+            <input type="date" id="effective-date-end-filter-{{ $tableId }}" class="filter-select" placeholder="End date">
+        </div>
     </div>
     @endif
 
