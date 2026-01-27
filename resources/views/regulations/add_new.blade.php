@@ -517,7 +517,7 @@
             data-placeholder="Select one or more documents">
             
             @foreach ($relatedDocuments as $docs)
-                <option value="{{ $docs->id }}">{{ $docs->title }}</option>
+                <option value="{{ $docs->id }}">{{ $docs->title }} ({{ $docs->year->name }})</option>
             @endforeach
         </select>
     </div>
