@@ -839,7 +839,7 @@
                                                                     @foreach ($relatedDocuments as $doc)
                                                                         <option value="{{ $doc->id }}" 
                                                                             {{ $regulation->relatedDocuments->contains('id', $doc->id) ? 'selected' : '' }}>
-                                                                            {{ $doc->title }} ({{ $doc->year->name }})
+                                                                            {{ $doc->title }} ({{ $doc->month->name }} - {{ $doc->year->name }})
                                                                         </option>
                                                                     @endforeach
                                                                 </select>
