@@ -176,57 +176,61 @@
                     @if (Auth::check())
                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                             <div class="table-responsive-wrapper">
-                                <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
-                                <thead>
+                                <table id="example" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        {{-- <th style="text-align: center;">Category</th>--}}
-                                        <th style="text-align: center;">Subcategory</th> 
-                                        <th style="text-align: center;">Version Number</th>
-                                        <th style="text-align: center;">Issue Date</th>
-                                        <th style="text-align: center;">Year</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Status</th>
-                                        <th style="text-align: center;">Status Date</th>
-                                        <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;">Market Product</th>
-                                        <th style="text-align: center;">Related Docs</th>
-                                        <th style="text-align: center;">Action</th>
+                                        <th class="text-center" style="min-width: 150px; white-space: nowrap;">Title</th>
+                                        {{-- <th class="text-center d-none d-lg-table-cell">Category</th>--}}
+                                        <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Subcategory</th> 
+                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Version Number</th>
+                                        <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Issue Date</th>
+                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 80px; white-space: nowrap;">Year</th>
+                                        <th class="text-center" style="min-width: 100px; white-space: nowrap;">Effective Date</th>
+                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 80px; white-space: nowrap;">Status</th>
+                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Status Date</th>
+                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Entity</th>
+                                        <th class="text-center d-none d-xl-table-cell" style="min-width: 120px; white-space: nowrap;">Market Product</th>
+                                        <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Related Docs</th>
+                                        <th class="text-center" style="min-width: 120px; white-space: nowrap;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($records as $result)
                                         <tr>
-                                            <td class="" style="text-align:justify">
+                                            <td class="align-middle" style="text-align:justify; max-width: 200px; word-wrap: break-word;">
                                                 <a href="#" data-toggle="modal"
                                                     data-target="#pdfModal-{{ $result->id }}">
-                                                    {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
-
+                                                    <div class="d-block d-sm-none" style="font-size: 0.9em;">
+                                                        <div class="fw-bold">{{ Str::limit($result->title, 50) }}</div>
+                                                    </div>
+                                                    <div class="d-none d-sm-block">
+                                                        {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                                    </div>
                                                 </a>
                                             </td>
-                                            {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td>--}}
-                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td> 
+                                            {{-- <td class="text-center align-middle">{{ optional($result->category)->name }}</td>--}}
+                                            <td class="text-center align-middle">{{ optional($result->subcategory)->name }}</td> 
                                             
-                                            <td style="text-align: center">{{ $result->document_version }}</td>
-                                            <td style="text-align: center">
+                                            <td class="text-center align-middle">{{ $result->document_version }}</td>
+                                            <td class="text-center align-middle">
                                                 {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
                                             </td>
-                                            <td style="text-align: center">{{ $result->year->name }}</td>
-                                            <td style="text-align: center">
+                                            <td class="text-center align-middle">{{ $result->year->name }}</td>
+                                            <td class="text-center align-middle">
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
-                                             <td style="text-align: center">
+                                             <td class="text-center align-middle">
                                                 @if($result->ceased && $result->ceased !== 'Active')
                                                     <span class="badge badge-primary">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased), function($status) { return trim($status) !== 'Active'; }))) }}</span>
                                                 @endif
                                             </td>
 
-                                             <td style="text-align: center">
+                                             <td class="text-center align-middle">
                                                 {{ \Carbon\Carbon::parse($result->ceased_date)->format('M. d, Y') }}
                                             </td>
 
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td style="text-align: center">
+                                            <td class="text-center align-middle">{{ optional($result->entity)->name }}</td>
+                                            <td class="text-center align-middle">
                                                 @php
                                                     $tags = $result->marketProductTags ?? collect();
                                                     if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
@@ -237,9 +241,14 @@
                                                     }
                                                 @endphp
                                                 @if($tags && $tags->count())
-                                                    @foreach($tags as $tag)
-                                                        <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
-                                                    @endforeach
+                                                    <div class="d-none d-md-block">
+                                                        @foreach($tags as $tag)
+                                                            <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="d-md-none">
+                                                        <span class="badge badge-info">Tags: {{ $tags->count() }}</span>
+                                                    </div>
                                                 @else
                                                     <span class="badge badge-secondary">None</span>
                                                 @endif
@@ -509,35 +518,40 @@
                             </div>
                         @else
                             <div class="table-responsive-wrapper">
-                                <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
-                                <thead>
+                                <table id="example" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <th style="text-align: center;">Title</th>
-                                        {{-- <th style="text-align: center;">Category</th> --}}
-                                        <th style="text-align: center;">Subcategory</th>
-                                        <th style="text-align: center;">Effective Date</th>
-                                        <th style="text-align: center;">Entity</th>
-                                        <th style="text-align: center;">Related Docs</th>
-                                        <th style="text-align: center;"><span style=" display:none">Entity</span></th>
-                                        <th style="text-align: center;"><span>Action</span></th>
+                                        <th class="text-center" style="min-width: 150px; white-space: nowrap;">Title</th>
+                                        {{-- <th class="text-center d-none d-lg-table-cell">Category</th> --}}
+                                        <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Subcategory</th>
+                                        <th class="text-center" style="min-width: 100px; white-space: nowrap;">Effective Date</th>
+                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Entity</th>
+                                        <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Related Docs</th>
+                                        <th class="text-center" style="display: none;"><span>Entity</span></th>
+                                        <th class="text-center" style="min-width: 120px; white-space: nowrap;"><span>Action</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($records as $result)
                                         <tr>
-                                            <td class="" style="text-align: justify;">
+                                            <td class="align-middle" style="text-align: justify; max-width: 200px; word-wrap: break-word;">
                                                 <a href="#" data-toggle="modal"
                                                     data-target="#pdfModal-{{ $result->id }}">
-                                                    {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                                    <div class="d-block d-sm-none" style="font-size: 0.9em;">
+                                                        <div class="fw-bold">{{ Str::limit($result->title, 50) }}</div>
+                                                    </div>
+                                                    <div class="d-none d-sm-block">
+                                                        {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                                    </div>
                                                 </a>
                                             </td>
-                                            {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td> --}}
-                                            <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
-                                            <td style="text-align: center">
+                                            {{-- <td class="text-center align-middle">{{ optional($result->category)->name }}</td> --}}
+                                            <td class="text-center align-middle">{{ optional($result->subcategory)->name }}</td>
+                                            <td class="text-center align-middle">
                                                 {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
                                             </td>
-                                            <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                                            <td style="text-align: center">
+                                            <td class="text-center align-middle">{{ optional($result->entity)->name }}</td>
+                                            <td class="text-center align-middle">
                                                 @php
                                                     $tags = $result->marketProductTags ?? collect();
                                                     if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
@@ -548,9 +562,14 @@
                                                     }
                                                 @endphp
                                                 @if($tags && $tags->count())
-                                                    @foreach($tags as $tag)
-                                                        <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
-                                                    @endforeach
+                                                    <div class="d-none d-md-block">
+                                                        @foreach($tags as $tag)
+                                                            <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="d-md-none">
+                                                        <span class="badge badge-info">Tags: {{ $tags->count() }}</span>
+                                                    </div>
                                                 @else
                                                     <span class="badge badge-secondary">None</span>
                                                 @endif
@@ -799,23 +818,28 @@
                             <table id="example" class="datatable-init responsive table table-striped" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th style="text-align: center;">Title</th>
-                                    {{-- <th style="text-align: center;">Category</th>
-                                    <th style="text-align: center;">Subcategory</th> --}}
-                                    <th style="text-align: center;">Effective Date</th>
-                                    <th style="text-align: center;">Entity</th>
-                                    <th style="text-align: center;">Related Docs</th>
+                                    <th class="text-center" style="min-width: 150px; white-space: nowrap;">Title</th>
+                                    {{-- <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Category</th>
+                                    <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Subcategory</th> --}}
+                                    <th class="text-center" style="min-width: 100px; white-space: nowrap;">Effective Date</th>
+                                    <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Entity</th>
+                                    <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Related Docs</th>
                                     <th style="text-align: center;"><span style=" display:none">Entity</span></th>
-                                    <th style="text-align: center;"><span>Action</span></th>
+                                    <th class="text-center" style="min-width: 120px; white-space: nowrap;"><span>Action</span></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($records as $result)
                                     <tr>
-                                        <td class="" style="text-align: justify;">
+                                        <td class="align-middle" style="text-align: justify; max-width: 200px; word-wrap: break-word;">
                                             <a href="#" data-toggle="modal"
                                                 data-target="#pdfModal-{{ $result->id }}">
-                                                {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                                    <div class="d-block d-sm-none" style="font-size: 0.9em;">
+                                                        <div class="fw-bold">{{ Str::limit($result->title, 50) }}</div>
+                                                    </div>
+                                                    <div class="d-none d-sm-block">
+                                                        {{ $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                                    </div>
                                             </a>
                                         </td>
                                         {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td>
@@ -859,45 +883,68 @@
                                                 style=" display:none">{{ $result->year->name }}</span></td>
                                         <td class="tb-odr-action"
                                             style="display: flex !important; align-items: center; justify-content: center">
+                                            <!-- Desktop view buttons -->
                                             <div style="display: flex !important; align-items: center; justify-content: center" class="tb-odr-btns d-none d-sm-inline">
                                                 @if ($isSubscribed)
                                                     <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
                                                         target="_blank"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
+                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary" title="View">
                                                         <em class="icon ni ni-book-read"></em>
                                                     </a>
                                                     <a href="{{ route('download', $result->id) }}"
-                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary" title="Download"><em
                                                             class="icon ni ni-download"></em></a>
+                                                    <a href="#" id="submit"
+                                                        onclick="document.getElementById('save-{{ $result->id }}').submit();"
+                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary" title="Save"><em
+                                                        class="icon ni ni-save"></em></a>
                                                 @else
                                                     @if (Auth::check())
                                                         <a href="{{ route('subscribe') }}" target="_blank"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                            <em class="icon ni ni-book-read"></em>
+                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary" title="Subscribe">
+                                                            <em class="icon ni ni-lock"></em>
                                                         </a>
-                                                        <a href="{{ route('subscribe') }}"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-download"></em></a>
                                                     @else
                                                         <a href="{{ route('login') }}" target="_blank"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary">
-                                                            <em class="icon ni ni-book-read"></em>
+                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary" title="Login">
+                                                            <em class="icon ni ni-lock"></em>
                                                         </a>
-                                                        <a href="{{ route('login') }}"
-                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                class="icon ni ni-download"></em></a>
                                                     @endif
                                                 @endif
-                                                <a href="#" id="submit"
-                                                    onclick="document.getElementById('save-{{ $result->id }}').submit();"
-                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                        class="icon ni ni-save"></em></a>
-                                                <form id="save-{{ $result->id }}"
-                                                    action="{{ route('save-document', $result->id) }}" method="POST"
-                                                    class="d-none" style="display: none">
-                                                    @csrf
-                                                </form>
                                             </div>
+                                            
+                                            <!-- Mobile view buttons -->
+                                            <div class="d-sm-none d-flex justify-content-center">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    @if ($isSubscribed)
+                                                        <a href="{{ asset('public/pdf_documents/' . $result->regulation_doc) }}"
+                                                            target="_blank"
+                                                            class="btn btn-outline-primary btn-sm" title="View">
+                                                            <em class="icon ni ni-book-read"></em>
+                                                        </a>
+                                                        <a href="{{ route('download', $result->id) }}"
+                                                            class="btn btn-outline-primary btn-sm" title="Download">
+                                                            <em class="icon ni ni-download"></em>
+                                                        </a>
+                                                        <a href="#" id="mobile-submit-{{ $result->id }}"
+                                                            onclick="document.getElementById('save-{{ $result->id }}').submit();"
+                                                            class="btn btn-outline-primary btn-sm" title="Save">
+                                                            <em class="icon ni ni-save"></em>
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ route('subscribe') }}" target="_blank"
+                                                            class="btn btn-outline-warning btn-sm" title="Subscribe">
+                                                            <em class="icon ni ni-lock"></em>
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            
+                                            <form id="save-{{ $result->id }}"
+                                                action="{{ route('save-document', $result->id) }}" method="POST"
+                                                class="d-none" style="display: none">
+                                                @csrf
+                                            </form>
                                         </td>
                                     </tr>
                                     <div class="modal fade" id="pdfModal-{{ $result->id }}" tabindex="-1"

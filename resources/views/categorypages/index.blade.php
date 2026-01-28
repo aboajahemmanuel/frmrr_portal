@@ -107,8 +107,8 @@
                             'showAlphabetFilter' => true,
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
-                            'showEffectiveDateFilter' => true,
-                            'showVersionFilter' => true,
+                            'showEffectiveDateFilter' => false,
+                            'showVersionFilter' => false,
                             'showSearchBar' => true,
                             'showStatusFilter' => false,
                             'years' => $years

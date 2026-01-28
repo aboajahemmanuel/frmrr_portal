@@ -824,7 +824,7 @@
                                                                                     @foreach($relatedDocs as $relatedDoc)
                                                                                         <li>
                                                                                             <a href="{{ route('view_doc', $relatedDoc->id) }}" target="_blank">
-                                                                                                {{ $relatedDoc->title }}
+                                                                                                {{ $relatedDoc->title }} ({{ $relatedDoc->month->name }} - {{ $relatedDoc->year->name }})
                                                                                             </a>
                                                                                         </li>
                                                                                     @endforeach

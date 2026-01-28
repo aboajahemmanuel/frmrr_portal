@@ -168,8 +168,8 @@
 
 @if (Auth::check())
     @if ($isSubscribed || Auth::user()->usertype == 'internal')
-        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-ordering="false">
-            <thead>
+        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+       <thead class="thead-dark">
                 <tr>
                     <th style="text-align: center;">Title</th>
                   
@@ -535,8 +535,8 @@
                 cursor: default !important;
             }
         </style>
-        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-auto-responsive="false" data-ordering="false">
-            <thead>
+        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+       <thead class="thead-dark">
                 <tr>
                     <th style="text-align: center;">Title</th>
                     <th style="text-align: center;">Category</th> 
