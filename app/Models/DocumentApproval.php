@@ -16,7 +16,8 @@ class DocumentApproval extends Model
         'title', 'effective_date', 'issue_date', 'document_version', 'year_id', 
         'month_id', 'entity_id', 'category_id', 'subcategory_id', 'alpha_id', 
         'document_tag', 'ceased_date', 'ceased', 'doc_preview', 'doc_preview_count',
-        'related_docs', 'market_product_tag', 'regulation_doc', 'slug', 'group_id', 'authoriser_time', 'inputter_time'
+        'related_docs', 'market_product_tag', 'regulation_doc', 'slug', 'group_id', 'authoriser_time', 'inputter_time',
+        'temp_nested_related_docs', 'temp_relationship_types', 'temp_relationship_notes'
     ];
 
     public function regulation()

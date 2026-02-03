@@ -830,7 +830,7 @@
                                                         </div>
                                                     </div> --}}
 
-                                                    {{-- Related Documents Section --}}
+                                                    {{-- Related Documents Section (Simple) --}}
                                                     <div class="col-md-6">
                                                         <div class="form-group">
                                                             <label class="form-label" for="related-documents-select">
@@ -855,12 +855,38 @@
                                                         </div>
                                                     </div>
 
+                                                    {{-- Nested Related Documents Section (Advanced Relationships) --}}
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label class="form-label" for="nested-related-documents-select">
+                                                                Select Nested Related Documents
+                                                            </label>
+                                                            <div class="form-control-wrap">
+                                                                <select 
+                                                                    name="nested_related_docs[]" 
+                                                                    id="nested-related-documents-select"
+                                                                    class="form-select form-control select2"
+                                                                    multiple="multiple"
+                                                                    data-placeholder="Select one or more documents">
+                                                                    
+                                                                    @foreach ($nestedRelatedDocuments as $doc)
+                                                                        <option value="{{ $doc->id }}" 
+                                                                            {{ !empty($regulation->nested_related_docs) && is_array($regulation->nested_related_docs) && in_array($doc->id, $regulation->nested_related_docs) ? 'selected' : '' }}>
+                                                                            {{ $doc->title }} ({{ $doc->month->name }} - {{ $doc->year->name }})
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
                                                     <script>
                                                         $(document).ready(function() {
                                                             $('#related-documents-select').select2();
+                                                            $('#nested-related-documents-select').select2();
                                                         });
                                                     </script>
-                                                    {{-- End Related Documents Section --}}
+                                                    {{-- End Related Documents Sections --}}
 
                                                     <div class="col-12">
                                                         <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">

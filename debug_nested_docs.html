@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Nested Related Docs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Debug: Nested Related Documents for Document ID 35</h1>
+        
+        <?php
+        require_once __DIR__ . '/vendor/autoload.php';
+        $app = require_once __DIR__ . '/bootstrap/app.php';
+        $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+        $kernel->bootstrap();
+        
+        $result = \App\Models\Regulation::find(35);
+        ?>
+        
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Document: <?php echo $result->title; ?></h5>
+                <p>ID: <?php echo $result->id; ?></p>
+                <p>Issue Date: <?php echo $result->issue_date; ?></p>
+                
+                <!-- Related Documents Badge (same as frontend) -->
+                <?php
+                $relatedCount = $result->related_documents->count();
+                $nestedRelatedCount = $result->nested_related_docs_column ? count(json_decode($result->nested_related_docs_column, true)) : 0;
+                $totalCount = $relatedCount + $nestedRelatedCount;
+                ?>
+                
+                <p>Related Count: <?php echo $relatedCount; ?></p>
+                <p>Nested Related Count: <?php echo $nestedRelatedCount; ?></p>
+                <p>Total Count: <?php echo $totalCount; ?></p>
+                
+                <?php if($totalCount > 0): ?>
+                    <span class="badge badge-primary" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#relatedDocsModal-<?php echo $result->id; ?>">
+                        <?php echo $totalCount; ?> related
+                        <?php if($nestedRelatedCount > 0): ?>
+                            <span class="badge bg-info ms-1"><?php echo $nestedRelatedCount; ?> nested</span>
+                        <?php endif; ?>
+                    </span>
+                <?php else: ?>
+                    <span class="badge badge-secondary">None</span>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Modal for Related Documents -->
+        <div class="modal fade" id="relatedDocsModal-<?php echo $result->id; ?>" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Related Documents for <?php echo $result->title; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <?php 
+                        $relatedDocs = $result->all_related_documents;
+                        if ($relatedDocs instanceof \Illuminate\Support\Collection) {
+                            $relatedDocs = $relatedDocs->sortByDesc(function ($doc) {
+                                return \Carbon\Carbon::parse($doc->issue_date);
+                            });
+                        }
+                        
+                        $nestedRelatedDocsFromColumn = $result->nested_related_docs_column ? collect(json_decode($result->nested_related_docs_column, true)) : collect();
+                        ?>
+                        
+                        <?php if($relatedDocs->count() > 0 || $nestedRelatedDocsFromColumn->count() > 0): ?>
+                            <div class="accordion" id="relatedDocsAccordion-<?php echo $result->id; ?>">
+                                <!-- Regular related documents -->
+                                <?php foreach($relatedDocs as $index => $relatedDoc): ?>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button <?php echo $index > 0 ? 'collapsed' : ''; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?php echo $result->id; ?>-<?php echo $index; ?>">
+                                                <?php echo $relatedDoc->title; ?>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-<?php echo $result->id; ?>-<?php echo $index; ?>" class="accordion-collapse collapse <?php echo $index == 0 ? 'show' : ''; ?>">
+                                            <div class="accordion-body">
+                                                <p>Issue Date: <?php echo $relatedDoc->issue_date; ?></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                                
+                                <!-- Nested related documents from column -->
+                                <?php if($nestedRelatedDocsFromColumn->count() > 0): ?>
+                                    <?php foreach($nestedRelatedDocsFromColumn as $nestedId): ?>
+                                        <?php
+                                        $nestedDoc = \App\Models\Regulation::find($nestedId);
+                                        if ($nestedDoc) {
+                                            $nestedDoc->relationship_type = 'Nested Related';
+                                        }
+                                        ?>
+                                        <?php if($nestedDoc): ?>
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-nested-<?php echo $result->id; ?>-<?php echo $nestedId; ?>">
+                                                        <?php echo $nestedDoc->title; ?> <span class="badge bg-info ms-2">Nested Related</span>
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse-nested-<?php echo $result->id; ?>-<?php echo $nestedId; ?>" class="accordion-collapse collapse">
+                                                    <div class="accordion-body">
+                                                        <p>Issue Date: <?php echo $nestedDoc->issue_date; ?></p>
+                                                        <p>Version: <?php echo $nestedDoc->document_version ?? 'N/A'; ?></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-center text-muted">No related documents found.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

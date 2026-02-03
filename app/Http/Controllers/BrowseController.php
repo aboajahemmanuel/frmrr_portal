@@ -87,7 +87,7 @@ class BrowseController extends Controller
     public function ceasedDoc($slug)
     {
 
-        $data     = Category::where('status', 1)->get();
+         $data     = Category::where('status', 1)->get();
         $category = Category::where('slug', $slug)->first();
 
         $news_alert = News::all();

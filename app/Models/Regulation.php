@@ -15,7 +15,7 @@ class Regulation extends Model
         'entity_id', 'category_id', 'subcategory_id', 'regulation_doc', 'regulation_doc2',
         'price', 'status', 'note', 'ceased', 'effective_date', 'issue_date',
         'document_version', 'ceased_date', 'group_id', 'doc_preview', 'doc_preview_count', 'admin_status',
-        'related_docs', 'market_product_tag'
+        'related_docs', 'nested_related_docs', 'market_product_tag'
             ];
 
 
@@ -143,6 +143,8 @@ class Regulation extends Model
         return $relatedDocuments;
     }
     
+
+    
     // Recursive method to load nested related documents with circular reference prevention
     private function loadNestedRelatedDocuments($document, $visitedIds = [])
     {
@@ -162,6 +164,81 @@ class Regulation extends Model
         });
         
         return $nestedDocuments;
+    }
+    
+    // Get all related documents using the relationship-based approach
+    public function getRelatedDocumentsFromRelationshipsAttribute()
+    {
+        // Get documents that this document is linked to as a source
+        $directlyRelated = $this->sourceRelationships()->where('is_active', true)->with('relatedDocument')->get();
+        
+        $result = collect();
+        
+        foreach ($directlyRelated as $relationship) {
+            if ($relationship->relatedDocument) {
+                $relationship->relatedDocument->relationship_type = $relationship->relationship_type;
+                $relationship->relatedDocument->relationship_notes = $relationship->notes;
+                $result->push($relationship->relatedDocument);
+            }
+        }
+        
+        return $result;
+    }
+    
+    // Get all nested related documents using relationship-based approach
+    public function getNestedRelatedDocumentsFromRelationshipsAttribute($visitedIds = [])
+    {
+        if (in_array($this->id, $visitedIds)) {
+            return collect();
+        }
+        
+        $visitedIds[] = $this->id;
+        
+        // Get directly related documents
+        $directlyRelated = $this->getRelatedDocumentsFromRelationshipsAttribute();
+        
+        $nestedCollection = collect();
+        
+        foreach ($directlyRelated as $relatedDoc) {
+            if (!in_array($relatedDoc->id, $visitedIds)) {
+                // Add the related document to the collection
+                $nestedCollection->push($relatedDoc);
+                
+                // Recursively get nested related documents
+                $nestedRelated = $relatedDoc->getNestedRelatedDocumentsFromRelationshipsAttribute($visitedIds);
+                $nestedCollection = $nestedCollection->merge($nestedRelated);
+            }
+        }
+        
+        return $nestedCollection->unique('id');
+    }
+    
+    // Combined method to get all related documents (both simple and relationship-based)
+    public function getAllRelatedDocumentsAttribute()
+    {
+        $simpleRelated = $this->related_documents; // Uses the existing accessor
+        $relationshipBased = $this->getRelatedDocumentsFromRelationshipsAttribute();
+        
+        // Combine both collections and return unique documents
+        return $simpleRelated->merge($relationshipBased)->unique('id');
+    }
+    
+    // Combined method to get all nested related documents
+    public function getAllNestedRelatedDocumentsAttribute($visitedIds = [])
+    {
+        $simpleNested = $this->nested_related_documents; // Uses existing nested accessor
+        $relationshipBasedNested = $this->getNestedRelatedDocumentsFromRelationshipsAttribute($visitedIds);
+        
+        // Combine both collections and return unique documents
+        return $simpleNested->merge($relationshipBasedNested)->unique('id');
+    }
+    
+
+    
+    // Direct accessor for nested_related_docs column
+    public function getNestedRelatedDocsColumnAttribute()
+    {
+        return $this->attributes['nested_related_docs'] ?? null;
     }
     
     // Accessor to get formatted title with effective date

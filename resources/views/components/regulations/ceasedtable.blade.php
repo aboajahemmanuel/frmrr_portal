@@ -256,16 +256,31 @@
                                             
                                             {{-- Related Documents Column --}}
                                             <td style="text-align: center">
-                                                @if($result->related_docs)
-                                                    @php
-                                                        $relatedDocuments = $result->related_documents;
-                                                        $relatedCount = $relatedDocuments->count();
-                                                    @endphp
-                                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
-                                                @else
-                                                    <span class="badge badge-secondary">None</span>
-                                                @endif
-                                            </td>
+                            @if($result->related_docs || $result->nested_related_docs_column)
+                                @php
+                                    $relatedDocuments = $result->related_documents;
+                                    // Sort related documents by effective_date in descending order
+                                    if ($relatedDocuments instanceof \Illuminate\Support\Collection) {
+                                        $relatedDocuments = $relatedDocuments->sortByDesc(function($doc) {
+                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                        });
+                                    }
+                                    $relatedCount = $relatedDocuments->count();
+                                    
+                                    // Get nested related documents from the new column
+                                    $nestedRelatedCount = $result->nested_related_docs_column ? count(json_decode($result->nested_related_docs_column, true)) : 0;
+                                    
+                                    $totalCount = $relatedCount + $nestedRelatedCount;
+                                @endphp
+                                <span class="badge badge-primary" title="View related documents and lineage" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related
+                                    {{-- @if($nestedRelatedCount > 0)
+                                        <span class="badge bg-info ms-1">{{ $nestedRelatedCount }} nested</span>
+                                    @endif --}}
+                                </span>
+                            @else
+                                <span class="badge badge-secondary">None</span>
+                            @endif
+                        </td>
                                             {{-- End Related Documents Column --}}
                                             
                                             <td class="tb-odr-action"
@@ -358,159 +373,316 @@
                                         </div>
                                         
                                         <!-- Modal for Related Documents -->
-                                        <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        @php 
-                                                            $relatedDocs = $result->relatedDocuments;
-                                                            // Sort related documents by issue_date in descending order
-                                                            if ($relatedDocs instanceof \Illuminate\Support\Collection) {
-                                                                $relatedDocs = $relatedDocs->sortByDesc(function($doc) {
-                                                                    return \Carbon\Carbon::parse($doc->issue_date);
-                                                                });
-                                                            }
-                                                        @endphp
-                                                        
-                                                        @if($relatedDocs->count() > 0)
-                                                            <div class="accordion" id="relatedDocsAccordion-{{ $result->id }}">
-                                                                @foreach($relatedDocs as $index => $relatedDoc)
-                                                                    <div class="accordion-item">
-                                                                        <h2 class="accordion-header" id="heading-{{ $result->id }}-{{ $index }}">
-                                                                            <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $result->id }}-{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse-{{ $result->id }}-{{ $index }}">
-                                                                                <div class="d-flex w-100 justify-content-between align-items-center">
-                                                                                    <span>{{ $relatedDoc->title }}</span>
-                                                                                    <div>
-                                                                                        @if($relatedDoc->ceased)
-                                                                                            <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
-                                                                                        @else
-                                                                                            <span class="badge badge-primary ms-2">Active</span>
-                                                                                        @endif
-                                                                                        @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                            <span class="badge bg-secondary ms-2">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
-                                                                                        @endif
-                                                                                    </div>
-                                                                                </div>
-                                                                            </button>
-                                                                        </h2>
-                                                                        <div id="collapse-{{ $result->id }}-{{ $index }}" class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading-{{ $result->id }}-{{ $index }}" data-bs-parent="#relatedDocsAccordion-{{ $result->id }}">
-                                                                            <div class="accordion-body">
-                                                                                <div class="related-doc-details">
-                                                                                    <div class="row mb-3">
-                                                                                        <div class="col-md-6">
-                                                                                            @if($relatedDoc->document_version)
-                                                                                                <p><strong>Version:</strong> {{ $relatedDoc->document_version }}</p>
-                                                                                            @endif
-                                                                                            @if($relatedDoc->effective_date)
-                                                                                                <p><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</p>
-                                                                                            @endif
-                                                                                            @if($relatedDoc->year)
-                                                                                                <p><strong>Year:</strong> {{ $relatedDoc->year->name }}</p>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                        <div class="col-md-6">
-                                                                                            @if($relatedDoc->entity)
-                                                                                                <p><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</p>
-                                                                                            @endif
-                                                                                            <p><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</p>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                    <div class="mb-3">
-                                                                                        @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                                            <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary me-2">
-                                                                                                <em class="icon ni ni-book-read"></em> View
-                                                                                            </a>
-                                                                                            <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-outline-primary me-2">
-                                                                                                <em class="icon ni ni-download"></em> Download
-                                                                                            </a>
-                                                                                            <a href="#" onclick="document.getElementById('save-{{ $relatedDoc->id }}').submit();" class="btn btn-sm btn-outline-primary">
-                                                                                                <em class="icon ni ni-save"></em> Save
-                                                                                            </a>
-                                                                                            <form id="save-{{ $relatedDoc->id }}" action="{{ route('save-document', $relatedDoc->id) }}" method="POST" class="d-none">
-                                                                                                @csrf
-                                                                                            </form>
-                                                                                        @else
-                                                                                            <a href="{{ route('subscribe') }}" class="btn btn-sm btn-warning">
-                                                                                                <em class="icon ni ni-lock"></em> Restricted - Subscribe to Access
-                                                                                            </a>
-                                                                                        @endif
-                                                                                    </div>
+                                  <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}  </h5>
+                                    
+                                    <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#activeRelatedDocsModal-{{ $result->id }}"> Jump to Active Version</span>
+                                </div>
+                                <div class="modal-body">
+                                    @php 
+                                        $relatedDocs = $result->relatedDocuments;
+                                        // Sort related documents by effective_date in descending order
+                                        if ($relatedDocs instanceof \Illuminate\Support\Collection) {
+                                            $relatedDocs = $relatedDocs->sortByDesc(function($doc) {
+                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                            });
+                                        }
+                                    @endphp
+                                    
+                                    @if($relatedDocs->count() > 0)
+                                        <div class="accordion" id="relatedDocsAccordion-{{ $result->id }}">
+                                            @foreach($relatedDocs as $index => $relatedDoc)
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="heading-{{ $result->id }}-{{ $index }}">
+                                                        <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $result->id }}-{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse-{{ $result->id }}-{{ $index }}">
+                                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                                <span>{{ $relatedDoc->title }}</span>
+                                                                <div>
+                                                                    @if($relatedDoc->ceased)
+                                                                        <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                                    @else
+                                                                        <span class="badge badge-primary ms-2">Active</span>
+                                                                    @endif
+                                                                    @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
 
-                                                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                                                        <div class="nested-related-docs mt-4">
-                                                                                            <h6>Related Documents:</h6>
-                                                                                            @foreach($relatedDoc->nested_related_documents as $nestedIndex => $nestedDoc)
-                                                                                                <div class="card mb-2">
-                                                                                                    <div class="card-body py-2">
-                                                                                                        <div class="d-flex justify-content-between align-items-start">
-                                                                                                            <div>
-                                                                                                                <h6 class="mb-1">{{ $nestedDoc->title }}</h6>
-                                                                                                                <div class="small text-muted">
-                                                                                                                    @if($nestedDoc->ceased)
-                                                                                                                        <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
-                                                                                                                    @else
-                                                                                                                        <span class="badge badge-primary">Active</span>
-                                                                                                                    @endif
-                                                                                                                    @if($nestedDoc->document_version)
-                                                                                                                        <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
-                                                                                                                    @endif
-                                                                                                                    @if($nestedDoc->effective_date)
-                                                                                                                        <span class="ms-2"><strong>Effective:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
-                                                                                                                    @endif
-                                                                                                                    @if($nestedDoc->issue_date)
-                                                                                                                        <span class="ms-2"><strong>Issue:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
-                                                                                                                    @endif
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div>
-                                                                                                                @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                                                                                                                    <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary me-1">
-                                                                                                                        <em class="icon ni ni-book-read"></em>
-                                                                                                                    </a>
-                                                                                                                    <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary me-1">
-                                                                                                                        <em class="icon ni ni-download"></em>
-                                                                                                                    </a>
-                                                                                                                    <a href="#" onclick="document.getElementById('save-nested-{{ $nestedDoc->id }}').submit();" class="btn btn-xs btn-outline-primary">
-                                                                                                                        <em class="icon ni ni-save"></em>
-                                                                                                                    </a>
-                                                                                                                    <form id="save-nested-{{ $nestedDoc->id }}" action="{{ route('save-document', $nestedDoc->id) }}" method="POST" class="d-none">
-                                                                                                                        @csrf
-                                                                                                                    </form>
-                                                                                                                @else
-                                                                                                                    <a href="{{ route('subscribe') }}" class="btn btn-xs btn-warning">
-                                                                                                                        <em class="icon ni ni-lock"></em>
-                                                                                                                    </a>
-                                                                                                                @endif
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            @endforeach
-                                                                                        </div>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+    
+    $totalNestedCount = $nestedDocsFromColumn->count();
+    $oldNestedCount = isset($relatedDoc->nested_related_documents) ? $relatedDoc->nested_related_documents->count() : 0;
+    $combinedNestedCount = $totalNestedCount + $oldNestedCount;
+@endphp
+
+{{-- @if($combinedNestedCount > 0)
+    <span class="badge bg-secondary ms-2">+{{ $combinedNestedCount }} more</span>
+@endif --}}
+                                                                </div>
                                                             </div>
-                                                        @else
-                                                            <p class="text-center text-muted">No related documents found.</p>
-                                                        @endif
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapse-{{ $result->id }}-{{ $index }}" class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading-{{ $result->id }}-{{ $index }}" data-bs-parent="#relatedDocsAccordion-{{ $result->id }}">
+                                                        <div class="accordion-body">
+                                                            <div class="related-doc-details">
+                                                                <div class="row mb-3">
+                                                                    <div class="col-md-6">
+                                                                        @if($relatedDoc->document_version)
+                                                                            <p><strong>Version:</strong> {{ $relatedDoc->document_version }}</p>
+                                                                        @endif
+                                                                        @if($relatedDoc->effective_date)
+                                                                            <p><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        @if($relatedDoc->entity)
+                                                                            <p><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</p>
+                                                                        @endif
+                                                                        <p><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary me-2">
+                                                                        <em class="icon ni ni-book-read"></em> View
+                                                                    </a>
+                                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-outline-primary">
+                                                                        <em class="icon ni ni-download"></em> Download
+                                                                    </a>
+                                                                </div>
+
+                                                                @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+@endphp
+
+@if($nestedDocsFromColumn->count() > 0)
+    <div class="nested-related-docs mt-4">
+        <h6>Related Documents:</h6>
+        @foreach($nestedDocsFromColumn as $nestedIndex => $nestedDoc)
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ $nestedDoc->title }}</h6>
+                            <div class="small text-muted">
+                                @if($nestedDoc->ceased)
+                                    <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
+                                @else
+                                    <span class="badge badge-primary">Active</span>
+                                @endif
+                                {{-- @if(isset($nestedDoc->relationship_type))
+                                    <span class="badge bg-info ms-1">{{ $nestedDoc->relationship_type }}</span>
+                                @endif --}}
+                                @if($nestedDoc->document_version)
+                                    <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                                @endif
+                                @if($nestedDoc->effective_date)
+                                    <span class="ms-2"><strong>Effective:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                @endif
+                                @if($nestedDoc->issue_date)
+                                    <span class="ms-2"><strong>Issue:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary me-1">
+                                <em class="icon ni ni-book-read"></em>
+                            </a>
+                            <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary">
+                                <em class="icon ni ni-download"></em>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+@endif
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
+                                    @else
+                                        <p class="text-center text-muted">No related documents found.</p>
+                                    @endif
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Related Documents Modal -->
+                    <div class="modal fade related-docs-modal" id="activeRelatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="activeRelatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="activeRelatedDocsModalLabel-{{ $result->id }}">Active Related Documents - {{ $result->title }}</h5>
+                                </div>
+                                <div class="modal-body">
+                                    @php
+                                        $allRelatedDocs = $result->relatedDocuments;
+                                        // Sort related documents by effective_date in descending order
+                                        if ($allRelatedDocs instanceof \Illuminate\Support\Collection) {
+                                            $allRelatedDocs = $allRelatedDocs->sortByDesc(function($doc) {
+                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                            });
+                                        }
+                                        $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection)
+                                            ? $allRelatedDocs->filter(function($doc){ return is_null($doc->ceased); })
+                                            : collect();
+                                    @endphp
+                                    @if($activeRelatedDocs->count() > 0)
+                                        @foreach($activeRelatedDocs as $relatedDoc)
+                                            <div class="related-doc-item">
+                                                <div class="related-doc-title">
+                                                    {{ $relatedDoc->title }}
+                                                    @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+    
+    // Count active nested documents
+    $activeNestedCount = $nestedDocsFromColumn->filter(function($d){ return is_null($d->ceased); })->count();
+@endphp
+
+@if($nestedDocsFromColumn->count() > 0)
+    @if($activeNestedCount > 0)
+        <span class="nested-badge">+{{ $activeNestedCount }} active</span>
+    @endif
+@endif
+                                                </div>
+                                                <div class="related-doc-meta">
+                                                    <span class="badge badge-primary">Active</span>
+                                                    @if($relatedDoc->document_version)
+                                                        <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
+                                                    @endif
+                                                    @if($relatedDoc->effective_date)
+                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                    @endif
+                                                    @if($relatedDoc->entity)
+                                                        <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
+                                                    @endif
+                                                </div>
+                                                <div style="margin-top: 8px;">
+                                                    <a href="{{ asset('public/pdf_documents/' . $relatedDoc->regulation_doc) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                        <em class="icon ni ni-book-read"></em> View
+                                                    </a>
+                                                    <a href="{{ route('download', $relatedDoc->id) }}" class="btn btn-sm btn-primary">
+                                                        <em class="icon ni ni-download"></em> Download
+                                                    </a>
+                                                </div>
+
+                                                @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                    @php 
+                                                        $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return is_null($d->ceased); });
+                                                        // Sort active nested documents by effective_date in descending order
+                                                        $activeNestedDocs = $activeNestedDocs->sortByDesc(function($doc) {
+                                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                                        });
+                                                    @endphp
+                                                    @if($activeNestedDocs->count() > 0)
+                                                        <div class="nested-related-docs">
+                                                            <small><strong>Active Related Documents:</strong></small>
+                                                            @foreach($activeNestedDocs as $nestedDoc)
+                                                                <div class="nested-doc-item">
+                                                                    <div class="nested-doc-title">
+                                                                        <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
+                                                                    </div>
+                                                                    <div class="related-doc-meta">
+                                                                        <span class="badge badge-primary">Active</span>
+                                                                        @if($nestedDoc->document_version)
+                                                                            <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                                                                        @endif
+                                                                        @if($nestedDoc->effective_date)
+                                                                            <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                        @endif
+                                                                        @if($nestedDoc->issue_date)
+                                                                            <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div style="margin-top: 5px;">
+                                                                        <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary">
+                                                                            <em class="icon ni ni-book-read"></em> View
+                                                                        </a>
+                                                                        <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary">
+                                                                            <em class="icon ni ni-download"></em> Download
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <p class="text-center text-muted">No active related documents found.</p>
+                                    @endif
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                                         <!-- End Modal for Related Documents -->
                                     @endforeach
                                 </tbody>
@@ -727,8 +899,14 @@
                                                                                     </div>
                                                                                     {{-- Check if this related document has its own related documents --}}
                                                                                     @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                        @php
+                                                                                            // Sort nested documents by effective_date in descending order
+                                                                                            $sortedNestedDocs = $relatedDoc->nested_related_documents->sortByDesc(function($doc) {
+                                                                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                                                            });
+                                                                                        @endphp
                                                                                         @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                            'nestedDocuments' => $sortedNestedDocs,
                                                                                             'parentIndex' => $index + 1,
                                                                                             'level' => 1,
                                                                                             'isSubscribed' => $isSubscribed || Auth::user()->usertype == 'internal'
@@ -754,8 +932,14 @@
                                                                                     </div>
                                                                                     {{-- Check if this related document has its own related documents --}}
                                                                                     @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                        @php
+                                                                                            // Sort nested documents by effective_date in descending order
+                                                                                            $sortedNestedDocs = $relatedDoc->nested_related_documents->sortByDesc(function($doc) {
+                                                                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                                                            });
+                                                                                        @endphp
                                                                                         @include('partials.nested-related-documents', [
-                                                                                            'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                            'nestedDocuments' => $sortedNestedDocs,
                                                                                             'parentIndex' => $index + 1,
                                                                                             'level' => 1,
                                                                                             'isSubscribed' => false
@@ -871,6 +1055,12 @@
                                             @if($result->related_docs)
                                                 @php
                                                     $relatedDocuments = $result->related_documents;
+                                                    // Sort related documents by effective_date in descending order
+                                                    if ($relatedDocuments instanceof \Illuminate\Support\Collection) {
+                                                        $relatedDocuments = $relatedDocuments->sortByDesc(function($doc) {
+                                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                                        });
+                                                    }
                                                     $relatedCount = $relatedDocuments->count();
                                                 @endphp
                                                 <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related</span>
@@ -980,6 +1170,12 @@
                                                 <div class="modal-body">
                                                     @php
                                                         $relatedDocuments = $result->related_documents;
+                                                        // Sort related documents by effective_date in descending order
+                                                        if ($relatedDocuments instanceof \Illuminate\Support\Collection) {
+                                                            $relatedDocuments = $relatedDocuments->sortByDesc(function($doc) {
+                                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                            });
+                                                        }
                                                     @endphp
                                                     @if($relatedDocuments && $relatedDocuments->count() > 0)
                                                         <div class="card w-100 border-0 shadow-sm">
@@ -1043,8 +1239,14 @@
                                                                                 </div>
                                                                                 {{-- Check if this related document has its own related documents --}}
                                                                                 @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                    @php
+                                                                                        // Sort nested documents by effective_date in descending order
+                                                                                        $sortedNestedDocs = $relatedDoc->nested_related_documents->sortByDesc(function($doc) {
+                                                                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                                                                        });
+                                                                                    @endphp
                                                                                     @include('partials.nested-related-documents', [
-                                                                                        'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                        'nestedDocuments' => $sortedNestedDocs,
                                                                                         'parentIndex' => $index + 1,
                                                                                         'level' => 1,
                                                                                         'isSubscribed' => $isSubscribed || Auth::user()->usertype == 'internal'
@@ -1070,8 +1272,14 @@
                                                                                 </div>
                                                                                 {{-- Check if this related document has its own related documents --}}
                                                                                 @if($relatedDoc->related_docs && $relatedDoc->nested_related_documents->count() > 0)
+                                                                                    @php
+                                                                                        // Sort nested documents by effective_date in descending order
+                                                                                        $sortedNestedDocs = $relatedDoc->nested_related_documents->sortByDesc(function($doc) {
+                                                                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                                                                        });
+                                                                                    @endphp
                                                                                     @include('partials.nested-related-documents', [
-                                                                                        'nestedDocuments' => $relatedDoc->nested_related_documents,
+                                                                                        'nestedDocuments' => $sortedNestedDocs,
                                                                                         'parentIndex' => $index + 1,
                                                                                         'level' => 1,
                                                                                         'isSubscribed' => false

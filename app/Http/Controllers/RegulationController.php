@@ -147,6 +147,29 @@ class RegulationController extends Controller
         if ($request->has('related_docs') && is_array($request->related_docs)) {
             $new_regulation->related_docs = implode(',', $request->related_docs);
         }
+        
+        // Handle nested related documents (document relationships)
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // Process document relationships
+            foreach ($request->nested_related_docs as $relatedDocId) {
+                // Check if relationship already exists to avoid duplicates
+                $existingRelationship = \App\Models\DocumentRelationship::where('source_document_id', $new_regulation->id)
+                    ->where('related_document_id', $relatedDocId)
+                    ->first();
+                
+                if (!$existingRelationship) {
+                    $documentRelationship = new \App\Models\DocumentRelationship();
+                    $documentRelationship->source_document_id = $new_regulation->id;
+                    $documentRelationship->related_document_id = $relatedDocId;
+                    $documentRelationship->relationship_type = $request->relationship_type[$relatedDocId] ?? 'Related';
+                    $documentRelationship->notes = $request->relationship_notes[$relatedDocId] ?? null;
+                    $documentRelationship->is_active = true;
+                    $documentRelationship->created_by = Auth::id();
+                    $documentRelationship->group_id = $user->group_id;
+                    $documentRelationship->save();
+                }
+            }
+        }
 
         if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
             $new_regulation->market_product_tag = implode(',', $request->market_product_tags);
@@ -205,6 +228,14 @@ class RegulationController extends Controller
         // Add related_docs to the approval record
         if ($request->has('related_docs') && is_array($request->related_docs)) {
             $regulation_approval->related_docs = implode(',', $request->related_docs);
+        }
+        
+        // Handle nested related documents for approval records
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // Store nested related document IDs temporarily in approval record
+            $regulation_approval->temp_nested_related_docs = json_encode($request->nested_related_docs);
+            $regulation_approval->temp_relationship_types = json_encode($request->relationship_type ?? []);
+            $regulation_approval->temp_relationship_notes = json_encode($request->relationship_notes ?? []);
         }
 
         if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
@@ -302,6 +333,32 @@ class RegulationController extends Controller
         // Add related_docs to the approval record
         if ($request->has('related_docs') && is_array($request->related_docs)) {
             $regulation_approval->related_docs = implode(',', $request->related_docs);
+        }
+        
+        // Handle nested related documents for approval records
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // Store nested related document IDs temporarily in approval record
+            $regulation_approval->temp_nested_related_docs = json_encode($request->nested_related_docs);
+            $regulation_approval->temp_relationship_types = json_encode($request->relationship_type ?? []);
+            $regulation_approval->temp_relationship_notes = json_encode($request->relationship_notes ?? []);
+        } else {
+            // If no nested related docs in request, check if document already has relationships
+            // and preserve them in the approval record
+            $existingRelationships = $regulation_update->sourceRelationships()->pluck('related_document_id')->toArray();
+            if (!empty($existingRelationships)) {
+                $regulation_approval->temp_nested_related_docs = json_encode($existingRelationships);
+                
+                // Get existing relationship types and notes
+                $existingTypes = [];
+                $existingNotes = [];
+                $relationships = $regulation_update->sourceRelationships()->get();
+                foreach ($relationships as $rel) {
+                    $existingTypes[$rel->related_document_id] = $rel->relationship_type;
+                    $existingNotes[$rel->related_document_id] = $rel->notes;
+                }
+                $regulation_approval->temp_relationship_types = json_encode($existingTypes);
+                $regulation_approval->temp_relationship_notes = json_encode($existingNotes);
+            }
         }
 
         if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
@@ -406,13 +463,22 @@ class RegulationController extends Controller
             ->where('id', '!=', $regulation->id) // Exclude current document
             ->orderBy('title')
             ->get();
+        
+        // Get nested related documents (all documents for relationship selection)
+        $nestedRelatedDocuments = Regulation::where('admin_status', 1) // Only approved documents
+            ->where('id', '!=', $regulation->id) // Exclude current document
+            ->orderBy('title')
+            ->get();
+        
+        // Get existing nested relationships for this document
+        $existingNestedRelationships = $regulation->sourceRelationships()->with('relatedDocument')->get()->pluck('related_document_id')->toArray();
 
         $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
             ->where('admin_status', 1)
             ->orderBy('name')
             ->get();
 
-        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'marketProductTags'));
+        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'nestedRelatedDocuments', 'existingNestedRelationships', 'marketProductTags'));
     }
 
     public function view_doc($id)
@@ -441,13 +507,22 @@ class RegulationController extends Controller
             ->where('id', '!=', $regulation->id) // Exclude current document
             ->orderBy('title')
             ->get();
+        
+        // Get nested related documents (all documents for relationship selection)
+        $nestedRelatedDocuments = Regulation::where('admin_status', 1) // Only approved documents
+            ->where('id', '!=', $regulation->id) // Exclude current document
+            ->orderBy('title')
+            ->get();
+        
+        // Get existing nested relationships for this document
+        $existingNestedRelationships = $regulation->sourceRelationships()->with('relatedDocument')->get()->pluck('related_document_id')->toArray();
 
         $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
             ->where('admin_status', 1)
             ->orderBy('name')
             ->get();
 
-        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'marketProductTags'));
+        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'nestedRelatedDocuments', 'existingNestedRelationships', 'marketProductTags'));
     }
 
     /**
@@ -493,6 +568,28 @@ class RegulationController extends Controller
             $regulation->related_docs = implode(',', $request->related_docs);
         } else {
             $regulation->related_docs = null;
+        }
+        
+        // Handle nested related documents (document relationships)
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // First, remove existing relationships for this document as source
+            \App\Models\DocumentRelationship::where('source_document_id', $regulation->id)->delete();
+            
+            // Then create new relationships
+            foreach ($request->nested_related_docs as $relatedDocId) {
+                $documentRelationship = new \App\Models\DocumentRelationship();
+                $documentRelationship->source_document_id = $regulation->id;
+                $documentRelationship->related_document_id = $relatedDocId;
+                $documentRelationship->relationship_type = $request->relationship_type[$relatedDocId] ?? 'Related';
+                $documentRelationship->notes = $request->relationship_notes[$relatedDocId] ?? null;
+                $documentRelationship->is_active = true;
+                $documentRelationship->created_by = Auth::id();
+                $documentRelationship->group_id = $regulation->group_id;
+                $documentRelationship->save();
+            }
+        } else {
+            // If no nested related docs provided, remove existing relationships
+            \App\Models\DocumentRelationship::where('source_document_id', $regulation->id)->delete();
         }
         
         $regulation->slug = Str::slug($request->title);
@@ -576,6 +673,11 @@ class RegulationController extends Controller
                     ->where('admin_status', 1) // Only approved documents
                     ->orderBy('title')
                     ->get();
+        
+        // Get nested related documents (all documents for relationship selection)
+        $nestedRelatedDocuments = Regulation::where('admin_status', 1) // Only approved documents
+            ->orderBy('title')
+            ->get();
 
          $statua            = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statua);
@@ -597,6 +699,7 @@ class RegulationController extends Controller
             'statuses'      => $statuses,
             'formattedStatuses' => $formattedStatuses,
             'relatedDocuments' => $relatedDocuments,
+            'nestedRelatedDocuments' => $nestedRelatedDocuments,
             'marketProductTags' => $marketProductTags
         ]);
     }
@@ -628,8 +731,42 @@ class RegulationController extends Controller
             $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated
             $regulation_approval->authoriser_time = $authoriser_time;
 
+            // Copy related_docs from approval record to regulation
+            $update_admin_status->related_docs = $regulation_approval->related_docs;
+            
+            // Copy nested related documents from approval record to regulation
+            if (!empty($regulation_approval->temp_nested_related_docs)) {
+                $update_admin_status->nested_related_docs = $regulation_approval->temp_nested_related_docs;
+            }
+            
             $update_admin_status->save();
             $regulation_approval->save();
+            
+            // Process nested related documents if they exist in the approval record
+            if (!empty($regulation_approval->temp_nested_related_docs)) {
+                $nestedRelatedDocs = json_decode($regulation_approval->temp_nested_related_docs, true);
+                if (is_array($nestedRelatedDocs)) {
+                    // Remove existing relationships for this document
+                    \App\Models\DocumentRelationship::where('source_document_id', $update_admin_status->id)->delete();
+                    
+                    // Create new relationships
+                    foreach ($nestedRelatedDocs as $relatedDocId) {
+                        $documentRelationship = new \App\Models\DocumentRelationship();
+                        $documentRelationship->source_document_id = $update_admin_status->id;
+                        $documentRelationship->related_document_id = $relatedDocId;
+                        $documentRelationship->relationship_type = (isset(json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId])) 
+                            ? json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId] 
+                            : 'Related';
+                        $documentRelationship->notes = (isset(json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId])) 
+                            ? json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId] 
+                            : null;
+                        $documentRelationship->is_active = true;
+                        $documentRelationship->created_by = Auth::id();
+                        $documentRelationship->group_id = $update_admin_status->group_id;
+                        $documentRelationship->save();
+                    }
+                }
+            }
 
             $action = $update_admin_status->title;
 
@@ -673,8 +810,42 @@ class RegulationController extends Controller
             $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated
             $regulation_approval->authoriser_time = $authoriser_time;
 
+            // Copy related_docs from approval record to regulation
+            $update_admin_status->related_docs = $regulation_approval->related_docs;
+            
+            // Copy nested related documents from approval record to regulation
+            if (!empty($regulation_approval->temp_nested_related_docs)) {
+                $update_admin_status->nested_related_docs = $regulation_approval->temp_nested_related_docs;
+            }
+            
             $update_admin_status->save();
             $regulation_approval->save();
+            
+            // Process nested related documents if they exist in the approval record
+            if (!empty($regulation_approval->temp_nested_related_docs)) {
+                $nestedRelatedDocs = json_decode($regulation_approval->temp_nested_related_docs, true);
+                if (is_array($nestedRelatedDocs)) {
+                    // Remove existing relationships for this document
+                    \App\Models\DocumentRelationship::where('source_document_id', $update_admin_status->id)->delete();
+                    
+                    // Create new relationships
+                    foreach ($nestedRelatedDocs as $relatedDocId) {
+                        $documentRelationship = new \App\Models\DocumentRelationship();
+                        $documentRelationship->source_document_id = $update_admin_status->id;
+                        $documentRelationship->related_document_id = $relatedDocId;
+                        $documentRelationship->relationship_type = (isset(json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId])) 
+                            ? json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId] 
+                            : 'Related';
+                        $documentRelationship->notes = (isset(json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId])) 
+                            ? json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId] 
+                            : null;
+                        $documentRelationship->is_active = true;
+                        $documentRelationship->created_by = Auth::id();
+                        $documentRelationship->group_id = $update_admin_status->group_id;
+                        $documentRelationship->save();
+                    }
+                }
+            }
 
             $action = $update_admin_status->title;
 
