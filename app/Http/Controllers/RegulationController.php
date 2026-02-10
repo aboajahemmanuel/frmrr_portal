@@ -460,7 +460,7 @@ class RegulationController extends Controller
         // Get related documents for the same category
         $relatedDocuments = Regulation::where('category_id', $regulation->category_id)
             ->where('admin_status', 1) // Only approved documents
-            ->where('id', '!=', $regulation->id) // Exclude current document
+           // ->where('id', '!=', $regulation->id) // Exclude current document
             ->orderBy('title')
             ->get();
         

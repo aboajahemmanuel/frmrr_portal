@@ -259,15 +259,20 @@
                             @if($result->related_docs || $result->nested_related_docs_column)
                                 @php
                                     $relatedDocuments = $result->related_documents;
-                                    // Sort related documents by effective_date in descending order
+                                  
                                     if ($relatedDocuments instanceof \Illuminate\Support\Collection) {
                                         $relatedDocuments = $relatedDocuments->sortByDesc(function($doc) {
                                             return \Carbon\Carbon::parse($doc->effective_date);
                                         });
+                                        
+                                        // Remove current document ID from count
+                                        $relatedDocuments = $relatedDocuments->filter(function($doc) use ($result) {
+                                            return $doc->id != $result->id;
+                                        });
                                     }
                                     $relatedCount = $relatedDocuments->count();
                                     
-                                    // Get nested related documents from the new column
+                                    
                                     $nestedRelatedCount = $result->nested_related_docs_column ? count(json_decode($result->nested_related_docs_column, true)) : 0;
                                     
                                     $totalCount = $relatedCount + $nestedRelatedCount;
@@ -377,7 +382,7 @@
                         <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}  </h5>
+                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }} ({{ $result->year->name }}) </h5>
                                     
                                     <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#activeRelatedDocsModal-{{ $result->id }}"> Jump to Active Version</span>
                                 </div>
@@ -399,7 +404,7 @@
                                                     <h2 class="accordion-header" id="heading-{{ $result->id }}-{{ $index }}">
                                                         <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $result->id }}-{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse-{{ $result->id }}-{{ $index }}">
                                                             <div class="d-flex w-100 justify-content-between align-items-center">
-                                                                <span>{{ $relatedDoc->title }}</span>
+                                                                <span>{{ $relatedDoc->title }} ({{ $relatedDoc->year->name }})</span>
                                                                 <div>
                                                                     @if($relatedDoc->ceased)
                                                                         <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
@@ -492,7 +497,7 @@
     });
 @endphp
 
-@if($nestedDocsFromColumn->count() > 0)
+{{-- @if($nestedDocsFromColumn->count() > 0)
     <div class="nested-related-docs mt-4">
         <h6>Related Documents:</h6>
         @foreach($nestedDocsFromColumn as $nestedIndex => $nestedDoc)
@@ -507,9 +512,7 @@
                                 @else
                                     <span class="badge badge-primary">Active</span>
                                 @endif
-                                {{-- @if(isset($nestedDoc->relationship_type))
-                                    <span class="badge bg-info ms-1">{{ $nestedDoc->relationship_type }}</span>
-                                @endif --}}
+                                
                                 @if($nestedDoc->document_version)
                                     <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                 @endif
@@ -534,7 +537,7 @@
             </div>
         @endforeach
     </div>
-@endif
+@endif --}}
                                                             </div>
                                                         </div>
                                                     </div>
