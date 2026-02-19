@@ -201,7 +201,7 @@
 
                                                 <th class="nk-tb-col">Category</th>
                                                 <th class="nk-tb-col">Status</th>
-                                                <th class="nk-tb-col">{{$formattedStatuses}}</th>
+                                                <th class="nk-tb-col">Doc Status</th>
                                                 <th class="nk-tb-col">Date Created</th>
                                                 <th class="nk-tb-col">Related Docs</th>
                                                 <th class="nk-tb-col"></th>

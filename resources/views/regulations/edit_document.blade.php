@@ -173,7 +173,7 @@
                                                             $categoryslug = $regulation->category->slug;
                                                         @endphp
 
-                                                        @if ($regulation->category->slug == 'rules-regulations' || $regulation->category->slug == 'guidelines')
+                                                     
                                                             <div class="col-md-4">
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="lead-name">Entity</label>
@@ -198,6 +198,9 @@
 
                                                             </div>
 
+
+
+                                                            
 
                                                             <div class="col-md-4">
                                                                 <div class="form-group">
@@ -265,8 +268,15 @@
 
                                                             </div>
 
+
+                                                           
+
+
+
+                                                            
+
                                                          
-                                                        @endif
+                                                     
 
                                                         <div class="col-md-4">
                                                             <div class="form-group">
@@ -286,285 +296,11 @@
                                                         </div>
 
 
-                                                        @if ($regulation->category->slug == 'market-notices' || $regulation->category->slug == 'market-bulletins')
-                                                        <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Entity  </label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-select" name="entity_id" required>
 
-                                                       <option value="" @if (empty($regulation->entity_id)) selected @endif>-- Select an Entity --</option>
-                                        @foreach ($entities as $entity)
-                                            <option value="{{ $entity->id ?? '' }}"
-                                                @if (!empty($regulation->entity_id) && $entity->id == $regulation->entity_id) selected @endif>
-                                                {{ $entity->name ?? 'Unnamed Entity' }}
-                                            </option>
-                                        @endforeach
+                      
 
 
-
-
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-
-                                                            
-                                                            <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Category</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select required name="category_id"
-                                                                            id="Category-dropdown" class="form-control"
-                                                                            required>
-
-                                                                            @foreach ($categories as $category)
-                                                                                <option value="{{ $category->id }}"
-                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
-                                                                                    {{ $category->name }}
-                                                                                </option>
-                                                                            @endforeach
-
-
-                                                                        </select>
-
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-
-                                                             <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Sub
-                                                                        Category</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-control" name="subcategory_id"
-                                                                            id="CategoryName-dropdown" required>
-                                                                            @php
-                                                                                $categorieslist = \App\Models\Category::where(
-                                                                                    'slug',
-                                                                                    '=',
-                                                                                    $categoryslug,
-                                                                                )->first();
-                                                                                $subcategorieslist = \App\Models\Subcategory::where(
-                                                                                    'category_id',
-                                                                                    '=',
-                                                                                    $categorieslist->id,
-                                                                                )->get();
-
-                                                                            @endphp
-                                                                            <option selected
-                                                                                value="{{ $regulation->subcategory_id }}">
-                                                                                {{ optional($regulation->subcategory)->name }}
-                                                                            </option>
-                                                                            @foreach ($subcategorieslist as $subcate)
-                                                                                <option readonly value="{{ $subcate->id }}">
-                                                                                    {{ $subcate->name }}</option>
-                                                                            @endforeach
-                                                                        </select>
-
-
-
-
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-
-
-                                                        @endif
-
-
-                                                        @if ($regulation->category->slug == 'market-circulars')
-                                                            <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Entity</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-select" name="entity_id" required>
-
-
-
-
-                                                                            @foreach ($entities as $entity)
-                                                                                <option value="{{ $entity->id ?? '' }}"
-                                                                                    @if ($entity->id == $regulation->entity_id) selected @endif>
-                                                                                    {{ $entity->name ?? 'Unnamed Entity' }}
-                                                                                </option>
-                                                                            @endforeach
-
-
-
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-
-
-                                                            <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Category</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select required name="category_id"
-                                                                            id="Category-dropdown" class="form-control"
-                                                                            required>
-
-                                                                            @foreach ($categories as $category)
-                                                                                <option value="{{ $category->id }}"
-                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
-                                                                                    {{ $category->name }}
-                                                                                </option>
-                                                                            @endforeach
-
-
-                                                                        </select>
-
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                             <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Sub
-                                                                        Category</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-control" name="subcategory_id"
-                                                                            id="CategoryName-dropdown" required>
-                                                                            @php
-                                                                                $categorieslist = \App\Models\Category::where(
-                                                                                    'slug',
-                                                                                    '=',
-                                                                                    $categoryslug,
-                                                                                )->first();
-                                                                                $subcategorieslist = \App\Models\Subcategory::where(
-                                                                                    'category_id',
-                                                                                    '=',
-                                                                                    $categorieslist->id,
-                                                                                )->get();
-
-                                                                            @endphp
-                                                                            <option selected
-                                                                                value="{{ $regulation->subcategory_id }}">
-                                                                                {{ optional($regulation->subcategory)->name }}
-                                                                            </option>
-                                                                            @foreach ($subcategorieslist as $subcate)
-                                                                                <option readonly value="{{ $subcate->id }}">
-                                                                                    {{ $subcate->name }}</option>
-                                                                            @endforeach
-                                                                        </select>
-
-
-
-
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        @endif
-
-                                                        @if (
-                                                            !in_array($regulation->category->slug, [
-                                                                'market-circulars',
-                                                                'market-notices',
-                                                                'market-bulletins',
-                                                                'rules-regulations',
-                                                                'guidelines',
-                                                            ]))
-
-                                                            
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Entity</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-select" name="entity_id" required>
-
-                                                                            @foreach ($entities as $entity)
-                                                                                <option value="{{ $entity->id ?? '' }}"
-                                                                                    @if ($entity->id == $regulation->entity_id) selected @endif>
-                                                                                    {{ $entity->name ?? 'Unnamed Entity' }}
-                                                                                </option>
-                                                                            @endforeach
-
-
-
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-
-
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Category</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select required name="category_id"
-                                                                            id="Category-dropdown" class="form-control"
-                                                                            required>
-
-                                                                            @foreach ($categories as $category)
-                                                                                <option value="{{ $category->id }}"
-                                                                                    @if ($category->id == $regulation->category_id) selected @endif>
-                                                                                    {{ $category->name }}
-                                                                                </option>
-                                                                            @endforeach
-
-
-                                                                        </select>
-
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-
-
-
-
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="lead-name">Sub
-                                                                        Category</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-control" name="category_name"
-                                                                            id="CategoryName-dropdown" required>
-                                                                            @php
-                                                                                $categorieslist = \App\Models\Category::where(
-                                                                                    'slug',
-                                                                                    '=',
-                                                                                    $categoryslug,
-                                                                                )->first();
-                                                                                $subcategorieslist = \App\Models\Subcategory::where(
-                                                                                    'category_id',
-                                                                                    '=',
-                                                                                    $categorieslist->id,
-                                                                                )->get();
-
-                                                                            @endphp
-                                                                            <option selected
-                                                                                value="{{ $regulation->subcategory_id }}">
-                                                                                {{ optional($regulation->subcategory)->name }}
-                                                                            </option>
-                                                                            @foreach ($subcategorieslist as $subcate)
-                                                                                <option readonly value="{{ $subcate->id }}">
-                                                                                    {{ $subcate->name }}</option>
-                                                                            @endforeach
-                                                                        </select>
-
-
-
-
-
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        @endif
+                                                      
 
 
 
@@ -815,20 +551,7 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    {{-- <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label class="form-label" for="doc_preview_count">Preview Page Count</label>
-                                                            <div class="form-control-wrap">
-                                                                <input type="number" name="doc_preview_count" id="doc_preview_count"
-                                                                    class="form-control" min="0" max="10" 
-                                                                    value="{{ $regulation->doc_preview_count ?? 2 }}"
-                                                                    placeholder="Enter number of pages to preview (0 for default behavior)">
-                                                                <div class="form-note">
-                                                                    Number of pages users can preview (0 = use default logic)
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div> --}}
+                                          
 
                                                     {{-- Related Documents Section (Simple) --}}
                                                     <div class="col-md-6">

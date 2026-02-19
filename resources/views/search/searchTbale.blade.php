@@ -405,6 +405,7 @@ entityBox.addEventListener("click", function (e) {
         
         // Create status data array
         const statuses = [
+            {name: "N/A", value: null},
             // {name: "Active"},
             @foreach ($statuses as $status)
                 {name: "{{ $status->name }}"},
@@ -501,7 +502,7 @@ entityBox.addEventListener("click", function (e) {
             const item = document.createElement('div');
             item.className = 'autocomplete-item';
             const name = type === 'entity' ? suggestion.name : suggestion.name;
-            const id = type === 'entity' ? suggestion.id : suggestion.name;
+            const id = type === 'entity' ? suggestion.id : (suggestion.value !== undefined ? suggestion.value : suggestion.name);
             
             // Highlight matching text only when filtering
             if (inputValue.length >= 2) {

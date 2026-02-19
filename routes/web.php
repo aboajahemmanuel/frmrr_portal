@@ -128,6 +128,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     
     // Market Product Tag routes
     Route::get('/market-tag/{slug}', [BrowseController::class, 'marketProductTag'])->name('marketProductTag');
+    Route::get('/market-tag-debug/{slug}', [BrowseController::class, 'marketProductTagDebug'])->name('marketProductTagDebug');
     Route::get('/search-category-ceased/{slug}/{title}', [BrowseController::class, 'search_category_ceased'])->name('search_category_ceased');
     Route::get('/search_market_tag', [BrowseController::class, 'search_market_tag'])->name('search_market_tag');
 

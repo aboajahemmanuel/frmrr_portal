@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
@@ -642,7 +643,7 @@ class BrowseController extends Controller
 
     public function marketProductTag($slug)
     {
-        $data = Category::where('status', 1)->get();
+         $data = Category::where('status', 1)->get();
         $marketTag = \App\Models\MarketProductTag::where('slug', $slug)->first();
         
         if (!$marketTag) {
@@ -660,6 +661,23 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today)
             ->exists();
 
+        // Debug: Check what data exists but might be filtered out
+        $debugInfo = [
+            'tag_name' => $marketTag->name,
+            'tag_id' => $marketTag->id,
+            'total_regulations_with_tag_legacy' => Regulation::where('market_product_tag', 'LIKE', '%' . $marketTag->id . '%')->count(),
+            'total_regulations_with_tag_relationship' => Regulation::whereHas('marketProductTags', function($q) use ($marketTag) {
+                $q->where('market_product_tags.id', $marketTag->id);
+            })->count(),
+            'total_active_regulations' => Regulation::where('status', 1)->count(),
+            'total_non_ceased_regulations' => Regulation::whereNull('ceased')->count(),
+            'total_active_non_ceased' => Regulation::where('status', 1)->whereNull('ceased')->count(),
+            'tag_admin_status' => $marketTag->admin_status,
+            'tag_status' => $marketTag->status,
+        ];
+        
+        \Illuminate\Support\Facades\Log::info('Market Tag Debug', $debugInfo);
+        
         // Get regulations that have this tag in their market_product_tag field
         $reg = Regulation::with(['year', 'entity', 'category', 'subcategory'])
             ->where('status', 1)
@@ -669,7 +687,15 @@ class BrowseController extends Controller
                           $q->where('market_product_tags.id', $marketTag->id);
                       });
             })
-            ->whereNull('ceased')
+            ->where(function ($query) {
+                $query->where(function($q) {
+                    $q->whereNull('ceased')
+                      ->orWhere('ceased', 'Active')
+                      ->orWhere('ceased', 'NULL')
+                      ->orWhere('ceased', '')
+                      ->orWhere('ceased', 'LIKE', '%Active%');
+                });
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(50);
             
@@ -700,6 +726,86 @@ class BrowseController extends Controller
             ->get();
 
         return view('categorypages.market_tag', compact('data', 'news_alert', 'years', 'marketTag', 'reg', 'isSubscribed', 'regulations_ceased', 'formattedStatuses', 'marketProductTags'));
+    }
+    
+    public function marketProductTagDebug($slug)
+    {
+        $marketTag = \App\Models\MarketProductTag::where('slug', $slug)->first();
+        
+        if (!$marketTag) {
+            return response()->json(['error' => 'Market Product Tag not found.'], 404);
+        }
+
+        // Get all regulations with this tag (any status)
+        $allWithTagLegacy = Regulation::where('market_product_tag', 'LIKE', '%' . $marketTag->id . '%')
+            ->with(['year', 'entity', 'category', 'subcategory'])
+            ->get();
+            
+        $allWithTagRelationship = Regulation::whereHas('marketProductTags', function($q) use ($marketTag) {
+                $q->where('market_product_tags.id', $marketTag->id);
+            })
+            ->with(['year', 'entity', 'category', 'subcategory'])
+            ->get();
+
+        // Get the actual filtered results
+        $filteredResults = Regulation::with(['year', 'entity', 'category', 'subcategory'])
+            ->where('status', 1)
+            ->where(function($query) use ($marketTag) {
+                $query->where('market_product_tag', 'LIKE', '%' . $marketTag->id . '%')
+                      ->orWhereHas('marketProductTags', function($q) use ($marketTag) {
+                          $q->where('market_product_tags.id', $marketTag->id);
+                      });
+            })
+            ->whereNull('ceased')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $debugData = [
+            'tag_info' => [
+                'id' => $marketTag->id,
+                'name' => $marketTag->name,
+                'slug' => $marketTag->slug,
+                'status' => $marketTag->status,
+                'admin_status' => $marketTag->admin_status,
+            ],
+            'statistics' => [
+                'total_regulations_with_tag_legacy' => $allWithTagLegacy->count(),
+                'total_regulations_with_tag_relationship' => $allWithTagRelationship->count(),
+                'total_active_regulations' => Regulation::where('status', 1)->count(),
+                'total_non_ceased_regulations' => Regulation::whereNull('ceased')->count(),
+                'filtered_results_count' => $filteredResults->count(),
+            ],
+            'legacy_tagged_regulations' => $allWithTagLegacy->map(function($reg) {
+                return [
+                    'id' => $reg->id,
+                    'title' => $reg->title,
+                    'status' => $reg->status,
+                    'ceased' => $reg->ceased,
+                    'market_product_tag' => $reg->market_product_tag,
+                ];
+            }),
+            'relationship_tagged_regulations' => $allWithTagRelationship->map(function($reg) {
+                return [
+                    'id' => $reg->id,
+                    'title' => $reg->title,
+                    'status' => $reg->status,
+                    'ceased' => $reg->ceased,
+                    'related_tags' => $reg->marketProductTags->pluck('name')->toArray(),
+                ];
+            }),
+            'filtered_results' => $filteredResults->map(function($reg) {
+                return [
+                    'id' => $reg->id,
+                    'title' => $reg->title,
+                    'status' => $reg->status,
+                    'ceased' => $reg->ceased,
+                    'market_product_tag' => $reg->market_product_tag,
+                    'related_tags' => $reg->marketProductTags->pluck('name')->toArray(),
+                ];
+            }),
+        ];
+
+        return response()->json($debugData, 200);
     }
 
     public function search_market_tag(Request $request)

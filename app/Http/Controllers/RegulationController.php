@@ -534,6 +534,8 @@ class RegulationController extends Controller
      */
     public function update(Request $request, $id)
     {
+
+       
         $this->validate($request, [
             'name' => 'required',
 
@@ -713,7 +715,7 @@ class RegulationController extends Controller
 
         $authoriser_time     = Carbon::now();
         $userId              = Auth::user()->id;
-        $update_admin_status = regulation::find($id);
+         $update_admin_status = regulation::find($id);
 
         $regulation_approval = DocumentApproval::where('regulation_id', $id)->where(
             'authoriser_id',
