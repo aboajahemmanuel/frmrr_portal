@@ -6,13 +6,11 @@
     .upgrade-card {
         position: relative;
         width: 100%;
-        height: fit-content;
-        min-height: 520px;
+        height: auto;
         background: linear-gradient(135deg, #f8f9fd 0%, #eef1f8 100%);
         border-radius: 20px;
         padding: 40px 30px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -282,20 +280,18 @@
     /* Plans Container */
     .plans-container {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        flex-wrap: wrap;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         justify-content: center;
         gap: 25px;
         max-width: 1200px;
         width: 100%;
     }
 
-    /* Plan Card */
-    .card {
+    /* Plan Card - scoped under .pricing-container to avoid global .card conflicts */
+    .pricing-container .plan-card {
         flex: 1;
         min-width: 250px;
         max-width: 300px;
-        max-height: ;
         background: linear-gradient(135deg, #1a3a8f 0%, #0c2b70 100%);
         border-radius: 15px;
         padding: 30px;
@@ -306,15 +302,18 @@
         flex-direction: column;
         position: relative;
         overflow: hidden;
+        width: auto;
+        min-height: auto;
+        perspective: none;
     }
 
-    .card:hover {
+    .pricing-container .plan-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(12, 43, 112, 0.3);
     }
 
     /* Decorative Elements */
-    .card::before {
+    .pricing-container .plan-card::before {
         content: '';
         position: absolute;
         top: 0;
@@ -325,7 +324,7 @@
         border-radius: 0 0 0 60px;
     }
 
-    .card::after {
+    .pricing-container .plan-card::after {
         content: '';
         position: absolute;
         bottom: 0;
@@ -337,26 +336,30 @@
     }
 
     /* Card Header */
-    .card-header {
+    .pricing-container .plan-card .plan-card-header {
         text-align: center;
         margin-bottom: 20px;
+        display: block;
+        padding: 0;
+        border: none;
+        background: none;
     }
 
-    .card-title {
+    .pricing-container .plan-card .plan-card-title {
         font-size: 18px;
         font-weight: 600;
         display: block;
         margin-bottom: 15px;
     }
 
-    .card-price {
+    .pricing-container .plan-card .plan-card-price {
         font-size: 32px;
         font-weight: 800;
-        /* margin: 10px 0; */
         position: relative;
+        color: white;
     }
 
-    .card-price::after {
+    .pricing-container .plan-card .plan-card-price::after {
         content: '';
         position: absolute;
         bottom: -10px;
@@ -368,41 +371,40 @@
     }
 
     /* Card Body */
-    .card-body {
+    .pricing-container .plan-card .plan-card-body {
         flex: 1;
         text-align: center;
-        /* margin: 20px 0; */
     }
 
-    .card-body p {
+    .pricing-container .plan-card .plan-card-body p {
         font-size: 14px;
         line-height: 1.5;
         color: rgba(255, 255, 255, 0.85);
     }
 
     /* Card Footer */
-    .card-footer {
+    .pricing-container .plan-card .plan-card-footer {
         margin-top: auto;
     }
 
     /* Highlighted Card */
-    .card.highlighted {
+    .pricing-container .plan-card.highlighted {
         background: linear-gradient(135deg, #1e429c 0%, #0d2d78 100%);
         transform: scale(1.03);
         box-shadow: 0 15px 35px rgba(12, 43, 112, 0.4);
         border: 2px solid rgba(255, 215, 138, 0.6);
     }
 
-    .card.highlighted::before {
+    .pricing-container .plan-card.highlighted::before {
         background-color: rgba(255, 215, 138, 0.2);
     }
 
-    .card.highlighted .card-price {
+    .pricing-container .plan-card.highlighted .plan-card-price {
         color: #f4d078;
         text-shadow: 0 0 10px rgba(255, 215, 138, 0.4);
     }
 
-    .card.highlighted .card-price::after {
+    .pricing-container .plan-card.highlighted .plan-card-price::after {
         background-color: rgba(255, 215, 138, 0.5);
         height: 3px;
         width: 50px;
@@ -475,12 +477,12 @@
             align-items: center;
         }
         
-        .card {
+        .pricing-container .plan-card {
             max-width: 100%;
             width: 100%;
         }
         
-        .card.highlighted {
+        .pricing-container .plan-card.highlighted {
             order: -1;
             margin-bottom: 10px;
         }
@@ -517,16 +519,8 @@
         @else
     <div class="upgrade-card">
 
-             <section class="hd-main-container pricing-section">
-        <div class="pricing">
-            
-
-            <div class="pricing-body" >
-            <!-- style="margin: -150px 0px 00px 0px " -->
-                <br>
-                <br>
-                <br>
-                <div class="pricing-container">
+             <section class="hd-main-container pricing-section" >
+                           <div class="pricing-container">
     <div class="pricing-body-header">
           <h1>Upgrade to Pro Membership</h1>
         <h2>Choose a Plan</h2>
@@ -535,21 +529,21 @@
         <div class="active" id="pricing__monthly__plan">
             <div class="plans-container">
                 @foreach ($plans as $package)
-                    <div class="card {{ $package->name === 'Weekly Access' ? 'highlighted' : '' }}">
+                    <div class="plan-card {{ $package->name === 'Weekly Access' ? 'highlighted' : '' }}">
                         @if($package->name === 'Weekly Access')
                             <div class="popular-badge">POPULAR</div>
                         @endif
-                        <div class="card-header">
-                            <span class="card-title">{{ $package->name }}</span>
-                            <h2 class="card-price">₦{{ number_format($package->price, 2) }}</h2>
+                        <div class="plan-card-header">
+                            <span class="plan-card-title">{{ $package->name }}</span>
+                            <h2 class="plan-card-price">₦{{ number_format($package->price, 2) }}</h2>
                         </div>
-                        <div class="card-body">
+                        <div class="plan-card-body">
                             <p>{{ $package->description }}</p>
                         </div>
-                        <div class="card-footer">
+                        <div class="plan-card-footer">
                             <form method="post" action="{{ route('subscribe_payment') }}">
                                 @csrf
-                                <input name="plan_id" type="hidden" value="{{ $package->id }}" name="">
+                                <input name="plan_id" type="hidden" value="{{ $package->id }}">
                                 
                                 <button type="submit" class="choose-button">Choose Plan</button>
                             </form>
@@ -562,58 +556,14 @@
         </div>
     </div>
 </div>
+        
+               
+     
             </div>
         </div>
     </section>
-      
-        {{-- <div>
-            <div class="card-header">
-                <div class="header-text">
-                    <h1>Upgrade to <span>Pro Membership</span></h1>
-                </div>
-                <div class="medal-icon">
-                    <div class="medal-ribbon"></div>
-                    <div class="medal-circle">
-                        <div class="medal-crown"></div>
-                        <div class="medal-shine"></div>
-                    </div>
-                </div>
-            </div>
-
-            <p class="value-prop">Unlock premium features and exclusive content</p>
-            <!-- <p class="social-proof">Join 10,000+ members enjoying advanced benefits</p> -->
-
-            <div class="features">
-                <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <div class="feature-text">Advanced Search</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <div class="feature-text">Priority Support</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <div class="feature-text">Exclusive Content</div>
-                </div>
-            </div>
-        </div>
-        <a href="{{ route('subscribe') }}">
-            <div class="button-container-sb" style="margin-top: 50px !important;">
-                <div class="gradient-buttons">
-                    <div class="gradient-button-content">
-                        <div>View Subscription Types</div>
-                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="FMDQ Logo" />
-                    </div>
-                </div>
-            </div>
-        </a> --}}
         
     </div>
-    </a>
-    
-
-    </div> 
     @endif
     <!-- <div class=""> -->
     @if ($userSubscription)
