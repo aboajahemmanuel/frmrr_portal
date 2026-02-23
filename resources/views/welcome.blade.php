@@ -550,9 +550,12 @@
                             <form method="post" action="{{ route('subscribe_payment') }}">
                                 @csrf
                                 <input name="plan_id" type="hidden" value="{{ $package->id }}" name="">
+                                
                                 <button type="submit" class="choose-button">Choose Plan</button>
                             </form>
+                            
                         </div>
+                        
                     </div>
                 @endforeach
             </div>

@@ -403,17 +403,17 @@
                                             </div>
                                         </div>
 
-
+ 
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <label class="form-label" for="lead-name">Price <span
+                                                <label class="form-label" for="lead-name">Price (₦) <span
                                                         style="color: red">*</span></label>
                                                 <div class="form-control-wrap">
-                                                    <input name="price" required type="number"
+                                                    <input name="price" required type="number" step="0.01"
                                                         class="form-control formattedNumberField" id="lead-name">
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> 
 
 
                                         <div class="col-md-12">
@@ -516,11 +516,11 @@
 
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label class="form-label" for="lead-name">Price <span
+                                                    <label class="form-label" for="lead-name">Price (₦) <span
                                                             style="color: red">*</span></label>
                                                     <div class="form-control-wrap">
                                                         <input name="price" required value="{{ $transaction->price }}"
-                                                            type="number" class="form-control" id="lead-name">
+                                                            type="number" step="0.01" class="form-control" id="lead-name">
                                                     </div>
                                                 </div>
                                             </div>

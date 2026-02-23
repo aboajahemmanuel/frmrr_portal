@@ -294,16 +294,11 @@ entityBox.addEventListener("click", function (e) {
 
 
                                         </div>
-                                        <div class="w-33">
+                                        <!-- <div class="w-33">
                                             <div class="si-title" style="margin-top: 0px;">Version Number</div>
                                             <input class="si-input-box" style="margin-top: 3px;" type="number"
                                                 name="document_version" />
-
-
-
-                                        </div>
-
-
+                                        </div> -->
                                     </div>
 
 

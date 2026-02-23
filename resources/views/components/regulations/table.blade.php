@@ -176,7 +176,7 @@
                   
                     <th style="text-align: center;">Subcategory</th> 
                      <th style="text-align: center;">Status</th>
-                    <th style="text-align: center;">Version Number</th>
+                    <!-- <th style="text-align: center;">Version Number</th> -->
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Year</th>
                     <th style="text-align: center;">Effective Date</th>
@@ -200,7 +200,7 @@
                         </td>
                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
                           <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'Active' }}</span></td>
-                        <td style="text-align: center">{{ $result->document_version }}</td>
+                        <!-- <td style="text-align: center">{{ $result->document_version }}</td> -->
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}</td>
@@ -630,7 +630,7 @@
                     <th style="text-align: center;">Title</th>
                     {{-- <th style="text-align: center;">Category</th> --}}
                     <th style="text-align: center;">Subcategory</th>
-                    <th style="text-align: center;">Version Number</th>
+                    <!-- <th style="text-align: center;">Version Number</th> -->
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Year</th>
                     <th style="text-align: center;">Effective Date</th>
@@ -658,7 +658,7 @@
                         <td style="text-align: center">
                             {{ optional($result->subcategory)->name }}
                         </td>
-                        <td style="text-align: center">{{ $result->document_version }}</td>
+                        <!-- <td style="text-align: center">{{ $result->document_version }}</td> -->
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}</td>

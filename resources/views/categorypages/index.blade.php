@@ -50,7 +50,7 @@
             }, 100);
             
             // Add ceased button to filter container (after Clear Filters button)
-            @if ($regulations_ceased->count() > 0)
+            @if ($regulations_ceased > 0)
             setTimeout(function() {
                 var clearButton = $('#clear-filters-example');
                 if (clearButton.length) {

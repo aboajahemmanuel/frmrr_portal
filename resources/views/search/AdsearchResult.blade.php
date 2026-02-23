@@ -165,7 +165,7 @@
                                     'showYearFilter' => true,
                                     'showEntityFilter' => true,
                                     'showEffectiveDateFilter' => true,
-                                    'showVersionFilter' => true,
+                                    'showVersionFilter' => false,
                                     'years' => $results->pluck('year.name')->unique()->sort()->values()
                                 ]
                             ])

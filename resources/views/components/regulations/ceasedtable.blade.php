@@ -182,7 +182,7 @@
                                         <th class="text-center" style="min-width: 150px; white-space: nowrap;">Title</th>
                                         {{-- <th class="text-center d-none d-lg-table-cell">Category</th>--}}
                                         <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Subcategory</th> 
-                                        <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Version Number</th>
+                                        <!-- <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Version Number</th> -->
                                         <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Issue Date</th>
                                         <th class="text-center d-none d-lg-table-cell" style="min-width: 80px; white-space: nowrap;">Year</th>
                                         <th class="text-center" style="min-width: 100px; white-space: nowrap;">Effective Date</th>
@@ -211,7 +211,7 @@
                                             {{-- <td class="text-center align-middle">{{ optional($result->category)->name }}</td>--}}
                                             <td class="text-center align-middle">{{ optional($result->subcategory)->name }}</td> 
                                             
-                                            <td class="text-center align-middle">{{ $result->document_version }}</td>
+                                            <!-- <td class="text-center align-middle">{{ $result->document_version }}</td> -->
                                             <td class="text-center align-middle">
                                                 {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
                                             </td>
