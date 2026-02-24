@@ -529,10 +529,7 @@
         <div class="active" id="pricing__monthly__plan">
             <div class="plans-container">
                 @foreach ($plans as $package)
-                    <div class="plan-card {{ $package->name === 'Weekly Access' ? 'highlighted' : '' }}">
-                        @if($package->name === 'Weekly Access')
-                            <div class="popular-badge">POPULAR</div>
-                        @endif
+                    <div class="plan-card">
                         <div class="plan-card-header">
                             <span class="plan-card-title">{{ $package->name }}</span>
                             <h2 class="plan-card-price">₦{{ number_format($package->price, 2) }}</h2>

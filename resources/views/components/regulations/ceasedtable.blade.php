@@ -170,6 +170,15 @@
 
 
 
+@php
+    // Sort records alphabetically by title
+    if ($records instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+        $records->setCollection($records->getCollection()->sortBy('title')->values());
+    } elseif ($records instanceof \Illuminate\Support\Collection) {
+        $records = $records->sortBy('title')->values();
+    }
+@endphp
+
 <div style="background-color: #fff; padding: 20px; width: 100%">
             <div class="row" style="width: 100%">
                 <div class="col-md-12">

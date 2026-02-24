@@ -252,7 +252,7 @@
             <div class="row" style="width: 100%">
                 <div class="col-md-12">
                
-                    @include('components.regulations.table', [
+                    @include('components.regulations.subtable', [
                         'records' => $reg, 
                         'isSubscribed' => $isSubscribed,
                         'showFilters' => true,
@@ -262,7 +262,7 @@
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
                             'showEffectiveDateFilter' => true,
-                            'showVersionFilter' => true,
+                            'showVersionFilter' => false,
                             'years' => $years
                         ]
                     ])

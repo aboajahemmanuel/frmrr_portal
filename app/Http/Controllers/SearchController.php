@@ -120,8 +120,10 @@ class SearchController extends Controller
             'categories' => $request->input('categories', []),
             'year_id' => $request->input('year'),
             'entity_id' => $request->input('entity_id'),
-            'issue_date' => $request->input('issue_date'),
-            'effective_date' => $request->input('effective_date'),
+            'issue_date_from' => $request->input('issue_date_from'),
+            'issue_date_to' => $request->input('issue_date_to'),
+            'effective_date_from' => $request->input('effective_date_from'),
+            'effective_date_to' => $request->input('effective_date_to'),
             'ceasedRepealed' => $request->input('ceasedRepealed'),
             'document_version' => $request->input('document_version'),
             'number' => $request->input('number'),
@@ -147,14 +149,24 @@ class SearchController extends Controller
             $query->where('entity_id', $filters['entity_id']);
         }
 
-        // Apply issue date filter
-        if (!empty($filters['issue_date'])) {
-            $query->whereDate('issue_date', $filters['issue_date']);
+        // Apply issue date range filter
+        if (!empty($filters['issue_date_from']) && !empty($filters['issue_date_to'])) {
+            $query->whereDate('issue_date', '>=', $filters['issue_date_from'])
+                  ->whereDate('issue_date', '<=', $filters['issue_date_to']);
+        } elseif (!empty($filters['issue_date_from'])) {
+            $query->whereDate('issue_date', '>=', $filters['issue_date_from']);
+        } elseif (!empty($filters['issue_date_to'])) {
+            $query->whereDate('issue_date', '<=', $filters['issue_date_to']);
         }
 
-        // Apply effective date filter
-        if (!empty($filters['effective_date'])) {
-            $query->whereDate('effective_date', $filters['effective_date']);
+        // Apply effective date range filter
+        if (!empty($filters['effective_date_from']) && !empty($filters['effective_date_to'])) {
+            $query->whereDate('effective_date', '>=', $filters['effective_date_from'])
+                  ->whereDate('effective_date', '<=', $filters['effective_date_to']);
+        } elseif (!empty($filters['effective_date_from'])) {
+            $query->whereDate('effective_date', '>=', $filters['effective_date_from']);
+        } elseif (!empty($filters['effective_date_to'])) {
+            $query->whereDate('effective_date', '<=', $filters['effective_date_to']);
         }
 
         // Apply ceased/repealed status filter
@@ -198,8 +210,10 @@ class SearchController extends Controller
             'entities' => Entity::where('status', 1)->get(),
             'title' => $filters['keywords'],
             'isSubscribed' => $isSubscribed,
-            'issueDate' => $filters['issue_date'],
-            'effectiveDate' => $filters['effective_date'],
+            'issueDateFrom' => $filters['issue_date_from'],
+            'issueDateTo' => $filters['issue_date_to'],
+            'effectiveDateFrom' => $filters['effective_date_from'],
+            'effectiveDateTo' => $filters['effective_date_to'],
             'ceasedRepealed' => $filters['ceasedRepealed'],
             'versionNumber' => $filters['document_version'],
             'year_id' => $filters['year_id'],

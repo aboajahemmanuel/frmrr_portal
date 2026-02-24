@@ -284,21 +284,22 @@ entityBox.addEventListener("click", function (e) {
 
                                     <div class="search-input">
                                         <div class="w-33">
-                                            <div class="si-title">Issue Date</div>
-                                            <input class="si-input-box" type="date" name="issue_date" />
-
+                                            <div class="si-title">Issue Date (From)</div>
+                                            <input class="si-input-box" type="date" name="issue_date_from" />
                                         </div>
                                         <div class="w-33">
-                                            <div class="si-title" style="margin-top: 0px;"> Effective Date</div>
-                                            <input class="si-input-box" type="date" name="effective_date" />
-
-
+                                            <div class="si-title">Issue Date (To)</div>
+                                            <input class="si-input-box" type="date" name="issue_date_to" />
                                         </div>
-                                        <!-- <div class="w-33">
-                                            <div class="si-title" style="margin-top: 0px;">Version Number</div>
-                                            <input class="si-input-box" style="margin-top: 3px;" type="number"
-                                                name="document_version" />
-                                        </div> -->
+                                        <div class="w-33">
+                                            <div class="si-title" style="margin-top: 0px;"> Effective Date (From) </div>
+                                            <input class="si-input-box" type="date" name="effective_date_from" />
+                                        </div>
+                                        <div class="w-33">
+                                            <div class="si-title" style="margin-top: 0px;"> Effective Date (To) </div>
+                                            <input class="si-input-box" type="date" name="effective_date_to" />
+                                        </div>
+                                        
                                     </div>
 
 

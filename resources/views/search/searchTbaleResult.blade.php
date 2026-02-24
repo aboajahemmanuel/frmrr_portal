@@ -282,17 +282,24 @@
 
                                         <div class="search-input">
                                             <div class="w-33">
-                                                <div class="si-title">Issue Date</div>
+                                                <div class="si-title">Issue Date (From)</div>
                                                 <input class="si-input-box" type="date"
-                                                    value="{{ $issueDate }}" name="issue_date" />
-
+                                                    value="{{ $issueDateFrom ?? '' }}" name="issue_date_from" />
                                             </div>
                                             <div class="w-33">
-                                                <div class="si-title" style="margin-top: 0px;"> Effective Date</div>
+                                                <div class="si-title">Issue Date (To)</div>
                                                 <input class="si-input-box" type="date"
-                                                    value="{{ $effectiveDate }}" name="effective_date" />
-
-
+                                                    value="{{ $issueDateTo ?? '' }}" name="issue_date_to" />
+                                            </div>
+                                            <div class="w-33">
+                                                <div class="si-title" style="margin-top: 0px;"> Effective Date (From)</div>
+                                                <input class="si-input-box" type="date"
+                                                    value="{{ $effectiveDateFrom ?? '' }}" name="effective_date_from" />
+                                            </div>
+                                            <div class="w-33">
+                                                <div class="si-title" style="margin-top: 0px;"> Effective Date (To)</div>
+                                                <input class="si-input-box" type="date"
+                                                    value="{{ $effectiveDateTo ?? '' }}" name="effective_date_to" />
                                             </div>
                                             <!-- <div class="w-33">
                                                 <div class="si-title" style="margin-top: 0px;">Version Number</div>
@@ -350,36 +357,19 @@
                                             </div>
 
                                             <div class="w-33">
-                                                <div class="si-title" style="margin-top: 4px;">{{$formattedStatuses}}
+                                                <div class="si-title" style="margin-top: 4px;">Status
                                                 </div>
                                                 <select class="si-input-box-s" style="margin-top: 3.5px"
                                                     name="ceasedRepealed" id="">
                                                     <option></option>
                                                     <option value="Active" {{ trim($ceasedRepealed ?? '') === 'Active' ? 'selected' : '' }}>Active</option>
                                                      @foreach ($statuses as $status)
+                                                                @if(trim($status->name) === 'Active') @continue @endif
                                                                 <option value="{{ trim($status->name) }}" 
                                                                     {{ trim($status->name) === trim($ceasedRepealed) ? 'selected' : '' }}>
                                                                     {{ trim($status->name) }}
                                                                 </option>
                                                             @endforeach 
-
-
-                                                    {{-- <option value="Ceased"
-                                                        @if ($ceasedRepealed == 'Ceased') selected @endif>
-                                                        Ceased</option>
-                                                    <option value="Repealed"
-                                                        @if ($ceasedRepealed == 'Repealed') selected @endif>
-                                                        Repealed</option>
-
-                                                    <option value="Amended"
-                                                        @if ($ceasedRepealed == 'Amended') selected @endif>
-                                                        Amended</option>
-
-                                                          <option value="Superseded"
-                                                        @if ($ceasedRepealed == 'Superseded') selected @endif>
-                                                        Superseded</option> --}}
-
-                                                        
 
 
 
@@ -566,15 +556,20 @@
 
                                     <div class="search-input">
                                         <div class="w-33">
-                                            <div class="si-title">Issue Date</div>
-                                            <input class="si-input-box" type="date" name="issue_date" />
-
+                                            <div class="si-title">Issue Date (From)</div>
+                                            <input class="si-input-box" type="date" name="issue_date_from" />
                                         </div>
                                         <div class="w-33">
-                                            <div class="si-title" style="margin-top: 0px;"> Effective Date</div>
-                                            <input class="si-input-box" type="date" name="effective_date" />
-
-
+                                            <div class="si-title">Issue Date (To)</div>
+                                            <input class="si-input-box" type="date" name="issue_date_to" />
+                                        </div>
+                                        <div class="w-33">
+                                            <div class="si-title" style="margin-top: 0px;"> Effective Date (From) </div>
+                                            <input class="si-input-box" type="date" name="effective_date_from" />
+                                        </div>
+                                        <div class="w-33">
+                                            <div class="si-title" style="margin-top: 0px;"> Effective Date (To) </div>
+                                            <input class="si-input-box" type="date" name="effective_date_to" />
                                         </div>
                                         <div class="w-33">
                                             <div class="si-title" style="margin-top: 0px;">Version number</div>
