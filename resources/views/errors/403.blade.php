@@ -1,5 +1,14 @@
-@extends('errors::minimal')
+@extends('errors.error-layout')
 
-@section('title', __('Forbidden'))
 @section('code', '403')
-@section('message', __($exception->getMessage() ?: 'Forbidden'))
+@section('title', __('Forbidden'))
+@section('description', __($exception->getMessage() ?: 'You don\'t have permission to access this resource. Contact your administrator if you believe this is an error.'))
+
+@section('icon')
+{{-- Shield icon --}}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    <line x1="15" y1="9" x2="9" y2="15"/>
+    <line x1="9" y1="9" x2="15" y2="15"/>
+</svg>
+@endsection
