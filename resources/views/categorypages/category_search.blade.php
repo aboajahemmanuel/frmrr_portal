@@ -177,6 +177,7 @@
                         'showEntityFilter' => true,
                         'showEffectiveDateFilter' => true,
                         'showVersionFilter' => true,
+                        'showSearchBar' => true,
                         'years' => $years
                     ]
                 ])
