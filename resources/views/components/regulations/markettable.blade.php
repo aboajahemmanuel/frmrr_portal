@@ -187,7 +187,7 @@
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Effective Date</th>
                     <th style="text-align: center;">Entity</th>
-                    <th style="text-align: center;">Market Product</th>
+                    <!-- <th style="text-align: center;">Market Product</th> -->
                     <th style="text-align: center;">Related Docs</th>
                     <th style="text-align: center;">Action</th>
                 </tr>
@@ -212,7 +212,7 @@
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ optional($result->entity)->name }}</td>
-                        <td style="text-align: center">
+                        <!-- <td style="text-align: center">
                             @php
                                 $tags = $result->marketProductTags ?? collect();
                                 if (($tags instanceof \Illuminate\Support\Collection ? $tags->isEmpty() : empty($tags)) && !empty($result->market_product_tag)) {
@@ -229,7 +229,7 @@
                             @else
                                 <span class="badge badge-secondary">None</span>
                             @endif
-                        </td>
+                        </td> -->
                         <td style="text-align: center">
                             @if($result->related_docs || $result->nested_related_docs_column)
                                 @php
@@ -252,9 +252,7 @@
                                     
                                     $totalCount = $relatedCount + $nestedRelatedCount;
                                 @endphp
-                                <span class="badge badge-primary" title="View related documents and lineage" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related
-                                   
-                                </span>
+                                <span class="badge badge-primary" title="View related documents and lineage" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $totalCount }} related</span>
                             @else
                                 <span class="badge badge-secondary">None</span>
                             @endif
@@ -472,15 +470,21 @@
                                 </div>
                                 <div class="modal-body">
                                     @php
-                                        $allRelatedDocs = $result->relatedDocuments;
-                                        // Sort related documents by effective_date in descending order
+                                        // Use the new recursive flattened search to find any active documents in the lineage
+                                        $allRelatedDocs = $result->getFlattenedRelatedDocuments();
+                                        
+                                        // Sort related documents by effective_date in descending order, handling nulls
                                         if ($allRelatedDocs instanceof \Illuminate\Support\Collection) {
                                             $allRelatedDocs = $allRelatedDocs->sortByDesc(function($doc) {
-                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                return $doc->effective_date ? \Carbon\Carbon::parse($doc->effective_date) : \Carbon\Carbon::now()->subYears(100);
                                             });
                                         }
+                                        
+                                        // Filter for active documents (where ceased is null, empty string, or 'Active')
                                         $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection)
-                                            ? $allRelatedDocs->filter(function($doc){ return is_null($doc->ceased); })
+                                            ? $allRelatedDocs->filter(function($doc){ 
+                                                return empty($doc->ceased) || $doc->ceased === 'Active'; 
+                                            })
                                             : collect();
                                     @endphp
                                     @if($activeRelatedDocs->count() > 0)
@@ -516,7 +520,7 @@
     });
     
     // Count active nested documents
-    $activeNestedCount = $nestedDocsFromColumn->filter(function($d){ return is_null($d->ceased); })->count();
+    $activeNestedCount = $nestedDocsFromColumn->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; })->count();
 @endphp
 
 @if($nestedDocsFromColumn->count() > 0)
@@ -548,7 +552,7 @@
 
                                                 @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                     @php 
-                                                        $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return is_null($d->ceased); });
+                                                        $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; });
                                                         // Sort active nested documents by effective_date in descending order
                                                         $activeNestedDocs = $activeNestedDocs->sortByDesc(function($doc) {
                                                             return \Carbon\Carbon::parse($doc->effective_date);
@@ -942,14 +946,22 @@
                                 </div>
                                 <div class="modal-body">
                                     @php
-                                        $allRelatedDocs = $result->relatedDocuments;
-                                        // Sort related documents by effective_date in descending order
+                                        // Use the new recursive flattened search to find any active documents in the lineage
+                                        $allRelatedDocs = $result->getFlattenedRelatedDocuments();
+                                        
+                                        // Sort related documents by effective_date in descending order, handling nulls
                                         if ($allRelatedDocs instanceof \Illuminate\Support\Collection) {
                                             $allRelatedDocs = $allRelatedDocs->sortByDesc(function($doc) {
-                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                return $doc->effective_date ? \Carbon\Carbon::parse($doc->effective_date) : \Carbon\Carbon::now()->subYears(100);
                                             });
                                         }
-                                        $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection) ? $allRelatedDocs->filter(function($doc){ return is_null($doc->ceased); }) : collect();
+                                        
+                                        // Filter for active documents (where ceased is null, empty string, or 'Active')
+                                        $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection)
+                                            ? $allRelatedDocs->filter(function($doc){ 
+                                                return empty($doc->ceased) || $doc->ceased === 'Active'; 
+                                            })
+                                            : collect();
                                     @endphp
                                     @if($activeRelatedDocs->count() > 0)
                                         @foreach($activeRelatedDocs as $relatedDoc)
@@ -957,7 +969,7 @@
                                                 <div class="related-doc-title">{{ $relatedDoc->title }}
                                                     @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                         @php 
-                                                            $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return is_null($d->ceased); });
+                                                            $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; });
                                                             // Sort active nested documents by effective_date in descending order
                                                             $activeNestedDocs = $activeNestedDocs->sortByDesc(function($doc) {
                                                                 return \Carbon\Carbon::parse($doc->effective_date);
@@ -1017,7 +1029,7 @@
         return \Carbon\Carbon::parse($doc->effective_date);
     });
     
-    $activeNestedDocs = $nestedDocsFromColumn->filter(function($d){ return is_null($d->ceased); });
+    $activeNestedDocs = $nestedDocsFromColumn->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; });
 @endphp
 
 @if($activeNestedDocs->count() > 0)
@@ -1198,9 +1210,6 @@
 @if($totalCount > 0)
     <a href="#" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}" class="related-docs-badge">
         <em class="icon ni ni-link-alt"></em> {{ $totalCount }}
-        @if($nestedRelatedCount > 0)
-            <span class="badge bg-info ms-1">{{ $nestedRelatedCount }} nested</span>
-        @endif
     </a>
 @else
     <span class="related-docs-badge no-docs">0</span>
@@ -1230,7 +1239,7 @@
                 <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
-                            <div class="modal-header"><h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5></div>
+                            <div class="modal-header"><h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }} ({{ $result->year->name }})</h5></div>
                             <div class="modal-body">
                                 @php 
                                     $relatedDocs = $result->relatedDocuments;
@@ -1244,7 +1253,7 @@
                                 @if($relatedDocs->count() > 0)
                                     @foreach($relatedDocs as $relatedDoc)
                                         <div class="related-doc-item">
-                                            <div class="related-doc-title">{{ $relatedDoc->title }}</div>
+                                            <div class="related-doc-title">{{ $relatedDoc->title }} ({{ $relatedDoc->year->name }})</div>
                                             <div class="related-doc-meta">
                                                 @if($relatedDoc->document_version)
                                                     <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>

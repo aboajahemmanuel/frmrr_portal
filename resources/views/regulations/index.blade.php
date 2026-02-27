@@ -83,82 +83,36 @@
                                 <div class="card-inner">
                                     <!-- Filter Section -->
                                     <div class="filter-container mb-4">
-                                        <div class="row g-3 align-items-end">
-                                            <!-- Search Box -->
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label class="form-label">Search Documents</label>
-                                                    <div class="form-control-wrap">
-                                                        <input type="text" class="form-control" id="globalSearch" 
-                                                               placeholder="Search by title, category...">
+                                        <form action="{{ route('regulations.index') }}" method="GET" id="filterForm">
+                                            <div class="row g-3 align-items-end">
+                                                <!-- Search Box -->
+                                                <div class="col-md-8">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Search Documents</label>
+                                                        <div class="form-control-wrap">
+                                                            <div class="form-icon form-icon-right">
+                                                                <em class="icon ni ni-search"></em>
+                                                            </div>
+                                                            <input type="text" class="form-control" name="search" id="globalSearch" 
+                                                                   placeholder="Search by title..." value="{{ request('search') }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Action Buttons -->
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <em class="icon ni ni-search"></em> <span>Search</span>
+                                                        </button>
+                                                        <!-- <button type="button" class="btn btn-dim btn-outline-primary ml-2" id="clearFilters" 
+                                                                title="Clear all filters">
+                                                            <em class="icon ni ni-reload"></em> <span>Clear</span>
+                                                        </button> -->
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <!-- Category Filter -->
-                                            <div class="col-md-2" style="display: none;">
-                                                <div class="form-group">
-                                                    <label class="form-label">Category</label>
-                                                    <select class="form-select form-control" id="categoryFilter">
-                                                        <option value="">All Categories</option>
-                                                        @foreach($categories as $category)
-                                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <!-- Status Filter -->
-                                            <div class="col-md-2" style="display: none;">
-                                                <div class="form-group">
-                                                    <label class="form-label">Approval Status</label>
-                                                    <select class="form-select form-control" id="statusFilter">
-                                                        <option value="">All Status</option>
-                                                        <option value="0">Awaiting Approval</option>
-                                                        <option value="1">Approved</option>
-                                                        <option value="2">Rejected</option>
-                                                        <option value="3">Awaiting Delete</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <!-- Ceased Status Filter -->
-                                            <div class="col-md-2" style="display: none;">
-                                                <div class="form-group">
-                                                    <label class="form-label">Document Status</label>
-                                                    <select class="form-select form-control" id="ceasedFilter">
-                                                        <option value="">All Documents</option>
-                                                        <option value="Ceased">Ceased</option>
-                                                        <option value="Repealed">Repealed</option>
-                                                        <option value="Amended">Amended</option>
-                                                        <option value="Active">Active</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <!-- Year Filter -->
-                                            <div class="col-md-2" style="display: none;">
-                                                <div class="form-group">
-                                                    <label class="form-label">Year</label>
-                                                    <select class="form-select form-control" id="yearFilter">
-                                                        <option value="">All Years</option>
-                                                        @for($year = date('Y'); $year >= 2000; $year--)
-                                                            <option value="{{ $year }}">{{ $year }}</option>
-                                                        @endfor
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <!-- Action Buttons -->
-                                            <div class="col-md-1" style="display: none;">
-                                                <div class="form-group">
-                                                    <button type="button" class="btn btn-dim btn-outline-primary" id="clearFilters" 
-                                                            title="Clear all filters">
-                                                        <em class="icon ni ni-reload"></em>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        </form>
 
                                         <!-- Active Filters Display -->
                                         <div class="row mt-2" id="activeFiltersRow" style="display: none;">
@@ -1094,241 +1048,42 @@
                     clearBtn: !!clearBtn
                 });
                 
-                if (!searchInput || !categoryFilter || !statusFilter || !ceasedFilter || !yearFilter || !clearBtn) {
+                const filterForm = document.getElementById('filterForm');
+
+                if (!searchInput || !clearBtn || !filterForm) {
                     console.error('Some filter elements are missing!');
                     return;
                 }
                 
-                let currentFilters = {
-                    search: '',
-                    category: '',
-                    status: '',
-                    ceased: '',
-                    year: ''
-                };
-
-                // Filter rows based on current filters
-                function filterRows() {
-                    let visibleCount = 0;
-                    
-                    rows.forEach(row => {
-                        let visible = true;
-                        const cells = row.querySelectorAll('td');
-                        
-                        // Global search filter (search in title and category)
-                        if (currentFilters.search) {
-                            const title = cells[1]?.textContent.toLowerCase() || '';
-                            const category = cells[2]?.textContent.toLowerCase() || '';
-                            const searchTerm = currentFilters.search.toLowerCase();
-                            visible = visible && (title.includes(searchTerm) || category.includes(searchTerm));
-                        }
-                        
-                        // Category filter
-                        if (currentFilters.category) {
-                            const categoryName = document.querySelector(`#categoryFilter option[value="${currentFilters.category}"]`)?.textContent;
-                            const cellCategory = cells[2]?.textContent.trim() || '';
-                            visible = visible && (cellCategory === categoryName);
-                        }
-                        
-                        // Status filter
-                        if (currentFilters.status) {
-                            const statusCell = cells[3]?.textContent.trim() || '';
-                            let statusMatch = false;
-                            if (currentFilters.status === '0') statusMatch = statusCell.includes('Awaiting Approval');
-                            else if (currentFilters.status === '1') statusMatch = statusCell.includes('Approved') && !statusCell.includes('Awaiting');
-                            else if (currentFilters.status === '2') statusMatch = statusCell.includes('Rejected');
-                            else if (currentFilters.status === '3') statusMatch = statusCell.includes('Awaiting approval for delete');
-                            visible = visible && statusMatch;
-                        }
-                        
-                        // Ceased status filter
-                        if (currentFilters.ceased) {
-                            const ceasedCell = cells[4]?.textContent.trim() || '';
-                            visible = visible && ceasedCell.includes(currentFilters.ceased);
-                        }
-                        
-                        // Year filter
-                        if (currentFilters.year) {
-                            const dateCell = cells[5]?.textContent.trim() || '';
-                            visible = visible && dateCell.includes(currentFilters.year);
-                        }
-                        
-                        // Show/hide row
-                        row.style.display = visible ? '' : 'none';
-                        if (visible) visibleCount++;
-                    });
-                    
-                    updateResultsInfo(visibleCount);
-                }
-
-                // Global search functionality
-                searchInput.addEventListener('keyup', function(e) {
-                    console.log('Search triggered:', e.target.value);
-                    currentFilters.search = e.target.value;
-                    filterRows();
-                    updateFilterDisplay();
-                });
-                console.log('Search filter attached');
-
-                // Category filter
-                document.getElementById('categoryFilter').addEventListener('change', function(e) {
-                    currentFilters.category = e.target.value;
-                    filterRows();
-                    updateFilterDisplay();
-                });
-
-                // Status filter
-                document.getElementById('statusFilter').addEventListener('change', function(e) {
-                    currentFilters.status = e.target.value;
-                    filterRows();
-                    updateFilterDisplay();
-                });
-
-                // Ceased status filter
-                document.getElementById('ceasedFilter').addEventListener('change', function(e) {
-                    currentFilters.ceased = e.target.value;
-                    filterRows();
-                    updateFilterDisplay();
-                });
-
-                // Year filter
-                document.getElementById('yearFilter').addEventListener('change', function(e) {
-                    currentFilters.year = e.target.value;
-                    filterRows();
-                    updateFilterDisplay();
-                });
-
                 // Clear all filters
-                document.getElementById('clearFilters').addEventListener('click', function() {
-                    document.getElementById('globalSearch').value = '';
-                    document.getElementById('categoryFilter').value = '';
-                    document.getElementById('statusFilter').value = '';
-                    document.getElementById('ceasedFilter').value = '';
-                    document.getElementById('yearFilter').value = '';
-                    
-                    currentFilters = {
-                        search: '',
-                        category: '',
-                        status: '',
-                        ceased: '',
-                        year: ''
-                    };
-                    
-                    filterRows();
-                    updateFilterDisplay();
+                clearBtn.addEventListener('click', function() {
+                    window.location.href = "{{ route('regulations.index') }}";
                 });
-
-                // Update active filter display
-                function updateFilterDisplay() {
-                    const activeFiltersArray = [];
-                    let filtersHtml = '';
-
-                    // Check each filter
-                    if (currentFilters.search) {
-                        activeFiltersArray.push({type: 'search', label: 'Search: ' + currentFilters.search});
-                    }
-
-                    if (currentFilters.category) {
-                        const categoryText = document.querySelector(`#categoryFilter option[value="${currentFilters.category}"]`)?.textContent;
-                        activeFiltersArray.push({type: 'category', label: 'Category: ' + categoryText});
-                    }
-
-                    if (currentFilters.status) {
-                        const statusText = document.querySelector(`#statusFilter option[value="${currentFilters.status}"]`)?.textContent;
-                        activeFiltersArray.push({type: 'status', label: 'Status: ' + statusText});
-                    }
-
-                    if (currentFilters.ceased) {
-                        activeFiltersArray.push({type: 'ceased', label: 'Document Status: ' + currentFilters.ceased});
-                    }
-
-                    if (currentFilters.year) {
-                        activeFiltersArray.push({type: 'year', label: 'Year: ' + currentFilters.year});
-                    }
-
-                    // Display active filters
-                    if (activeFiltersArray.length > 0) {
-                        activeFiltersArray.forEach(function(filter) {
-                            filtersHtml += '<span class="filter-chip">' + filter.label + 
-                                          ' <span class="remove-filter" data-type="' + filter.type + '">×</span></span>';
-                        });
-                        document.getElementById('activeFilters').innerHTML = filtersHtml;
-                        document.getElementById('activeFiltersRow').style.display = 'block';
-                    } else {
-                        document.getElementById('activeFiltersRow').style.display = 'none';
-                    }
-                }
-
-                // Remove individual filter
-                document.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('remove-filter')) {
-                        const filterType = e.target.getAttribute('data-type');
-                        
-                        if (filterType === 'search') {
-                            document.getElementById('globalSearch').value = '';
-                            currentFilters.search = '';
-                        } else if (filterType === 'category') {
-                            document.getElementById('categoryFilter').value = '';
-                            currentFilters.category = '';
-                        } else if (filterType === 'status') {
-                            document.getElementById('statusFilter').value = '';
-                            currentFilters.status = '';
-                        } else if (filterType === 'ceased') {
-                            document.getElementById('ceasedFilter').value = '';
-                            currentFilters.ceased = '';
-                        } else if (filterType === 'year') {
-                            document.getElementById('yearFilter').value = '';
-                            currentFilters.year = '';
-                        }
-                        
-                        filterRows();
-                        updateFilterDisplay();
-                    }
-                });
-
-                // Update results info
-                function updateResultsInfo(visibleCount) {
-                    const filteredInfo = document.getElementById('filteredInfo');
-                    
-                    if (visibleCount < totalRows) {
-                        filteredInfo.innerHTML = '(filtered from ' + totalRows + ' total entries)';
-                        filteredInfo.style.display = 'inline';
-                    } else {
-                        filteredInfo.style.display = 'none';
-                    }
-                }
 
                 // Export to CSV
                 document.getElementById('exportCSV').addEventListener('click', function() {
                     exportTableToCSV('regulations_export.csv');
                 });
 
-                // Export to Excel (CSV format with .xls extension)
+                // Export to Excel
                 document.getElementById('exportExcel').addEventListener('click', function() {
                     exportTableToCSV('regulations_export.xls');
                 });
 
-                // Export function
                 function exportTableToCSV(filename) {
                     const csv = [];
-                    const visibleRows = rows.filter(row => row.style.display !== 'none');
+                    const visibleRows = Array.from(table.querySelectorAll('tbody tr.nk-tb-item'));
                     
-                    // Headers
                     const headers = [];
-                    const headerCells = table.querySelectorAll('thead th');
-                    headerCells.forEach((cell, index) => {
-                        if (index < 7) { // Exclude action columns
-                            headers.push(cell.textContent.trim());
-                        }
+                    table.querySelectorAll('thead th').forEach((cell, index) => {
+                        if (index < 7) headers.push(cell.textContent.trim());
                     });
                     csv.push(headers.join(','));
                     
-                    // Data rows
                     visibleRows.forEach(row => {
                         const rowData = [];
-                        const cells = row.querySelectorAll('td');
-                        cells.forEach((cell, index) => {
-                            if (index < 7) { // Exclude action columns
+                        row.querySelectorAll('td').forEach((cell, index) => {
+                            if (index < 7) {
                                 const cellText = cell.textContent.trim().replace(/\n/g, ' ').replace(/,/g, ';');
                                 rowData.push('"' + cellText + '"');
                             }
@@ -1336,7 +1091,6 @@
                         csv.push(rowData.join(','));
                     });
                     
-                    // Download
                     const csvContent = csv.join('\n');
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a');
@@ -1350,10 +1104,7 @@
                         document.body.removeChild(link);
                     }
                 }
-
-                // Initialize filter display
-                updateFilterDisplay();
-                filterRows();
+            });
             });
         </script>
 

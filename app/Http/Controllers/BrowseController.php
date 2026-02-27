@@ -43,15 +43,7 @@ class BrowseController extends Controller
                $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where('status', 1)
             ->where('category_id', $category->id)
-            ->where(function ($query) {
-                $query->where(function($q) {
-                    $q->whereNull('ceased')
-                      ->orWhere('ceased', 'Active')
-                      ->orWhere('ceased', 'NULL')
-                      ->orWhere('ceased', '')
-                      ->orWhere('ceased', 'LIKE', '%Active%');
-                });
-            })
+
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         // Load page count for each regulation
@@ -212,16 +204,7 @@ class BrowseController extends Controller
                 $reg = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
             ->where('status', 1)
            ->where('subcategory_id', $subcategory->id)
-            ->where(function ($query) {
-                // Treat actual NULL, the string 'NULL', empty string, or any CSV containing 'Active' as active
-                $query->whereNull('ceased')
-                      ->orWhere('ceased', 'Active')
-                      ->orWhere('ceased', 'NULL')
-                      ->orWhere('ceased', '')
-                      ->orWhere('ceased', 'LIKE', 'Active,%')
-                      ->orWhere('ceased', 'LIKE', '%,Active')
-                      ->orWhere('ceased', 'LIKE', '%,Active,%');
-            })
+
             ->orderBy('created_at', 'desc')
             ->paginate(20);
             
@@ -275,15 +258,7 @@ class BrowseController extends Controller
             ->when($request->title, function ($query, $title) {
                 return $query->where('title', 'LIKE', "%{$title}%");
             })
-            ->where(function ($query) {
-                $query->whereNull('ceased')
-                      ->orWhere('ceased', 'Active')
-                      ->orWhere('ceased', 'NULL')
-                      ->orWhere('ceased', '')
-                      ->orWhere('ceased', 'LIKE', 'Active,%')
-                      ->orWhere('ceased', 'LIKE', '%,Active')
-                      ->orWhere('ceased', 'LIKE', '%,Active,%');
-            })
+
             ->orderBy('created_at', 'desc')
             ->paginate(20);
             
@@ -344,16 +319,7 @@ class BrowseController extends Controller
             ->when($subcategory, function ($q) use ($subcategory) {
                 $q->where('subcategory_id', $subcategory->id);
             })
-            ->where(function ($query) {
-                // Treat actual NULL, the string 'NULL', empty string, or any CSV containing 'Active' as active
-                $query->whereNull('ceased')
-                      ->orWhere('ceased', 'Active')
-                      ->orWhere('ceased', 'NULL')
-                      ->orWhere('ceased', '')
-                      ->orWhere('ceased', 'LIKE', 'Active,%')
-                      ->orWhere('ceased', 'LIKE', '%,Active')
-                      ->orWhere('ceased', 'LIKE', '%,Active,%');
-            })
+
             ->get();
 
         $search_ceased = Regulation::with(['year', 'entity', 'marketProductTags'])
@@ -637,7 +603,7 @@ class BrowseController extends Controller
 
     public function marketProductTag($slug)
     {
-         $data = Category::where('status', 1)->get();
+          $data = Category::where('status', 1)->get();
         $marketTag = \App\Models\MarketProductTag::where('slug', $slug)->first();
         
         if (!$marketTag) {
@@ -681,17 +647,9 @@ class BrowseController extends Controller
                           $q->where('market_product_tags.id', $marketTag->id);
                       });
             })
-            ->where(function ($query) {
-                $query->where(function($q) {
-                    $q->whereNull('ceased')
-                      ->orWhere('ceased', 'Active')
-                      ->orWhere('ceased', 'NULL')
-                      ->orWhere('ceased', '')
-                      ->orWhere('ceased', 'LIKE', '%Active%');
-                });
-            })
+
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate(20);
             
         // Load page count for each regulation
         $reg->each(function($regulation) {
@@ -709,7 +667,7 @@ class BrowseController extends Controller
             })
             ->whereNotNull('ceased')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(20);
 
         $statuses = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
@@ -832,7 +790,7 @@ class BrowseController extends Controller
                           $q->where('market_product_tags.id', $marketTag->id);
                       });
             })
-            ->whereNull('ceased')
+
             ->orderBy('created_at', 'desc')
             ->get();
 

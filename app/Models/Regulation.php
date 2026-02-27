@@ -268,8 +268,42 @@ class Regulation extends Model
         }
     }
 
-    // public function approvals()
-    // {
-    //     return $this->hasMany(RegulationApproval::class);
-    // }
+    // Recursive method to get all related documents in a flat collection (lineage)
+    public function getFlattenedRelatedDocuments($visitedIds = [])
+    {
+        if (in_array($this->id, $visitedIds)) {
+            return collect();
+        }
+        
+        $visitedIds[] = $this->id;
+        
+        // 1. Get from DocumentRelationship records (both directions)
+        $relMethodDocs = $this->relatedDocuments(); // Using the method defined at line 93
+        
+        // 2. Get from related_docs column (simple CSV approach)
+        $colDocs = collect();
+        if ($this->related_docs) {
+            $ids = array_filter(explode(',', $this->related_docs));
+            if (!empty($ids)) {
+                $colDocs = Regulation::whereIn('id', $ids)->get();
+            }
+        }
+        
+        // Combine immediate relatives
+        $allImmediate = $relMethodDocs->merge($colDocs)->unique('id');
+        
+        $flat = clone $allImmediate;
+        
+        // Recurse for each relative
+        foreach ($allImmediate as $doc) {
+            if (!in_array($doc->id, $visitedIds)) {
+                $nested = $doc->getFlattenedRelatedDocuments($visitedIds);
+                $flat = $flat->merge($nested);
+            }
+        }
+        
+        return $flat->unique('id')->filter(function($doc) {
+            return $doc->id != $this->id;
+        });
+    }
 }

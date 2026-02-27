@@ -471,15 +471,21 @@
                                 </div>
                                 <div class="modal-body">
                                     @php
-                                        $allRelatedDocs = $result->relatedDocuments;
+                                        // Use the new recursive flattened search to find any active documents in the lineage
+                                        $allRelatedDocs = $result->getFlattenedRelatedDocuments();
+                                        
                                         // Sort related documents by effective_date in descending order
                                         if ($allRelatedDocs instanceof \Illuminate\Support\Collection) {
                                             $allRelatedDocs = $allRelatedDocs->sortByDesc(function($doc) {
-                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                return $doc->effective_date ? \Carbon\Carbon::parse($doc->effective_date) : \Carbon\Carbon::now()->subYears(100);
                                             });
                                         }
+                                        
+                                        // Filter for active documents (where ceased is null, empty string, or falsey)
                                         $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection)
-                                            ? $allRelatedDocs->filter(function($doc){ return is_null($doc->ceased); })
+                                            ? $allRelatedDocs->filter(function($doc){ 
+                                                return empty($doc->ceased) || $doc->ceased === 'Active'; 
+                                            })
                                             : collect();
                                     @endphp
                                     @if($activeRelatedDocs->count() > 0)
@@ -515,7 +521,7 @@
     });
     
     // Count active nested documents
-    $activeNestedCount = $nestedDocsFromColumn->filter(function($d){ return is_null($d->ceased); })->count();
+    $activeNestedCount = $nestedDocsFromColumn->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; })->count();
 @endphp
 
 @if($nestedDocsFromColumn->count() > 0)
@@ -547,7 +553,7 @@
 
                                                 @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                     @php 
-                                                        $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return is_null($d->ceased); });
+                                                        $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; });
                                                         // Sort active nested documents by effective_date in descending order
                                                         $activeNestedDocs = $activeNestedDocs->sortByDesc(function($doc) {
                                                             return \Carbon\Carbon::parse($doc->effective_date);

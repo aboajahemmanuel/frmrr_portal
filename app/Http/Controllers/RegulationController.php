@@ -50,7 +50,15 @@ class RegulationController extends Controller
             ->role($role)
             ->get();
 
-        $data = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->paginate(20);
+        $search   = $request->input('search');
+
+        $query = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id);
+
+        if ($search) {
+            $query->where('title', 'LIKE', "%{$search}%");
+        }
+
+        $data = $query->paginate(20)->appends($request->all());
 
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
