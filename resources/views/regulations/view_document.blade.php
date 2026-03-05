@@ -727,7 +727,7 @@
                                                                         
                                                                         @if (!empty($regulation->regulation_doc))
                                                                             <a href="../public/pdf_documents/{{ $regulation->regulation_doc }}"
-                                                                                download="{{ $regulation->regulation_doc }}">
+                                                                                target="_blank">
                                                                                 <h5>
                                                                                     <br>
                                                                                     <center>Click to download document</center>
