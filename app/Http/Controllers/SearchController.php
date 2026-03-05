@@ -7,18 +7,20 @@ use App\Models\Regulation;
 use App\Models\Subscription;
 use App\Models\Year;
 use Carbon\Carbon;
+use App\Traits\AlphabeticalPaginatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SearchController extends Controller
 {
+    use AlphabeticalPaginatable;
 
     public function index()
     {
         
 
-         $categories = Category::all();
+           $categories = Category::all();
         $categories = Category::where('status', 1)->get();
         $months     = DB::table('months')->get();
          $years      = DB::table('years')->get();
@@ -47,47 +49,43 @@ class SearchController extends Controller
 
     public function searchPost(Request $request)
     {
-          //return $request;
+        // return $Form = $request->input('Form'); // Keeping original legacy return if needed, but it stops execution.
+        
+        $results = $this->alphabeticalPaginate(null, null, function($query) use ($request) {
+            if ($request->has('category_id') && $request->category_id) {
+                $query->where('category_id', $request->category_id);
+            }
 
-        //return   $Form = $request->input('Form');
-        $query = Regulation::query();
+            if ($request->has('Key_Words') && $request->Key_Words) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->Key_Words . '%')
+                        ->orWhere('document_tag', 'like', '%' . $request->Key_Words . '%');
+                });
+            }
 
-        if ($request->has('category_id') && $request->category_id) {
-            $query->where('category_id', $request->category_id);
-        }
+            if ($request->has('year') && $request->year) {
+                $query->where('year_id', $request->year);
+            }
 
-        if ($request->has('Key_Words') && $request->Key_Words) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->Key_Words . '%')
-                    ->orWhere('document_tag', 'like', '%' . $request->Key_Words . '%');
-            });
-        }
-
-        if ($request->has('year') && $request->year) {
-            $query->where('year_id', $request->year);
-        }
-
-        if ($request->has('number') && $request->number) {
-            $query->limit($request->number);
-        }
-
-        if ($request->has('date_posted') && $request->date_posted) {
-            $query->whereDate('issue_date', $request->date_posted);
-        }
-
-        $results = $query->get();
+            if ($request->has('date_posted') && $request->date_posted) {
+                $query->whereDate('issue_date', $request->date_posted);
+            }
+            
+            // Limit handled by targetPerPage in alphabeticalPaginate usually, 
+            // but if they want literal limit:
+            if ($request->has('number') && $request->number) {
+                 $query->limit($request->number);
+            }
+        });
 
         $userId = Auth::id();
-
-        // Check if the user is subscribed
         $today = Carbon::now();
 
         $isSubscribed = Subscription::where('user_id', $userId)
             ->where('status', 1)
-            ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
+            ->where('end_date', '>=', $today)
             ->exists();
 
-        // Fetch additional data for the view
         $categories         = Category::where('status', 1)->get();
         $months             = DB::table('months')->get();
         $years              = DB::table('years')->get();
@@ -99,19 +97,14 @@ class SearchController extends Controller
         $date_posted        = $request->input('date_posted');
         $selectedCategories = $request->input('category_id');
 
-        // Get statuses for the dropdown
         $statuses = DB::table('doc_type')->get();
         $formattedStatuses = implode('/', $statuses->pluck('name')->toArray());
 
-        // Return the view with the results and additional data
         return view('search.searchResult', compact('results', 'Form', 'selectedCategories', 'categories', 'months', 'years', 'date_posted', 'year', 'number', 'entities', 'title', 'isSubscribed', 'statuses', 'formattedStatuses'));
     }
 
     public function searchPostAdvance(Request $request)
     {
-        // Initialize query with eager loading for better performance
-        $query = Regulation::with(['year', 'entity', 'category']);
-
         // Extract all filter parameters
         $filters = [
             'keywords' => $request->input('search_Words'),
@@ -129,74 +122,63 @@ class SearchController extends Controller
             'number' => $request->input('number'),
         ];
 
-        // Apply category filter
-        if (!empty($filters['categories'])) {
-            $query->whereIn('category_id', $filters['categories']);
-        }
-
-        // Apply keyword search with different methods
-        if (!empty($filters['keywords'])) {
-            $this->applyKeywordSearch($query, $filters['keywords'], $filters['searchMethod'], $filters['searchBy']);
-        }
-
-        // Apply year filter
-        if (!empty($filters['year_id'])) {
-            $query->where('year_id', $filters['year_id']);
-        }
-
-        // Apply entity filter
-        if (!empty($filters['entity_id'])) {
-            $query->where('entity_id', $filters['entity_id']);
-        }
-
-        // Apply issue date range filter
-        if (!empty($filters['issue_date_from']) && !empty($filters['issue_date_to'])) {
-            $query->whereDate('issue_date', '>=', $filters['issue_date_from'])
-                  ->whereDate('issue_date', '<=', $filters['issue_date_to']);
-        } elseif (!empty($filters['issue_date_from'])) {
-            $query->whereDate('issue_date', '>=', $filters['issue_date_from']);
-        } elseif (!empty($filters['issue_date_to'])) {
-            $query->whereDate('issue_date', '<=', $filters['issue_date_to']);
-        }
-
-        // Apply effective date range filter
-        if (!empty($filters['effective_date_from']) && !empty($filters['effective_date_to'])) {
-            $query->whereDate('effective_date', '>=', $filters['effective_date_from'])
-                  ->whereDate('effective_date', '<=', $filters['effective_date_to']);
-        } elseif (!empty($filters['effective_date_from'])) {
-            $query->whereDate('effective_date', '>=', $filters['effective_date_from']);
-        } elseif (!empty($filters['effective_date_to'])) {
-            $query->whereDate('effective_date', '<=', $filters['effective_date_to']);
-        }
-
-        // Apply ceased/repealed status filter
-        if (!empty($filters['ceasedRepealed'])) {
-            if ($filters['ceasedRepealed'] === 'Active') {
-                $query->whereNull('ceased');
-            } else {
-                // Handle comma-separated values in ceased column
-                $query->where(function ($q) use ($filters) {
-                    $q->where('ceased', $filters['ceasedRepealed'])
-                      ->orWhere('ceased', 'like', '%' . $filters['ceasedRepealed'] . ',%')
-                      ->orWhere('ceased', 'like', '%,' . $filters['ceasedRepealed'] . '%');
-                });
+        // Get filtered results using alphabetical pagination
+        $results = $this->alphabeticalPaginate(null, null, function($query) use ($filters) {
+            // Re-apply all filters inside the trait's query scope
+            if (!empty($filters['categories'])) {
+                $query->whereIn('category_id', $filters['categories']);
             }
-        }
 
+            if (!empty($filters['keywords'])) {
+                $this->applyKeywordSearch($query, $filters['keywords'], $filters['searchMethod'], $filters['searchBy']);
+            }
 
+            if (!empty($filters['year_id'])) {
+                $query->where('year_id', $filters['year_id']);
+            }
 
-        // Apply document version filter
-        if (!empty($filters['document_version'])) {
-            $query->where('document_version', $filters['document_version']);
-        }
+            if (!empty($filters['entity_id'])) {
+                $query->where('entity_id', $filters['entity_id']);
+            }
 
-        // Apply result limit
-        if (!empty($filters['number'])) {
-            $query->limit($filters['number']);
-        }
+            if (!empty($filters['issue_date_from']) && !empty($filters['issue_date_to'])) {
+                $query->whereDate('issue_date', '>=', $filters['issue_date_from'])
+                      ->whereDate('issue_date', '<=', $filters['issue_date_to']);
+            } elseif (!empty($filters['issue_date_from'])) {
+                $query->whereDate('issue_date', '>=', $filters['issue_date_from']);
+            } elseif (!empty($filters['issue_date_to'])) {
+                $query->whereDate('issue_date', '<=', $filters['issue_date_to']);
+            }
 
-        // Get filtered results
-        $results = $query->get();
+            if (!empty($filters['effective_date_from']) && !empty($filters['effective_date_to'])) {
+                $query->whereDate('effective_date', '>=', $filters['effective_date_from'])
+                      ->whereDate('effective_date', '<=', $filters['effective_date_to']);
+            } elseif (!empty($filters['effective_date_from'])) {
+                $query->whereDate('effective_date', '>=', $filters['effective_date_from']);
+            } elseif (!empty($filters['effective_date_to'])) {
+                $query->whereDate('effective_date', '<=', $filters['effective_date_to']);
+            }
+
+            if (!empty($filters['ceasedRepealed'])) {
+                if ($filters['ceasedRepealed'] === 'Active') {
+                    $query->whereNull('ceased');
+                } else {
+                    $query->where(function ($q) use ($filters) {
+                        $q->where('ceased', $filters['ceasedRepealed'])
+                          ->orWhere('ceased', 'like', '%' . $filters['ceasedRepealed'] . ',%')
+                          ->orWhere('ceased', 'like', '%,' . $filters['ceasedRepealed'] . '%');
+                    });
+                }
+            }
+
+            if (!empty($filters['document_version'])) {
+                $query->where('document_version', $filters['document_version']);
+            }
+
+            if (!empty($filters['number'])) {
+                $query->limit($filters['number']);
+            }
+        });
 
         // Check user subscription status
         $isSubscribed = $this->checkUserSubscription();
@@ -330,7 +312,7 @@ class SearchController extends Controller
 
     public function search_result(Request $request)
     {
-         $today = Carbon::now();
+          $today = Carbon::now();
 
         //return $search = $request->input('title');
         $title = $request['title'];
@@ -342,27 +324,14 @@ class SearchController extends Controller
             return ! in_array(strtolower($word), $stopWords);
         });
 
-        // Store the query parameters for pagination
-        $regQuery = Regulation::with(['year', 'entity', 'category', 'subcategory', 'marketProductTags'])
-            ->where(function ($query) use ($searchWords) {
+        $reg = $this->alphabeticalPaginate(null, null, function ($query) use ($searchWords) {
             $query->where(function ($q) use ($searchWords) {
                 foreach ($searchWords as $word) {
                     $q->orWhere('title', 'like', '%' . $word . '%');
-                   
                 }
             });
-        })
-            //->whereNull('ceased')
-            ->where('status', 1)
-            ->orderBy('created_at', 'desc');
-            
-        // Get the total count before pagination
-        $totalRecords = $regQuery->count();
-        
-        // Apply pagination
-        $reg = $regQuery->paginate(30)->appends($request->except('page'));
-
-       
+        }, 30);
+ 
         $total = $reg->total();
 
         $userId = Auth::id();
@@ -389,12 +358,12 @@ class SearchController extends Controller
         $search;
         $title = $search;
 
-        $search = Regulation::where('title', 'like', '%' . $title . '%')
-            ->where('status', 1)
-            ->whereNotNull('ceased')
-            ->get();
+        $search = $this->alphabeticalPaginate(null, null, function($query) use ($title) {
+            $query->where('title', 'like', '%' . $title . '%')
+                  ->whereNotNull('ceased');
+        });
 
-        $total = $search->count();
+        $total = $search->total();
 
         $userId = Auth::id();
 
@@ -412,14 +381,15 @@ class SearchController extends Controller
         return view('search.ceased_result', compact('search', 'years', 'title', 'total', 'isSubscribed', 'formattedStatuses', 'statuses'));
     }
 
-  public function search(Request $request)
+    public function search(Request $request)
     {
-        // $search = $request->input('title');
         $title  = $request['title'];
-        $search = Regulation::where('title', 'like', '%' . $title . '%')->paginate(10);
-        $total  = $search->count();
+        $search = $this->alphabeticalPaginate(null, null, function($query) use ($title) {
+            $query->where('title', 'like', '%' . $title . '%');
+        }, 10);
+        $total  = $search->total();
 
-        if (count($search) == 0) {
+        if ($search->isEmpty()) {
             return view('search.index', ['search' => null, 'title' => $title, 'total' => $total]);
         }
 
@@ -428,13 +398,14 @@ class SearchController extends Controller
 
     public function categorysearch(Request $request, $category_slug, $title)
     {
-        $catergory = Category::where('slug', $category_slug)->first();
+        $category = Category::where('slug', $category_slug)->first();
 
-        $search = Regulation::where('title', 'like', '%' . $title . '%')
-            ->where('category_id', $catergory->id)->paginate(10);
-        $total = $search->count();
+        $search = $this->alphabeticalPaginate($category->id, null, function($query) use ($title) {
+            $query->where('title', 'like', '%' . $title . '%');
+        }, 10);
+        $total = $search->total();
 
-        if (count($search) == 0) {
+        if ($search->isEmpty()) {
             return view('search.categorysearch', ['search' => null, 'title' => $title, 'total' => $total]);
         }
 
