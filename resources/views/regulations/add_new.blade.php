@@ -526,7 +526,7 @@
 </div>
 
 {{-- Nested Related Documents Section (Advanced Relationships) --}}
-<div class="col-md-6">
+<!-- <div class="col-md-6">
     <div class="form-group">
         <label class="form-label" for="nested-related-documents-select">
             Select Nested Related Documents
@@ -545,7 +545,7 @@
             </select>
         </div>
     </div>
-</div>
+</div> -->
 
 <script>
     $(document).ready(function() {
