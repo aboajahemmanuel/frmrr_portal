@@ -838,7 +838,7 @@
                                                                     
                                                                     @foreach ($relatedDocuments as $doc)
                                                                         <option value="{{ $doc->id }}" 
-                                                                            {{ $regulation->relatedDocuments->contains('id', $doc->id) ? 'selected' : '' }}>
+                                                                            {{ in_array($doc->id, $relatedDocumentsIds) ? 'selected' : '' }}>
                                                                             {{ $doc->title }} ({{ $doc->month->name }} - {{ $doc->year->name }})
                                                                         </option>
                                                                     @endforeach

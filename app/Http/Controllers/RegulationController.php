@@ -465,28 +465,22 @@ class RegulationController extends Controller
         $statua            = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statua);
 
-        // Get related documents for the same category
-        $relatedDocuments = Regulation::where('category_id', $regulation->category_id)
+        // Get related documents for the same category with eager loading
+        $relatedDocuments = Regulation::with(['month', 'year'])
+            ->where('category_id', $regulation->category_id)
             ->where('admin_status', 1) // Only approved documents
-           // ->where('id', '!=', $regulation->id) // Exclude current document
             ->orderBy('title')
             ->get();
         
-        // Get nested related documents (all documents for relationship selection)
-        $nestedRelatedDocuments = Regulation::where('admin_status', 1) // Only approved documents
-            ->where('id', '!=', $regulation->id) // Exclude current document
-            ->orderBy('title')
-            ->get();
-        
-        // Get existing nested relationships for this document
-        $existingNestedRelationships = $regulation->sourceRelationships()->with('relatedDocument')->get()->pluck('related_document_id')->toArray();
+        // Fetch only IDs of related documents once to avoid recursive accessor calls in the blade loop
+        $relatedDocumentsIds = $regulation->relatedDocuments->pluck('id')->toArray();
 
         $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
             ->where('admin_status', 1)
             ->orderBy('name')
             ->get();
 
-        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'nestedRelatedDocuments', 'existingNestedRelationships', 'marketProductTags'));
+        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'relatedDocumentsIds', 'marketProductTags'));
     }
 
     public function view_doc($id)
@@ -509,28 +503,23 @@ class RegulationController extends Controller
         $statua            = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statua);
 
-        // Get related documents for the same category
-        $relatedDocuments = Regulation::where('category_id', $regulation->category_id)
+        // Get related documents for the same category with eager loading
+        $relatedDocuments = Regulation::with(['month', 'year'])
+            ->where('category_id', $regulation->category_id)
             ->where('admin_status', 1) // Only approved documents
             ->where('id', '!=', $regulation->id) // Exclude current document
             ->orderBy('title')
             ->get();
         
-        // Get nested related documents (all documents for relationship selection)
-        $nestedRelatedDocuments = Regulation::where('admin_status', 1) // Only approved documents
-            ->where('id', '!=', $regulation->id) // Exclude current document
-            ->orderBy('title')
-            ->get();
-        
-        // Get existing nested relationships for this document
-        $existingNestedRelationships = $regulation->sourceRelationships()->with('relatedDocument')->get()->pluck('related_document_id')->toArray();
+        // Fetch only IDs of related documents once to avoid recursive accessor calls in the blade loop
+        $relatedDocumentsIds = $regulation->relatedDocuments->pluck('id')->toArray();
 
         $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
             ->where('admin_status', 1)
             ->orderBy('name')
             ->get();
 
-        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'nestedRelatedDocuments', 'existingNestedRelationships', 'marketProductTags'));
+        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'relatedDocumentsIds', 'marketProductTags'));
     }
 
     /**
