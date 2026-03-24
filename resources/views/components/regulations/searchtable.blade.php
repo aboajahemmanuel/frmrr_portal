@@ -526,7 +526,7 @@
                                                     </a>
                                                 </div>
 
-                                                @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                {{-- @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
                                                     @php $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; }); @endphp
                                                     @if($activeNestedDocs->count() > 0)
                                                         <div class="nested-related-docs">
@@ -560,7 +560,7 @@
                                                             @endforeach
                                                         </div>
                                                     @endif
-                                                @endif
+                                                @endif --}}
                                             </div>
                                         @endforeach
                                     @else
@@ -907,7 +907,7 @@
                                                     @endif
                                                 </div>
 
-                                                @php $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; }); @endphp
+                                                {{-- @php $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; }); @endphp
                                                 @if(isset($relatedDoc->nested_related_documents) && $activeNestedDocs->count() > 0)
                                                     <div class="nested-related-docs">
                                                         <small><strong>Active Related Documents:</strong></small>
@@ -937,7 +937,7 @@
                                                             </div>
                                                         @endforeach
                                                     </div>
-                                                @endif
+                                                @endif --}}
                                             </div>
                                         @endforeach
                                     @else

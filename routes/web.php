@@ -317,6 +317,9 @@ Route::get('/reset-password/{token}', [AuthController::class, 'resetpassword']);
 Route::post('reset-password', [AuthController::class, 'resetpasswordsubmit'])->name('resetpasswordsubmit');
 Route::post('post-registration', [AuthController::class, 'postRegistration'])->name('register.post');
 Route::post('/login/validate', [AuthController::class, 'validateLogin'])->name('login.post');
+Route::get('/otp/verify', [AuthController::class, 'showOtpForm'])->name('otp.verify');
+Route::post('/otp/verify', [AuthController::class, 'verifyOtpSubmit'])->name('otp.verify.submit');
+Route::get('/otp/resend', [AuthController::class, 'resendOtp'])->name('otp.resend');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/user/verify/{token}', [AuthController::class, 'verifyEmail'])->name('user.verify');
 

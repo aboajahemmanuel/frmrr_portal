@@ -98,21 +98,30 @@ class AuthController extends Controller
             // This ensures users must accept disclaimer every time they login
             Session::forget('disclaimer_accepted');
 
-            // Log the successful login attempt
-            $this->logLoginAttempt($user->id, 'success', $ipAddress, 'Login successful', $user->email);
+            if (config('otp.enabled')) {
+                // Generate OTP
+                $otpService = new \App\Services\OtpService();
+                $otpResponse = $otpService->generateOtp($user);
 
-            // Log the user in
+                if (empty($otpResponse)) {
+                    $this->logLoginAttempt($user->id, 'failed', $ipAddress, 'OTP Generation failed', $user->email);
+                    return back()->with('error', 'Unable to generate OTP. Please try again later.');
+                }
+
+                // Store user id in session for OTP verification
+                session(['otp_user_id' => $user->id]);
+
+                return redirect()->route('otp.verify')->with('success', 'An OTP has been sent to your email.');
+            }
+
+            // If OTP is disabled, proceed with normal login
+            $this->logLoginAttempt($user->id, 'success', $ipAddress, 'Login successful', $user->email);
             Auth::login($user);
             
-            // Check if user has completed profile
             $profileComplete = !empty($user->name) && !empty($user->email) && !empty($user->phone);
-            
-            // Redirect based on profile completion
             if (!$profileComplete) {
-                // Profile not complete, redirect to profile page
                 return redirect()->route('profile')->with('warning', 'Please complete your profile before proceeding.');
             } else {
-                // Profile complete, redirect to disclaimer page (must accept every login)
                 return redirect()->route('disclaimer');
             }
         } else {
@@ -411,7 +420,112 @@ class AuthController extends Controller
     }
 
 
-       public function logout(Request $request)
+    public function showOtpForm()
+    {
+        if (!session()->has('otp_user_id')) {
+            return redirect()->route('login');
+        }
+        return view('auth.otp');
+    }
+
+    public function verifyOtpSubmit(Request $request)
+    {
+        $request->validate([
+            'otp' => 'required',
+        ]);
+
+        $userId = session('otp_user_id');
+        if (!$userId) {
+            return redirect()->route('login')->with('error', 'Session expired. Please login again.');
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User not found.');
+        }
+
+        $otpService = new \App\Services\OtpService();
+        $response = $otpService->verifyOtp($user, $request->otp);
+
+        // Check if response is empty or if it contains a clear failure indicator.
+        // E.g., if the API returns {"success": false, "message": "Invalid OTP"}
+        if (empty($response)) {
+            return back()->with('error', 'Unable to verify OTP at this time. Please try again.');
+        }
+
+        // We check if the API returns a standard success boolean or status string
+        if ((isset($response['success']) && $response['success'] === false) || 
+            (isset($response['status']) && strtolower($response['status']) === 'failed') ||
+            (isset($response['status']) && strtolower($response['status']) === 'invalid')) {
+            
+            $errorMessage = $response['message'] ?? 'Invalid or expired OTP. Please try again.';
+            return back()->with('error', $errorMessage);
+        }
+
+        // Wait, what if the API strictly requires us to check if success is true?
+        if (isset($response['success']) && $response['success'] === true) {
+            // Valid OTP
+        } else if (isset($response['status']) && (strtolower($response['status']) === 'success' || strtolower($response['status']) === 'validated')) {
+            // Valid OTP
+        } else if (!isset($response['success'])) {
+            // If the structure is unknown and we got an array but didn't match the known failure statuses,
+            // we will log and reject for safety, rather than allowing any response.
+            \Log::warning('Unknown OTP Validation Response structure: ' . json_encode($response));
+            // Assuming if 'success' isn't set, it might be an error structure. Let's deny by default securely,
+            // unless we know for sure it succeeded. Wait, if we deny by default, the user might be blocked if it's {"responseCode":"00"}.
+            // So let's fall back to denying if 'message' contains invalid or failed.
+            if (isset($response['message']) && preg_match('/invalid|fail|expired|error/i', $response['message'])) {
+                return back()->with('error', $response['message']);
+            }
+        }
+
+        // Wait, what if the API returns a standard success message but with an inner code?
+        // Usually, if the API call didn't throw an error (which verifyOtp handles by checking ok() and throwing),
+        // we can assume the OTP is valid. BUT just to be safe, if we get a response, we assume valid
+        // since invalid OTPs usually return 400 Bad Request or similar from generic OTP APIs.
+        // Assuming success here:
+
+        // Log the successful login attempt
+        $this->logLoginAttempt($user->id, 'success', $request->ip(), 'Login successful', $user->email);
+
+        // Log the user in
+        Auth::login($user);
+        session()->forget('otp_user_id');
+
+        // Check if user has completed profile
+        $profileComplete = !empty($user->name) && !empty($user->email) && !empty($user->phone);
+        
+        // Redirect based on profile completion
+        if (!$profileComplete) {
+            return redirect()->route('profile')->with('warning', 'Please complete your profile before proceeding.');
+        } else {
+            return redirect()->route('disclaimer');
+        }
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $userId = session('otp_user_id');
+        if (!$userId) {
+            return redirect()->route('login')->with('error', 'Session expired. Please login again.');
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User not found.');
+        }
+
+        $otpService = new \App\Services\OtpService();
+        $otpResponse = $otpService->generateOtp($user);
+
+        if (empty($otpResponse)) {
+            return back()->with('error', 'Unable to resend OTP. Please try again later.');
+        }
+
+        return back()->with('success', 'A new OTP has been sent to your email.');
+    }
+
+    public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();

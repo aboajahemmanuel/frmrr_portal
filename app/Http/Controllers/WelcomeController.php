@@ -179,11 +179,8 @@ class WelcomeController extends Controller
 
 
 
-
     public function success_pay(Request $request)
     {
-
-
 
         return view('success');
     }
