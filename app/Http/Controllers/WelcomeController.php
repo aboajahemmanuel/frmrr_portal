@@ -164,15 +164,20 @@ class WelcomeController extends Controller
             'subject' => $request['subject'],
             'feedback' => $request['feedback'],
         );
-        Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
-            $message->to('aboajah.emmanuel@fmdqgroup.com')
-                ->replyTo($email_data['email'])
-                ->subject('New Feedback Received: ' . $email_data['subject'])
-                ->from('no-reply@fmdqgroup.com', 'FMRR Portal');
-        });
+        
+        try {
+            Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
+                $message->to('aboajah.emmanuel@fmdqgroup.com')
+                    ->replyTo($email_data['email'])
+                    ->subject('New Feedback Received: ' . $email_data['subject'])
+                    ->from('no-reply@fmdqgroup.com', 'FMRR Portal');
+            });
 
-
-        return redirect()->back()->with('success', 'Thank you for your Feedback.');
+            return redirect()->back()->with('success', 'Thank you for your Feedback.');
+        } catch (\Exception $e) {
+            // Log::error('Feedback email failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Sorry, we encountered a technical issue sending your feedback. Please try again later.');
+        }
     }
 
 
