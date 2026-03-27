@@ -37,15 +37,15 @@
                                             <br>
                                             <div class="sf-title">Select category</div>
                                             <div class="spc-btw">
-                                                <div class="cb-gap">
+                                                <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                                     @foreach ($categories as $category)
-                                                        <div class="catgory">
-                                                            <input type="checkbox" name="category_id[]"
-                                                                id="category_{{ $category->id }}"
+                                                        <div class="catgory" style="display: flex; align-items: center;">
+                                                            <input type="radio" name="category_id"
+                                                                id="res_basic1_category_{{ $category->id }}"
                                                                 value="{{ $category->id }}"
-                                                                @if (in_array($category->id, $selectedCategories ?? [])) checked @endif />
-                                                            <label style="margin-bottom: 0px;"
-                                                                for="category_{{ $category->id }}">{{ $category->name }}</label>
+                                                                @if (request('category_id') == $category->id) checked @endif style="margin-right: 5px;" />
+                                                            <label style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
+                                                                for="res_basic1_category_{{ $category->id }}">{{ $category->name }}</label>
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -124,16 +124,15 @@
                                         <div class="sf-title">Select category</div>
                                         <div class="spc-btw">
 
-                                            <div class="cb-gap">
+                                            <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                                 @foreach ($categories as $category)
-                                                    <div class="catgory">
-                                                        <input type="checkbox" name="category_id[]"
-                                                            id="category_{{ $category->id }}"
+                                                    <div class="catgory" style="display: flex; align-items: center;">
+                                                        <input type="radio" name="category_id"
+                                                            id="res_basic2_category_{{ $category->id }}"
                                                             value="{{ $category->id }}"
-                                                            @if (in_array($category->id, $selectedCategories ?? [])) checked @endif />
-                                                        <label
-                                                            style="margin-bottom: 0px;
-                                                        for="category_{{ $category->id }}">{{ $category->name }}</label>
+                                                            @if (request('category_id') == $category->id) checked @endif style="margin-right: 5px;" />
+                                                        <label style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
+                                                            for="res_basic2_category_{{ $category->id }}">{{ $category->name }}</label>
                                                     </div>
                                                 @endforeach
                                             </div>
@@ -211,19 +210,16 @@
                                     <form id="searchForm1" method="GET" action="{{ route('searchPostAdvance') }}">
                                         <div class="sf-title">Select one or more options</div>
                                         <div class="spc-btw">
-                                            <div>
-                                                <div class="cb-gap">
-
-
+                                           <div>
+                                                <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                                     @foreach ($categories as $category)
-                                                        <div class="catgory">
-                                                            <input type="checkbox" name="categories[]"
-                                                                id="category_{{ $category->id }}"
+                                                        <div class="catgory" style="display: flex; align-items: center;">
+                                                            <input type="checkbox" name="category_id[]"
+                                                                id="res_adv_category_{{ $category->id }}"
                                                                 value="{{ $category->id }}"
-                                                                @if (in_array($category->id, $selectedCategories ?? [])) checked @endif />
-                                                            <label
-                                                                style="margin-bottom: 0px;
-                                        for="category_{{ $category->id }}">{{ $category->name }}</label>
+                                                                @if (in_array($category->id, (array) request('category_id', []))) checked @endif style="margin-right: 5px;" />
+                                                            <label style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
+                                                                for="res_adv_category_{{ $category->id }}">{{ $category->name }}</label>
                                                         </div>
                                                     @endforeach
                                                 </div>

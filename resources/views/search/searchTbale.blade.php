@@ -90,13 +90,13 @@ entityBox.addEventListener("click", function (e) {
         <br>
         <div class="sf-title">Select category</div>
         <div class="spc-btw">
-            <div class="cb-gap">
+            <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                 @foreach ($categories as $category)
-                    <div class="catgory">
-                        <input type="checkbox" name="category_id[]"
+                    <div class="catgory" style="display: flex; align-items: center;">
+                        <input type="radio" name="category_id"
                             id="category_{{ $category->id }}"
-                            value="{{ $category->id }}" />
-                        <label for="category_{{ $category->id }}" style="margin-bottom: 0px;">
+                            value="{{ $category->id }}" style="margin-right: 5px;" />
+                        <label for="category_{{ $category->id }}" style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;">
                             {{ $category->name }}
                         </label>
                     </div>
@@ -167,6 +167,21 @@ entityBox.addEventListener("click", function (e) {
                                 <br>
                                  <form id="searchFormADFD" method="GET" action="{{ route('searchPostAdvance') }}">
                                     <div class="sf-title">Select one or more options</div>
+                                
+        <div class="spc-btw">
+            <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                @foreach ($categories as $category)
+                    <div class="catgory" style="display: flex; align-items: center;">
+                        <input type="checkbox" name="category_id[]"
+                            id="adv_category_{{ $category->id }}"
+                            value="{{ $category->id }}" style="margin-right: 5px;" />
+                        <label for="adv_category_{{ $category->id }}" style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;">
+                            {{ $category->name }}
+                        </label>
+                    </div>
+                @endforeach
+            </div>
+        </div>
                                     <!-- Add custom CSS for autocomplete -->
                                     <style>
                                         .si-input-box-s {
@@ -577,20 +592,17 @@ entityBox.addEventListener("click", function (e) {
                                         <div class="sf-title">Select category</div>
                                         <div class="spc-btw">
 
-                                            <div class="cb-gap">
+                                            <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                                 @foreach ($categories as $category)
-                                                    <div class="custom-control custom-radio">
-                                                        <input type="radio" style="font-size:5px"
-                                                            id="category_{{ $category->id }}" name="category_id"
-                                                            value="{{ $category->id }}" class="custom-control-input">
-                                                        <label class="custom-control-label"
-                                                            for="category_{{ $category->id }}"
-                                                            style="margin-bottom: 0px; color: #1d326d !important; font-size:12px">{{ $category->name }}</label>
+                                                    <div class="catgory" style="display: flex; align-items: center;">
+                                                        <input type="radio" name="category_id"
+                                                            id="usr_category_{{ $category->id }}"
+                                                            value="{{ $category->id }}" style="margin-right: 5px;" />
+                                                        <label for="usr_category_{{ $category->id }}" style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;">
+                                                            {{ $category->name }}
+                                                        </label>
                                                     </div>
                                                 @endforeach
-
-
-
                                             </div>
                                         </div>
                                         <div class="search-input">
@@ -680,20 +692,17 @@ entityBox.addEventListener("click", function (e) {
                                     <div class="sf-title">Select category</div>
                                     <div class="spc-btw">
 
-                                        <div class="cb-gap">
+                                        <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                             @foreach ($categories as $category)
-                                                <div class="custom-control custom-radio">
-                                                    <input type="radio" style="font-size:5px"
-                                                        id="category_{{ $category->id }}" name="category_id"
-                                                        value="{{ $category->id }}" class="custom-control-input">
-                                                    <label class="custom-control-label"
-                                                        for="category_{{ $category->id }}"
-                                                        style="margin-bottom: 0px; color: #1d326d !important; font-size:12px">{{ $category->name }}</label>
+                                                <div class="catgory" style="display: flex; align-items: center;">
+                                                    <input type="radio" name="category_id"
+                                                        id="gst_category_{{ $category->id }}"
+                                                        value="{{ $category->id }}" style="margin-right: 5px;" />
+                                                    <label for="gst_category_{{ $category->id }}" style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;">
+                                                        {{ $category->name }}
+                                                    </label>
                                                 </div>
                                             @endforeach
-
-
-
                                         </div>
                                     </div>
                                     <div class="search-input">
