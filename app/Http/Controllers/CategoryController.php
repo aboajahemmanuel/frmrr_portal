@@ -37,6 +37,10 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
+
+        if (!Auth::user()->hasPermissionTo('category-list')) {
+            abort(403, 'Unauthorized action.');
+        }
       
         $user = Auth::user();
         $permission = 'category-approve';

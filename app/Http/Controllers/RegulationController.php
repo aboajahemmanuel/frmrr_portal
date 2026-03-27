@@ -42,17 +42,29 @@ class RegulationController extends Controller
      */
     public function index(Request $request)
     {
-
         $user = Auth::user();
-        $role = 'Content_Owner_Authoriser';
 
+        $permission = 'document-approve';
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($permission)
             ->get();
 
-        $search   = $request->input('search');
+        // Check if the user has the 'view-all-documents' permission
+        $canViewAllGroups = $user->hasPermissionTo('view-all-documents');
 
-        $query = Regulation::orderBy('created_at', 'desc')->where('group_id', $user->group_id);
+        // Base query with permission check
+        $query = Regulation::orderBy('created_at', 'desc')
+            ->where(function ($q) use ($user, $canViewAllGroups) {
+                // Condition to filter documents by the user's group
+                $q->where('group_id', $user->group_id);
+
+                // If the user has permission to view all documents, include them
+                if ($canViewAllGroups) {
+                    $q->orWhereNotNull('id'); // This will include all categories
+                }
+            });
+
+        $search = $request->input('search');
 
         if ($search) {
             $query->where('title', 'LIKE', "%{$search}%");
@@ -65,6 +77,7 @@ class RegulationController extends Controller
 
         $regulation_pending = DocumentApproval::all();
         $categories = Category::where('status', 1)->get();
+        
         return view('regulations.index', compact('data', 'categories', 'authoriser', 'formattedStatuses', 'regulation_pending'));
     }
 
@@ -447,6 +460,12 @@ class RegulationController extends Controller
      */
     public function edit_doc($id)
     {
+
+          if (!Auth::user()->hasPermissionTo('document-create')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+
         $regulation = Regulation::where('id', $id)->first();
         $entities   = Entity::where('status', 1)->get();
         $categories = Category::where('status', 1)->get();

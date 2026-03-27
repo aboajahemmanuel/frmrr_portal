@@ -18,10 +18,10 @@ class NewsController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:post-list|post-create|post-edit|post-delete', ['only' => ['index', 'show']]);
-        $this->middleware('permission:post-create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:post-edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:post-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:news-list|news-create|news-edit|news-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:news-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:news-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:news-delete', ['only' => ['destroy']]);
     }
 
 
@@ -29,41 +29,31 @@ class NewsController extends Controller
     public function index(Request $request)
     {
 
-
-
         $user = Auth::user();
 
 
-        $roles = ['Super_Administrator_Authoriser', 'Super_Administrator_Inputter', 'Content_Owner_Authoriser'];
-
-        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+         $permission = 'news-approve';
+        $authoriser = User::where('group_id', $user->group_id)
+            ->permission($permission)
             ->get();
 
 
+             // Check if the user has the 'view-all-news' permission
+        $canViewAllGroups = $user->hasPermissionTo('view-all-news');
 
-        $superAdminRole = 'Super_Administrator_Authoriser';
-
-
-
-
-        // Check if the user has the 'Super_Administrator_Authoriser' role
-        $hasSuperAdminRole = $user->hasRole($superAdminRole);
-
-        // Fetch categories based on group_id or include all if the user has the Super Admin role
-         $data = News::where(function ($query) use ($user, $hasSuperAdminRole) {
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = News::where(function ($query) use ($user, $canViewAllGroups) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
-            // If the user has the Super Admin role, include all categories
-            if ($hasSuperAdminRole) {
+            // If the user has permission to view all categories, include them
+            if ($canViewAllGroups) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
         })
             ->orderBy('created_at', 'desc')
             ->get();
+
 
         return view('news_alert.index', compact('data', 'authoriser'));
     }

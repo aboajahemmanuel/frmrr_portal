@@ -24,6 +24,11 @@ class GroupController extends Controller
 
     public function index(Request $request)
     {
+        if (!Auth::user()->hasPermissionTo('group-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        
         $user = Auth::user();
         $permission = 'group-approve';
         $authoriser = User::where('group_id', $user->group_id)

@@ -26,7 +26,7 @@
                                         <div class="toggle-expand-content" data-content="more-options">
                                             <ul class="nk-block-tools g-3">
 
-                                                @can('transaction-create')
+                                                @can('subscription-create')
                                                     <li class="nk-block-tools-opt">
                                                         <a href="#" class="btn btn-icon btn-primary d-md-none"><em
                                                                 class="icon ni ni-plus"></em></a>
@@ -222,7 +222,7 @@
 
 
 
-                                                                                @can('transaction-delete')
+                                                                                @can('subscription-delete')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#deleteGroup-{{ $transaction->id }}"><em
                                                                                                 class="icon ni ni-trash"></em><span>Delete</span></a>
@@ -233,7 +233,7 @@
 
 
                                                                             @if ($transaction->admin_status == 0)
-                                                                                @can('transaction-approve')
+                                                                                @can('subscription-approve')
                                                                                     <li><a href="#" id="submit"
                                                                                             onclick="document.getElementById('approve-{{ $transaction->id }}').submit();"><em
                                                                                                 class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
@@ -241,7 +241,7 @@
                                                                                 @endcan
 
 
-                                                                                @can('transaction-reject')
+                                                                                @can('subscription-reject')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#reject-{{ $transaction->id }}"><em
                                                                                                 class="icon ni ni-cross-circle-fill"></em><span>Reject</span></a>
@@ -252,14 +252,14 @@
 
 
                                                                             @if ($transaction->admin_status == 3)
-                                                                                @can('transaction-approve')
+                                                                                @can('subscription-approve')
                                                                                     <li><a href="#" id="submit"
                                                                                             onclick="document.getElementById('approve-{{ $transaction->id }}').submit();"><em
                                                                                                 class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
                                                                                     </li>
                                                                                 @endcan
 
-                                                                                @can('transaction-reject')
+                                                                                @can('subscription-reject')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#reject-{{ $transaction->id }}"><em
                                                                                                 class="icon ni ni-cross-circle-fill"></em><span>Reject</span></a>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DisclaimerAcceptance;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class DisclaimerController extends Controller
@@ -15,6 +16,10 @@ class DisclaimerController extends Controller
      */
     public function index()
     {
+
+          if (!Auth::user()->hasPermissionTo('Disclaimer-History')) {
+            abort(403, 'Unauthorized action.');
+        }
          $acceptances = DisclaimerAcceptance::with('user')->orderBy('created_at', 'desc')->paginate(20);
         
         return view('admin.disclaimers.index', compact('acceptances'));

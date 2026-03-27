@@ -16,10 +16,10 @@ class TransactionController extends Controller
 {
     function __construct()
     {
-        $this->middleware('permission:transaction-list|transaction-create|transaction-edit|transaction-delete', ['only' => ['index', 'show']]);
-        $this->middleware('permission:transaction-create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:transaction-edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:transaction-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:subscription-list|subscription-create|subscription-edit|subscription-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:subscription-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:subscription-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:subscription-delete', ['only' => ['destroy']]);
     }
 
 
@@ -37,6 +37,10 @@ class TransactionController extends Controller
     public function subscribers(Request $request)
     {
 
+          if (!Auth::user()->hasPermissionTo('subscription-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
 
         $data = Subscription::orderBy('created_at', 'desc')->get();
         return view('transactions.subscribers', compact('data'));
@@ -48,18 +52,33 @@ class TransactionController extends Controller
     public function subcription_plan(Request $request)
     {
 
-        $user = Auth::user();
-        $role = 'Super_Administrator_Authoriser';
+        if (!Auth::user()->hasPermissionTo('subscription-list')) {
+            abort(403, 'Unauthorized action.');
+        }
 
+            $user = Auth::user();
+        $permission = 'subscription-approve';
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($permission)
             ->get();
 
 
+             // Check if the user has the 'view-all-categories' permission
+        $canViewAllMarketTag = $user->hasPermissionTo('view-all-subscriptions');
 
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = SubscriptionPlan::where(function ($query) use ($user, $canViewAllMarketTag) {
+            // Condition to filter categories by the user's group
+            $query->where('group_id', $user->group_id);
 
-        $data = SubscriptionPlan::where('group_id', $user->group_id)->orderBy('created_at', 'desc')->get();
-
+            // If the user has permission to view all categories, include them
+            if ($canViewAllMarketTag) {
+                $query->orWhereNotNull('id'); // This will include all categories
+            }
+        })
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         return view('transactions.subscriptionPlan', compact('data', 'authoriser'));
     }
 

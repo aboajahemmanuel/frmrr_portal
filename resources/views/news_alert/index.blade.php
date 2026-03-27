@@ -26,7 +26,7 @@
                                         <div class="toggle-expand-content" data-content="more-options">
                                             <ul class="nk-block-tools g-3">
 
-                                                @can('post-create')
+                                                @can('news-create')
                                                     <li class="nk-block-tools-opt">
                                                         <a href="#" class="btn btn-icon btn-primary d-md-none"><em
                                                                 class="icon ni ni-plus"></em></a>

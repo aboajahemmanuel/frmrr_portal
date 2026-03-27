@@ -14,11 +14,6 @@ class SubscriptionController extends Controller
 {
 
 
-
-
-
-
-
     public function subscribe_payment(Request $request, PaymentService $paymentService)
     {
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
