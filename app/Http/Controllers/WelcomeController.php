@@ -163,12 +163,12 @@ class WelcomeController extends Controller
             'email' => $request['email'],
             'subject' => $request['subject'],
             'feedback' => $request['feedback'],
-            'email' => '',
         );
         Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
-            $message->to($email_data['email'],)
-                ->subject('Feedback')
-                ->from('no-reply@fmdqgroup.com', 'Feedback');
+            $message->to('aboajah.emmanuel@fmdqgroup.com')
+                ->replyTo($email_data['email'])
+                ->subject('New Feedback Received: ' . $email_data['subject'])
+                ->from('no-reply@fmdqgroup.com', 'FMRR Portal');
         });
 
 
