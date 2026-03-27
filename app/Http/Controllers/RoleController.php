@@ -39,21 +39,33 @@ class RoleController extends Controller
     {
 
         $user = Auth::user();
-        $role = 'Super_Administrator_Authoriser';
 
+        // Used for authoriser dropdown
+        $authoriserPerm = 'role-approve';
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($authoriserPerm)
             ->get();
 
+        // Check if the user has the 'view-all-roles' permission
+        $canViewAllRoles = $user->hasPermissionTo('view-all-roles');
 
+        // Fetch roles based on group_id or include all if the user has the required permission
+        $data = Role::where(function ($query) use ($user, $canViewAllRoles) {
+            // Condition to filter roles by the user's group
+            $query->where('group_id', $user->group_id);
 
+            // If the user has permission to view all roles, include them
+            if ($canViewAllRoles) {
+                $query->orWhereNotNull('id'); // This will include all roles
+            }
+        })
+            ->orderBy('id', 'DESC')
+            ->get();
 
-
-
+        // Required for the view
         $permission = Permission::where('status', 1)->orderBy('name', 'ASC')->get();
-        $data = Role::orderBy('id', 'DESC')->get();
 
-        return view('roles.index', compact('data', 'permission', 'role', 'authoriser'));
+        return view('roles.index', compact('data', 'permission', 'authoriser'));
     }
 
     /**

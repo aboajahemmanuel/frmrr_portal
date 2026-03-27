@@ -34,14 +34,30 @@ class PermissionController extends Controller
     {
 
         $user = Auth::user();
-        $role = 'Super_Administrator_Authoriser';
+        $permission = 'permission-approve';
 
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($permission)
             ->get();
 
-        //$data = Permission::all();
-        $data = Permission::orderBy('id', 'DESC')->get();
+
+
+
+        // Check if the user has the 'view-all-categories' permission
+        $canViewAllPermissions = $user->hasPermissionTo('view-all-permissions');
+
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = Permission::where(function ($query) use ($user, $canViewAllPermissions) {
+            // Condition to filter categories by the user's group
+            $query->where('group_id', $user->group_id);
+
+            // If the user has permission to view all categories, include them
+            if ($canViewAllPermissions) {
+                $query->orWhereNotNull('id'); // This will include all categories
+            }
+        })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('permissions.index', compact('data', 'authoriser'));
     }
