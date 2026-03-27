@@ -24,10 +24,10 @@ class MarketProductTagController extends Controller
      */
     function __construct()
     {
-        $this->middleware('permission:category-list|category-create|category-edit|category-delete', ['only' => ['index', 'show']]);
-        $this->middleware('permission:category-create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:category-edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:category-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:Market-Product-Tag-list|Market-Product-Tag-create|Market-Product-Tag-edit|Market-Product-Tag-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:Market-Product-Tag-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:Market-Product-Tag-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:Market-Product-Tag-delete', ['only' => ['destroy']]);
     }
 
     /**
@@ -37,29 +37,24 @@ class MarketProductTagController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
-
-        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+               $user = Auth::user();
+        $permission = 'Market-Product-Tag-approve';
+        $authoriser = User::where('group_id', $user->group_id)
+            ->permission($permission)
             ->get();
 
-        $superAdminRole = ['Super_Administrator_Authoriser', 'Super_Administrator_Inputter'];
 
-        // Check if the user has the 'Super_Administrator_Authoriser' role
-        $hasSuperAdminRole = $user->hasRole($superAdminRole);
+             // Check if the user has the 'view-all-categories' permission
+        $canViewAllMarketTag = $user->hasPermissionTo('View-All-Market-Product-Tag');
 
-        // Fetch tags based on group_id or include all if the user has the Super Admin role
-        $data = MarketProductTag::where(function ($query) use ($user, $hasSuperAdminRole) {
-            // Condition to filter tags by the user's group
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = MarketProductTag::where(function ($query) use ($user, $canViewAllMarketTag) {
+            // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
-            // If the user has the Super Admin role, include all tags
-            if ($hasSuperAdminRole) {
-                $query->orWhereNotNull('id'); // This will include all tags
+            // If the user has permission to view all categories, include them
+            if ($canViewAllMarketTag) {
+                $query->orWhereNotNull('id'); // This will include all categories
             }
         })
             ->orderBy('created_at', 'desc')

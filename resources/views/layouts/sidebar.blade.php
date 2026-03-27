@@ -95,6 +95,7 @@
                          </li><!-- .nk-menu-item -->
                      @endcan
 
+                        @can('Market-Product-Tag-list')
                          <!-- Disclaimer History Link -->
                      <li class="nk-menu-item">
                          <a href="{{ url('market-product-tags') }}" class="nk-menu-link">
@@ -102,6 +103,7 @@
                              <span class="nk-menu-text" style="color: white">Market Product Tags
                          </a>
                      </li><!-- .nk-menu-item -->
+                        @endcan
 
                      @can('category-list')
                          <li class="nk-menu-item has-sub">
@@ -131,7 +133,7 @@
                          </li><!-- .nk-menu-item -->
                      @endcan
 
-                     @can('post-list')
+                     @can('news-list')
                          <li class="nk-menu-item">
                              <a href="{{ url('news') }}" class="nk-menu-link">
                                  <span class="nk-menu-icon" style="color: white"><em class="icon ni ni-qr"></em></span>
@@ -141,7 +143,7 @@
                      @endcan
 
 
-                     @can('regulation-list')
+                     @can('document-list')
                          <li class="nk-menu-item">
                              <a href="{{ url('regulations') }}" class="nk-menu-link">
                                  <span class="nk-menu-icon" style="color: white"><em class="icon ni ni-article"></em></span>
@@ -170,7 +172,7 @@
 
 
 
-                     @if (Auth::user()->hasRole('Super_Administrator_Authoriser') || Auth::user()->hasRole('Super_Administrator_Inputter'))
+                    @can('Audit-log')
                          <li class="nk-menu-item has-sub">
                              <a href="{{ url('logActivity') }}" class="nk-menu-link">
                                  <span class="nk-menu-icon"><em class="icon ni ni-coins"></em></span>
@@ -178,8 +180,9 @@
                              </a>
 
                          </li>
-                     @endif
+                     @endcan
 
+                     @can('Disclaimer-History')
                      <!-- Disclaimer History Link -->
                      <li class="nk-menu-item">
                          <a href="{{ route('admin.disclaimers.index') }}" class="nk-menu-link">
@@ -187,7 +190,7 @@
                              <span class="nk-menu-text" style="color: white">Disclaimer History
                          </a>
                      </li><!-- .nk-menu-item -->
-
+                        @endcan
 
                       <!-- Disclaimer History Link -->
                      <li class="nk-menu-item">

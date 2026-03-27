@@ -29,10 +29,10 @@ class RegulationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:regulation-list|regulation-create|regulation-edit|regulation-delete', ['only' => ['index', 'show']]);
-        $this->middleware('permission:regulation-create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:regulation-edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:regulation-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:document-list|document-create|document-edit|document-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:document-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:document-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:document-delete', ['only' => ['destroy']]);
     }
 
     /**
@@ -455,10 +455,10 @@ class RegulationController extends Controller
         $months     = DB::table('months')->get();
 
         $user = Auth::user();
-        $role = 'Content_Owner_Authoriser';
+        $permission = 'document-approve';
 
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($permission)
             ->get();
         $statuses = DB::table('doc_type')->get();
 
@@ -649,13 +649,16 @@ class RegulationController extends Controller
 
     public function redirectToUrl($selectedValue)
     {
+        if (!Auth::user()->hasPermissionTo('document-create')) {
+            abort(403, 'Unauthorized action.');
+        }
 
        
          $user = Auth::user();
-        $role = 'Content_Owner_Authoriser';
+        $permission = 'document-approve';
 
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($permission)
             ->get();
 
         $entities   = Entity::where('status', 1)->get();

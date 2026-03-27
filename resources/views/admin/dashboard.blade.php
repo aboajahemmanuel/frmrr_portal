@@ -309,7 +309,7 @@
                                                                                 </li>
                                                                                 @if ($regulation->status != 3)
                                                                                     @if ($regulation->status != 0)
-                                                                                        @can('regulation-edit')
+                                                                                        @can('document-edit')
                                                                                             <li>
                                                                                                 <a
                                                                                                     href="{{ route('edit_doc', $regulation->id) }}">
@@ -329,7 +329,7 @@
 
 
 
-                                                                                        @can('regulation-delete')
+                                                                                        @can('document-delete')
                                                                                             <li><a href="#"
                                                                                                     data-toggle="modal"
                                                                                                     data-target="#deleteReg-{{ $regulation->id }}"><em
@@ -342,7 +342,7 @@
 
 
                                                                                 @if ($regulation->status == 0)
-                                                                                    @can('regulation-approve')
+                                                                                    @can('document-approve')
                                                                                         <li><a href="#" id="submit"
                                                                                                 onclick="document.getElementById('approve-{{ $regulation->id }}').submit();"><em
                                                                                                     class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
@@ -355,7 +355,7 @@
                                                                                     @endcan
 
 
-                                                                                    @can('regulation-reject')
+                                                                                    @can('document-reject')
                                                                                         <li><a href="#" data-toggle="modal"
                                                                                                 data-target="#rejectdocument-{{ $regulation->id }}"><em
                                                                                                     class="icon ni ni-cross-circle-fill"></em><span>Reject</span></a>
@@ -366,14 +366,14 @@
 
 
                                                                                 @if ($regulation->status == 3)
-                                                                                    @can('regulation-approve')
+                                                                                    @can('document-approve')
                                                                                         <li><a href="#" id="submit"
                                                                                                 onclick="document.getElementById('approve-{{ $regulation->id }}').submit();"><em
                                                                                                     class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
                                                                                         </li>
                                                                                     @endcan
 
-                                                                                    @can('regulation-reject')
+                                                                                    @can('document-reject')
                                                                                         <li><a href="#" data-toggle="modal"
                                                                                                 data-target="#rejectdocument-{{ $regulation->id }}"><em
                                                                                                     class="icon ni ni-cross-circle-fill"></em><span>Reject</span></a>
@@ -2863,13 +2863,13 @@
                                                                 data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
                                                             <div class="dropdown-menu dropdown-menu-right">
                                                                 <ul class="link-list-opt no-bdr">
-                                                                    @can('regulation-edit')
+                                                                    @can('document-edit')
                                                                         <li><a href="{{ route('edit_doc', $regulation->id) }}"><em
                                                                                     class="icon ni ni-edit"></em><span>Edit</span></a>
                                                                         </li>
                                                                     @endcan
 
-                                                                    @can('regulation-delete')
+                                                                    @can('document-delete')
                                                                         <li>
 
 
@@ -2891,7 +2891,7 @@
 
 
                                                                     @if ($regulation->status == 0)
-                                                                        @can('regulation-approve')
+                                                                        @can('document-approve')
                                                                             <li><a href="#" id="submit"
                                                                                     onclick="document.getElementById('test1-{{ $regulation->id }}').submit();"><em
                                                                                         class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
@@ -2899,7 +2899,7 @@
                                                                         @endcan
 
 
-                                                                        @can('regulation-reject')
+                                                                        @can('document-reject')
                                                                             <li>
 
 

@@ -37,38 +37,27 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-
-
-
+      
         $user = Auth::user();
+        $permission = 'category-approve';
 
-
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
-
-        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+        $authoriser = User::where('group_id', $user->group_id)
+            ->permission($permission)
             ->get();
 
 
 
 
-        $superAdminRole = ['Super_Administrator_Authoriser', 'Super_Administrator_Inputter'];
+        // Check if the user has the 'view-all-categories' permission
+        $canViewAllCategories = $user->hasPermissionTo('view-all-categories');
 
-
-
-
-        // Check if the user has the 'Super_Administrator_Authoriser' role
-        $hasSuperAdminRole = $user->hasRole($superAdminRole);
-
-        // Fetch categories based on group_id or include all if the user has the Super Admin role
-        $data = Category::where(function ($query) use ($user, $hasSuperAdminRole) {
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = Category::where(function ($query) use ($user, $canViewAllCategories) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
-            // If the user has the Super Admin role, include all categories
-            if ($hasSuperAdminRole) {
+            // If the user has permission to view all categories, include them
+            if ($canViewAllCategories) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
         })
@@ -83,6 +72,8 @@ class CategoryController extends Controller
 
         $user_id = Auth::user()->id;
         $user = User::find($user_id);
+
+        
 
 
 

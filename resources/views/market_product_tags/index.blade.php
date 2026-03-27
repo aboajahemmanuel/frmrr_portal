@@ -25,7 +25,7 @@
                                             data-target="more-options"><em class="icon ni ni-more-v"></em></a>
                                         <div class="toggle-expand-content" data-content="more-options">
                                             <ul class="nk-block-tools g-3">
-                                                @can('category-create')
+                                                @can('Market-Product-Tag-create')
                                                     <li class="nk-block-tools-opt">
                                                         <a href="#" class="btn btn-icon btn-primary d-md-none"><em
                                                                 class="icon ni ni-plus"></em></a>
@@ -161,7 +161,7 @@
                                                                         <ul class="link-list-opt no-bdr">
                                                                             @if ($tag->admin_status != 3)
                                                                                 @if ($tag->admin_status != 0)
-                                                                                    @can('category-edit')
+                                                                                    @can('Market-Product-Tag-edit')
                                                                                         <li>
                                                                                             <a href="#" data-toggle="modal"
                                                                                                 data-target="#editTag-{{ $tag->id }}">
@@ -170,7 +170,7 @@
                                                                                         </li>
                                                                                     @endcan
 
-                                                                                    @can('category-delete')
+                                                                                    @can('Market-Product-Tag-delete')
                                                                                         <li><a href="#" data-toggle="modal"
                                                                                                 data-target="#deleteTag-{{ $tag->id }}"><em
                                                                                                     class="icon ni ni-trash"></em><span>Delete</span></a>
@@ -180,14 +180,14 @@
                                                                             @endif
 
                                                                             @if ($tag->admin_status == 0)
-                                                                                @can('category-approve')
+                                                                                @can('Market-Product-Tag-approve')
                                                                                     <li><a href="#" id="submit"
                                                                                             onclick="document.getElementById('approve-{{ $tag->id }}').submit();"><em
                                                                                                 class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
                                                                                     </li>
                                                                                 @endcan
 
-                                                                                @can('category-reject')
+                                                                                @can('Market-Product-Tag-delete')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#reject-{{ $tag->id }}"><em
                                                                                                 class="icon ni ni-cross-circle-fill"></em><span>Reject</span></a>
@@ -196,14 +196,14 @@
                                                                             @endif
 
                                                                             @if ($tag->admin_status == 3)
-                                                                                @can('category-approve')
+                                                                                @can('Market-Product-Tag-delete')
                                                                                     <li><a href="#" id="submit"
                                                                                             onclick="document.getElementById('approve-{{ $tag->id }}').submit();"><em
                                                                                                 class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
                                                                                     </li>
                                                                                 @endcan
 
-                                                                                @can('category-reject')
+                                                                                @can('Market-Product-Tag-delete')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#reject-{{ $tag->id }}"><em
                                                                                                 class="icon ni ni-cross-circle-fill"></em><span>Reject</span></a>

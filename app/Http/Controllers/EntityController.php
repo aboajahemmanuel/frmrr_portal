@@ -35,40 +35,23 @@ class EntityController extends Controller
     public function index(Request $request)
     {
 
-
-
-
-
-
-
         $user = Auth::user();
-
-
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
-
-        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+        $permission = 'entity-approve';
+        $authoriser = User::where('group_id', $user->group_id)
+            ->permission($permission)
             ->get();
 
 
+             // Check if the user has the 'view-all-categories' permission
+        $canViewAllGroups = $user->hasPermissionTo('view-all-entities');
 
-        $superAdminRole = ['Super_Administrator_Authoriser', 'Super_Administrator_Inputter'];
-
-
-
-
-        // Check if the user has the 'Super_Administrator_Authoriser' role
-        $hasSuperAdminRole = $user->hasRole($superAdminRole);
-
-        // Fetch categories based on group_id or include all if the user has the Super Admin role
-        $data = Entity::where(function ($query) use ($user, $hasSuperAdminRole) {
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = Entity::where(function ($query) use ($user, $canViewAllGroups) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
-            // If the user has the Super Admin role, include all categories
-            if ($hasSuperAdminRole) {
+            // If the user has permission to view all categories, include them
+            if ($canViewAllGroups) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
         })
