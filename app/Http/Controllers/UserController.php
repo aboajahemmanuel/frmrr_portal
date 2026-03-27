@@ -36,8 +36,19 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+
+           if (!Auth::user()->hasPermissionTo('user-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+      
+
+        
         //$data = User::all();
         $data = User::orderBy('created_at', 'desc')->get();
+
+
+
+        
 
         $groups = Group::all();
         $roles  = Role::pluck('name', 'name')->all();
@@ -48,17 +59,40 @@ class UserController extends Controller
     public function Adminusers(Request $request)
     {
 
+        if (!Auth::user()->hasPermissionTo('user-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+      
         $user = Auth::user();
-        $role = 'Super_Administrator_Authoriser';
+        $permission = 'user-approve';
 
         $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+            ->permission($permission)
             ->get();
 
-        $data = User::where('usertype', '=', 'internal')
-            ->where('status', '!=', 4)
+
+
+
+        // Check if the user has the 'view-all-categories' permission
+        $canViewAllUsers = $user->hasPermissionTo('view-all-users');
+
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $data = User::where(function ($query) use ($user, $canViewAllUsers) {
+            // Condition to filter categories by the user's group
+            $query->where('group_id', $user->group_id);
+            $query->where('usertype', '=', 'internal');
+            $query->where('status', '!=', 4);
+            $query->orderBy('created_at', 'desc');
+
+            // If the user has permission to view all categories, include them
+            if ($canViewAllUsers) {
+                $query->orWhereNotNull('id'); // This will include all categories
+            }
+        })
             ->orderBy('created_at', 'desc')
             ->get();
+
+        
 
         $groups = Group::where('status', 1)->get();
         $roles  = Role::where('status', 1)->pluck('name', 'name');

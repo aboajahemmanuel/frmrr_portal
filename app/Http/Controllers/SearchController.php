@@ -110,7 +110,7 @@ class SearchController extends Controller
             'keywords' => $request->input('search_Words'),
             'searchMethod' => $request->input('searchusing'),
             'searchBy' => $request->input('searchBy'),
-            'categories' => $request->input('categories', []),
+            'categories' => (array) $request->input('category_id', []),
             'year_id' => $request->input('year'),
             'entity_id' => $request->input('entity_id'),
             'issue_date_from' => $request->input('issue_date_from'),
