@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="w-70">
-                <div class="git">Get in Touch</div>
+                <div class="git">Feedback</div>
                 <div class="git-desc">
                     Please use the form below to report an issue, make a suggestion
                     or ask a question

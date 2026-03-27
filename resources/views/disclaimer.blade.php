@@ -4,23 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legal Disclaimer - Financial Markets Regulations & Rules Repository Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #0f2044 40%, #162d5a 70%, #1a3a8f 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
+
+        /* ── Animated Background Particles ── */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particles span {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
+            animation: float linear infinite;
+        }
+        .particles span:nth-child(1) { width: 6px; height: 6px; left: 10%; animation-duration: 18s; animation-delay: 0s; }
+        .particles span:nth-child(2) { width: 4px; height: 4px; left: 25%; animation-duration: 22s; animation-delay: 3s; }
+        .particles span:nth-child(3) { width: 8px; height: 8px; left: 40%; animation-duration: 16s; animation-delay: 1s; }
+        .particles span:nth-child(4) { width: 5px; height: 5px; left: 55%; animation-duration: 20s; animation-delay: 5s; }
+        .particles span:nth-child(5) { width: 7px; height: 7px; left: 70%; animation-duration: 24s; animation-delay: 2s; }
+        .particles span:nth-child(6) { width: 3px; height: 3px; left: 85%; animation-duration: 19s; animation-delay: 4s; }
+        .particles span:nth-child(7) { width: 6px; height: 6px; left: 5%;  animation-duration: 21s; animation-delay: 6s; }
+        .particles span:nth-child(8) { width: 4px; height: 4px; left: 60%; animation-duration: 17s; animation-delay: 2s; }
+
+        @keyframes float {
+            0%   { transform: translateY(110vh) scale(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* ── Radial Glow ── */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(26,58,143,.35) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .disclaimer-container {
             max-width: 900px;
+            width: 100%;
             margin: 0 auto;
             padding: 40px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
         }
         .logo-container {
             text-align: center;
@@ -108,6 +161,12 @@
     </style>
 </head>
 <body>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+
     <div class="disclaimer-container">
         <div class="logo-container">
             <img src="{{ asset('public/users/assets/FMDQ-logo.png') }}" alt="FMDQ Exchange Logo" class="logo">

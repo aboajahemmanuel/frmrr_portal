@@ -58,7 +58,7 @@
                                 <td>{{ $acceptance->user->name ?? 'N/A' }}</td>
                                 <td>{{ $acceptance->user->email ?? 'N/A' }}</td>
                                 <td>{{ $acceptance->ip_address ?? 'N/A' }}</td>
-                                <td> {{ \Carbon\Carbon::parse($acceptance->created_at)->format('M. j, Y g:i:s A') }} </td>
+                                <td> {{ \Carbon\Carbon::parse($acceptance->created_at)->addHour()->format('M. j, Y g:i:s A') }} </td>
                                
                             </tr>
                             @endforeach
