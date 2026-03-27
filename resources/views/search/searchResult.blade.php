@@ -209,6 +209,7 @@
                             'showEntityFilter' => true,
                             'showEffectiveDateFilter' => true,
                             'showVersionFilter' => true,
+                            'showStatusFilter' => true,
                             // Ensure years is properly formatted as an array of strings
                             'years' => $years->map(function($year) { 
                                 return is_object($year) && isset($year->name) ? $year->name : $year; 

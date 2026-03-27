@@ -22,6 +22,7 @@ function initCustomTableFilter(tableId, options = {}) {
         entity: '',
         effectiveDate: '',
         version: '',
+        status: '',
         custom: {}
     };
     
@@ -35,6 +36,7 @@ function initCustomTableFilter(tableId, options = {}) {
     });
     
     const titleColIndex = 0;
+    const statusColIndex = headers.indexOf('Status');
     const yearColIndex = headers.indexOf('Year');
     const entityColIndex = headers.indexOf('Entity');
     const effectiveDateColIndex = headers.indexOf('Effective Date');
@@ -149,6 +151,21 @@ function initCustomTableFilter(tableId, options = {}) {
             filterHtml += '</div>';
         }
         
+        // Status filter
+        if (statusColIndex !== -1 && options.showStatusFilter !== false) {
+            filterHtml += '<div class="filter-group">';
+            filterHtml += '<label for="status-filter-' + tableId + '">Status:</label>';
+            filterHtml += '<select id="status-filter-' + tableId + '" class="filter-select">';
+            filterHtml += '<option value="">All Statuses</option>';
+            filterHtml += '<option value="Active">Active</option>';
+            filterHtml += '<option value="Ceased">Ceased</option>';
+            filterHtml += '<option value="Repealed">Repealed</option>';
+            filterHtml += '<option value="Amended">Amended</option>';
+            filterHtml += '<option value="Superseded">Superseded</option>';
+            filterHtml += '</select>';
+            filterHtml += '</div>';
+        }
+        
         // Clear button
         filterHtml += '<button class="clear-filters-btn" id="clear-filters-' + tableId + '">Clear Filters</button>';
         filterHtml += '</div>';
@@ -191,6 +208,7 @@ function initCustomTableFilter(tableId, options = {}) {
             const cells = row.querySelectorAll('td');
             
             const titleText = cells[titleColIndex]?.textContent.trim() || '';
+            const statusText = statusColIndex >= 0 ? cells[statusColIndex]?.textContent.trim() || '' : '';
             const yearText = cells[yearColIndex >= 0 ? yearColIndex : 2]?.textContent.trim() || '';
             const entityText = entityColIndex >= 0 ? cells[entityColIndex]?.textContent.trim() || '' : '';
             const effectiveDateText = effectiveDateColIndex >= 0 ? cells[effectiveDateColIndex]?.textContent.trim() || '' : '';
@@ -229,6 +247,17 @@ function initCustomTableFilter(tableId, options = {}) {
                 visible = visible && versionText.includes(currentFilters.version);
             }
             
+            // Status filter
+            if (visible && currentFilters.status) {
+                if (currentFilters.status === 'Active') {
+                    // Active = the status badge says 'Active' (no ceased value)
+                    visible = visible && statusText === 'Active';
+                } else {
+                    // For Ceased/Repealed/Amended/Superseded, check if status text contains the keyword
+                    visible = visible && statusText.toLowerCase().includes(currentFilters.status.toLowerCase());
+                }
+            }
+            
             // Custom filters
             if (visible && options.customFilter) {
                 visible = visible && options.customFilter(row, cells, currentFilters);
@@ -262,6 +291,9 @@ function initCustomTableFilter(tableId, options = {}) {
         }
         if (currentFilters.version) {
             activeFilters.push('Version: ' + currentFilters.version);
+        }
+        if (currentFilters.status) {
+            activeFilters.push('Status: ' + currentFilters.status);
         }
         
         // Add custom filters to info
@@ -405,6 +437,15 @@ function initCustomTableFilter(tableId, options = {}) {
         });
     }
     
+    // Status filter
+    const statusFilter = document.getElementById('status-filter-' + tableId);
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function(e) {
+            currentFilters.status = e.target.value;
+            filterAndDisplayRows();
+        });
+    }
+    
     const clearButton = document.getElementById('clear-filters-' + tableId);
     if (clearButton) {
         clearButton.addEventListener('click', function() {
@@ -414,6 +455,7 @@ function initCustomTableFilter(tableId, options = {}) {
             if (entityFilter) entityFilter.value = '';
             if (effectiveDateFilter) effectiveDateFilter.value = '';
             if (versionFilter) versionFilter.value = '';
+            if (statusFilter) statusFilter.value = '';
             
             currentFilters = {
                 alphabet: '',
@@ -422,6 +464,7 @@ function initCustomTableFilter(tableId, options = {}) {
                 entity: '',
                 effectiveDate: '',
                 version: '',
+                status: '',
                 custom: {}
             };
             
