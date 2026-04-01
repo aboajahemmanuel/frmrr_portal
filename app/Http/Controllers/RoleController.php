@@ -40,6 +40,10 @@ class RoleController extends Controller
 
         $user = Auth::user();
 
+        if (!Auth::user()->hasPermissionTo('role-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         // Used for authoriser dropdown
         $authoriserPerm = 'role-approve';
         $authoriser = User::where('group_id', $user->group_id)

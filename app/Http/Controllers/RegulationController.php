@@ -44,6 +44,10 @@ class RegulationController extends Controller
     {
         $user = Auth::user();
 
+        if (!Auth::user()->hasPermissionTo('document-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $permission = 'document-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
