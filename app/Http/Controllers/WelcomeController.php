@@ -167,7 +167,12 @@ class WelcomeController extends Controller
         
         try {
             Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
-                $message->to('tobiloba.bakare@fmdqgroup.com')
+                // Add your additional email addresses to this array
+                $recipients = [
+                    'tobiloba.bakare@fmdqgroup.com',
+                    'olamide.ige@fmdqgroup.com' // Replace with the actual email
+                ];
+                $message->to($recipients)
                     ->replyTo($email_data['email'])
                     ->subject('New Feedback Received: ' . $email_data['subject'])
                     ->from('no-reply@fmdqgroup.com', 'FMRR Portal');
