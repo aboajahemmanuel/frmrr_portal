@@ -45,7 +45,7 @@ class RegulationController extends Controller
         $user = Auth::user();
 
         $permission = 'document-approve';
-        $authoriser = User::where('group_id', $user->group_id)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
 
@@ -476,7 +476,7 @@ class RegulationController extends Controller
         $user = Auth::user();
         $permission = 'document-approve';
 
-        $authoriser = User::where('group_id', $user->group_id)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
         $statuses = DB::table('doc_type')->get();
@@ -676,7 +676,7 @@ class RegulationController extends Controller
          $user = Auth::user();
         $permission = 'document-approve';
 
-        $authoriser = User::where('group_id', $user->group_id)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
 

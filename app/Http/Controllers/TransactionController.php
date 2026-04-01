@@ -58,7 +58,7 @@ class TransactionController extends Controller
 
             $user = Auth::user();
         $permission = 'subscription-approve';
-        $authoriser = User::where('group_id', $user->group_id)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
 

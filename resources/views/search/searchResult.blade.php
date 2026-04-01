@@ -123,34 +123,9 @@
                 info: true,
                 dom: 'lrtip' // Remove default search box
             });
-
-            // Manual filter functionality
-            $('#search-input').on('keyup', function() {
-                table.search(this.value).draw();
-            });
-
-            $('#letter-filter').on('change', function() {
-                var letter = this.value;
-                if (letter) {
-                    table.column(0).search('^' + letter, true, false).draw();
-                } else {
-                    table.column(0).search('').draw();
-                }
-            });
-
-            $('#year-filter').on('change', function() {
-                var year = this.value;
-                table.column(3).search(year).draw();
-            });
-
-            $('#clear-filters-example').on('click', function() {
-                $('#search-input').val('');
-                $('#letter-filter').val('');
-                $('#year-filter').val('');
-                table.search('').columns().search('').draw();
-            });
         });
     </script>
+
 
     <div class="info">
 
@@ -379,6 +354,8 @@
 
     </div>
     <script src="{{ asset('public/admin/js/bundle.js') }}"></script>
+
+    
 @endsection
 </div>
 </body>

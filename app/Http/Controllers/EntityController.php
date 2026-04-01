@@ -37,7 +37,7 @@ class EntityController extends Controller
 
         $user = Auth::user();
         $permission = 'entity-approve';
-        $authoriser = User::where('group_id', $user->group_id)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
 

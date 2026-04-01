@@ -66,7 +66,7 @@ class UserController extends Controller
         $user = Auth::user();
         $permission = 'user-approve';
 
-        $authoriser = User::where('group_id', $user->group_id)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
 

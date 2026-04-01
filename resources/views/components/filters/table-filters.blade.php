@@ -8,6 +8,7 @@
     // $showEntityFilter: bool (default: true)
     // $showEffectiveDateFilter: bool (default: false)
     // $showVersionFilter: bool (default: false)
+    // $showMarketProductFilter: bool (default: false)
     // $years: array of years for year filter (optional)
 @endphp
 
@@ -118,36 +119,34 @@
     </div>
     @endif
 
-    @if($options['showVersionFilter'] ?? false)
+    @if($options['showMarketProductFilter'] ?? true)
     <div class="filter-group">
-        <label for="version-filter-{{ $tableId }}">Version:</label>
-        <select id="version-filter-{{ $tableId }}" class="filter-select">
-            <option value="">All Versions</option>
+        <label for="market-product-filter-{{ $tableId }}">Market Product:</label>
+        <select id="market-product-filter-{{ $tableId }}" class="filter-select">
+            <option value="">All Market Products</option>
             @php
-                $versions = $records->pluck('document_version')->unique()->filter()->sort(function($a, $b) {
-                    return version_compare($a, $b);
-                })->values();
+                if (!isset($options['marketProducts'])) {
+                    $marketProducts = \App\Models\MarketProductTag::orderBy('name')->pluck('name');
+                } else {
+                    $marketProducts = $options['marketProducts'];
+                }
             @endphp
-            @foreach($versions as $version)
-                @if($version !== null && $version !== '')
-                    @php
-                        // Ensure we're working with a string value
-                        if (is_object($version)) {
-                            // If it's an object, convert to string
-                            $versionValue = (string)$version;
-                        } else {
-                            // If it's not an object, use as is
-                            $versionValue = $version;
-                        }
-                    @endphp
-                    <option value="{{ $versionValue }}">{{ $versionValue }}</option>
-                @endif
+            @foreach($marketProducts as $marketProduct)
+                @php
+                    if (is_object($marketProduct)) {
+                        $marketProductValue = isset($marketProduct->name) ? (string)$marketProduct->name : (string)$marketProduct;
+                    } else {
+                        $marketProductValue = (string)$marketProduct;
+                    }
+                @endphp
+                <option value="{{ $marketProductValue }}">{{ $marketProductValue }}</option>
             @endforeach
         </select>
     </div>
     @endif
+
     
-    @if($options['showStatusFilter'] ?? false)
+    @if($options['showStatusFilter'] ?? true)
     <div class="filter-group">
         <label for="status-filter-{{ $tableId }}">Status:</label>
         <select id="status-filter-{{ $tableId }}" class="filter-select">
