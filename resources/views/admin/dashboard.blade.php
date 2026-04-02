@@ -25,39 +25,7 @@
                             </div><!-- .nk-block-between -->
                             
                             <!-- Date Range Filter -->
-                            <div class="card card-bordered mt-3 mb-2">
-                                <div class="card-inner py-3">
-                                    <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-items-end flex-wrap" style="gap: 15px;">
-                                        <div class="form-group mb-0">
-                                            <label class="form-label" style="font-size: 13px;">Start Date</label>
-                                            <div class="form-control-wrap">
-                                                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ $selectedStartDate }}" />
-                                            </div>
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <label class="form-label" style="font-size: 13px;">End Date</label>
-                                            <div class="form-control-wrap">
-                                                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ $selectedEndDate }}" />
-                                            </div>
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <em class="icon ni ni-filter"></em><span>Filter</span>
-                                            </button>
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">
-                                                <em class="icon ni ni-reload"></em><span>Reset</span>
-                                            </a>
-                                        </div>
-                                        <div class="form-group mb-0 ml-auto">
-                                            <span class="badge badge-light" style="font-size: 12px;">
-                                                Showing: {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}
-                                            </span>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                           
                         </div><!-- .nk-block-head -->
                         <div class="nk-block">
                             <div class="row g-gs">
@@ -180,7 +148,39 @@
 
                             </div>
 
-
+ <div class="card card-bordered mt-3 mb-2">
+                                <div class="card-inner py-3">
+                                    <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-items-end flex-wrap" style="gap: 15px;">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label" style="font-size: 13px;">Start Date</label>
+                                            <div class="form-control-wrap">
+                                                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ $selectedStartDate }}" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="form-label" style="font-size: 13px;">End Date</label>
+                                            <div class="form-control-wrap">
+                                                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ $selectedEndDate }}" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <em class="icon ni ni-filter"></em><span>Filter</span>
+                                            </button>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                                                <em class="icon ni ni-reload"></em><span>Reset</span>
+                                            </a>
+                                        </div>
+                                        <div class="form-group mb-0 ml-auto">
+                                            <span class="badge badge-light" style="font-size: 12px;">
+                                                Showing: {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}
+                                            </span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
 
                              <div class="row g-gs">
 
@@ -194,12 +194,17 @@
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-md-8">
+                                                <div class="col-md-12">
                                                     <div style="position: relative; height: 400px;">
                                                         <canvas id="weeklyDownloadsBarChart"></canvas>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-4">
+                                               
+                                                <div class="col-md-12">
+                                                     <br>
+                                                <br>
+                                                <br>
+                                                <br>
                                                     <div style="position: relative; height: 400px;">
                                                         <canvas id="weeklyDownloadsLineChart"></canvas>
                                                     </div>
@@ -294,6 +299,8 @@
                             </div>
                         </div><!-- .nk-block -->
                     </div>
+
+                    
                     <br>
                     <br>
                     @if ($regulations->isNotEmpty())
