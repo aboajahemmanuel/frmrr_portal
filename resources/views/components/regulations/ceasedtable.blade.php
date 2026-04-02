@@ -1031,7 +1031,9 @@
                             <thead>
                                 <tr>
                                     <th class="text-center" style="min-width: 150px; white-space: nowrap;">Title</th>
+                                    <th class="text-center" style="min-width: 100px; white-space: nowrap;">Status</th>
                                     {{-- <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Category</th>
+
                                     <th class="text-center d-none d-md-table-cell" style="min-width: 100px; white-space: nowrap;">Subcategory</th> --}}
                                     <th class="text-center" style="min-width: 100px; white-space: nowrap;">Effective Date</th>
                                     <th class="text-center d-none d-lg-table-cell" style="min-width: 100px; white-space: nowrap;">Entity</th>
@@ -1054,6 +1056,7 @@
                                                     </div>
                                             </a>
                                         </td>
+                                        <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'N/A' }}</span></td>
                                         {{-- <td style="text-align: center">{{ optional($result->category)->name }}</td>
                                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td> --}}
                                         <td style="text-align: center">
