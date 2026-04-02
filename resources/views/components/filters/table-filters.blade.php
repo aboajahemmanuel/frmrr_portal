@@ -175,7 +175,7 @@
                             $parts = array_filter(preg_split('/[, \/]+/', $rawStatus));
                             foreach ($parts as $part) {
                                 $part = trim($part);
-                                if (!empty($part) && !in_array($part, $statusesArray) && strtolower($part) !== 'active') {
+                                if (!empty($part) && !in_array($part, $statusesArray)) {
                                     $statusesArray[] = $part;
                                 }
                             }
