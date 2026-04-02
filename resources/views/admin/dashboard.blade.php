@@ -23,6 +23,41 @@
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                             </div><!-- .nk-block-between -->
+                            
+                            <!-- Date Range Filter -->
+                            <div class="card card-bordered mt-3 mb-2">
+                                <div class="card-inner py-3">
+                                    <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-items-end flex-wrap" style="gap: 15px;">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label" style="font-size: 13px;">Start Date</label>
+                                            <div class="form-control-wrap">
+                                                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ $selectedStartDate }}" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="form-label" style="font-size: 13px;">End Date</label>
+                                            <div class="form-control-wrap">
+                                                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ $selectedEndDate }}" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <em class="icon ni ni-filter"></em><span>Filter</span>
+                                            </button>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                                                <em class="icon ni ni-reload"></em><span>Reset</span>
+                                            </a>
+                                        </div>
+                                        <div class="form-group mb-0 ml-auto">
+                                            <span class="badge badge-light" style="font-size: 12px;">
+                                                Showing: {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}
+                                            </span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div><!-- .nk-block-head -->
                         <div class="nk-block">
                             <div class="row g-gs">
@@ -143,49 +178,115 @@
 
 
 
-                            </div><!-- .row -->
+                            </div>
+
+
+
+                             <div class="row g-gs">
+
+                                <div class="col-md-12">
+                                    <div class="card card-bordered">
+                                        <div class="card-inner">
+                                            <div class="card-title-group mb-3">
+                                                <div class="card-title">
+                                                    <h6 class="title"> Document Downloads</h6>
+                                                    <p>Frequency of documents downloaded by users</p>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div style="position: relative; height: 400px;">
+                                                        <canvas id="weeklyDownloadsBarChart"></canvas>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div style="position: relative; height: 400px;">
+                                                        <canvas id="weeklyDownloadsLineChart"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+
+
                             <div class="row g-gs">
                                 <div class="col-md-5">
-                                    <div class="card card-preview">
+                                    <div class="card card-bordered card-full">
                                         <div class="card-inner">
-                                            <div class="card-head text-center">
-                                                <h6 class="title">Pie Chart</h6>
+                                            <div class="card-title-group mb-3">
+                                                <div class="card-title">
+                                                    <h6 class="title">Documents per Category</h6>
+                                                    <p>Showing: {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}</p>
+                                                </div>
                                             </div>
-                                            <canvas id="categoryChart"></canvas>
+                                            <div style="position: relative; height: 350px;">
+                                                <canvas id="categoryChart"></canvas>
+                                            </div>
                                         </div>
-                                    </div><!-- .card-preview -->
+                                    </div>
                                 </div>
                                 <div class="col-md-7">
-                                    <div class="col-xxl-4">
-                                        <div class="card card-bordered card-full">
-                                            <div class="card-inner d-flex flex-column h-100">
-                                                <div class="card-title-group mb-3">
-                                                    <div class="card-title">
-                                                        <h6 class="title">Top Document Downloaded</h6>
-                                                        <p>In last 7 days top selected ride.</p>
-                                                    </div>
-
-
+                                    <div class="card card-bordered card-full">
+                                        <div class="card-inner d-flex flex-column h-100">
+                                            <div class="card-title-group mb-3">
+                                                <div class="card-title">
+                                                    <h6 class="title">Top Downloaded Documents</h6>
+                                                    <p>Showing: {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}</p>
                                                 </div>
-                                                @foreach ($DownloadStats as $stat)
-                                                    <div class="progress-list gy-3">
-                                                        <div class="progress-wrap">
-                                                            <div class="progress-text">
-                                                                <div class="progress-label"> {{ $stat->title }}
-                                                                </div>
-                                                                <div class="progress-amount"> {{ $stat->total }}</div>
+                                                <div class="card-tools">
+                                                    <span class="badge badge-dim badge-outline-primary">{{ $DownloadStats->count() }} Documents</span>
+                                                </div>
+                                            </div>
+
+                                            @if($DownloadStats->count() > 0)
+                                                @php $maxDownloads = $DownloadStats->max('total'); @endphp
+                                                <div class="nk-tb-list nk-tb-ulist" style="overflow-y: auto; max-height: 380px;">
+                                                    <div class="nk-tb-item nk-tb-head">
+                                                        <div class="nk-tb-col" style="width: 40px;"><span class="sub-text">#</span></div>
+                                                        <div class="nk-tb-col"><span class="sub-text">Document</span></div>
+                                                        <div class="nk-tb-col text-right" style="width: 80px;"><span class="sub-text">Downloads</span></div>
+                                                    </div>
+                                                    @foreach ($DownloadStats->take(15) as $stat)
+                                                        @php 
+                                                            $percentage = $maxDownloads > 0 ? round(($stat->total / $maxDownloads) * 100) : 0;
+                                                            $rankColors = ['#4e73df', '#1cc88a', '#36b9cc'];
+                                                            $barColor = $loop->index < 3 ? $rankColors[$loop->index] : '#858796';
+                                                        @endphp
+                                                        <div class="nk-tb-item">
+                                                            <div class="nk-tb-col" style="width: 40px;">
+                                                                @if($loop->iteration <= 3)
+                                                                    <span class="badge" style="background-color: {{ $barColor }}; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">{{ $loop->iteration }}</span>
+                                                                @else
+                                                                    <span class="text-muted" style="font-size: 13px; padding-left: 6px;">{{ $loop->iteration }}</span>
+                                                                @endif
                                                             </div>
-                                                            <div class="progress progress-md">
-                                                                <div class="progress-bar"
-                                                                    data-progress=" {{ $stat->total }}">
+                                                            <div class="nk-tb-col">
+                                                                <div>
+                                                                    <span class="tb-lead" style="font-size: 13px;">{{ \Illuminate\Support\Str::limit($stat->title, 55) }}</span>
                                                                 </div>
+                                                                <div class="progress progress-sm mt-1" style="height: 4px;">
+                                                                    <div class="progress-bar" style="width: {{ $percentage }}%; background-color: {{ $barColor }};"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="nk-tb-col text-right" style="width: 80px;">
+                                                                <span class="badge badge-dim badge-outline-gray" style="font-size: 12px;">{{ $stat->total }}</span>
                                                             </div>
                                                         </div>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <div class="text-center py-5">
+                                                    <em class="icon ni ni-download-cloud" style="font-size: 48px; color: #c4cdd5;"></em>
+                                                    <p class="text-muted mt-2">No downloads recorded in this period</p>
+                                                </div>
+                                            @endif
 
-                                                    </div>
-                                                @endforeach
-
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2808,8 +2909,8 @@
                                 @foreach ($data as $regulation)
                                     <tr class="nk-tb-item">
                                         <td class="nk-tb-col"> {{ $loop->iteration }}</td>
-                                        <td class="nk-tb-col"> {{ optional($regulation->regulation)->title }}</td>
-                                        <td class="nk-tb-col">{{ optional($regulation->inputter)->name }}</td>
+                                        <td class="nk-tb-col"> {{ optional(optional($regulation)->regulation)->title }}</td>
+                                        <td class="nk-tb-col">{{ optional(optional($regulation)->inputter)->name }}</td>
                                         <td class="nk-tb-col">{{ $regulation->created_at }}</td>
                                         <td class="nk-tb-col"> {{ optional($regulation->authoriser)->name }}
                                         </td>
@@ -2955,46 +3056,190 @@
                 var ctx = document.getElementById('categoryChart').getContext('2d');
                 var chartData = @json($chartData);
 
-                var pieChartData = {
-                    labels: chartData.labels,
-                    dataUnit: 'Documents',
-                    legend: false,
-                    datasets: [{
-                        borderColor: "#fff",
-                        backgroundColor: chartData.colors,
-                        data: chartData.data
-                    }]
-                };
-
                 var categoryChart = new Chart(ctx, {
-                    type: 'pie',
+                    type: 'bar',
                     data: {
-                        labels: pieChartData.labels,
+                        labels: chartData.labels,
                         datasets: [{
-                            data: pieChartData.datasets[0].data,
-                            backgroundColor: pieChartData.datasets[0].backgroundColor,
-                            borderColor: pieChartData.datasets[0].borderColor,
-                            borderWidth: 1
+                            label: 'Documents',
+                            data: chartData.data,
+                            backgroundColor: chartData.colors,
+                            borderColor: chartData.colors.map(c => c),
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            barPercentage: 0.7
                         }]
                     },
                     options: {
+                        indexAxis: 'y',
                         responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Documents'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    font: { size: 11 },
+                                    autoSkip: false
+                                }
+                            }
+                        },
                         plugins: {
                             legend: {
-                                display: pieChartData.legend,
-                                position: 'top',
+                                display: false
                             },
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return context.label + ': ' + context.raw + ' ' + pieChartData
-                                            .dataUnit;
+                                        return context.raw + ' Documents';
                                     }
                                 }
                             }
                         }
                     }
                 });
+            });
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // ---- Weekly Downloads Stacked Bar Chart ----
+                var weeklyBarCtx = document.getElementById('weeklyDownloadsBarChart');
+                if (weeklyBarCtx) {
+                    var weeklyData = @json($weeklyDownloadChartData);
+                    new Chart(weeklyBarCtx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: weeklyData.labels,
+                            datasets: weeklyData.datasets
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 25,
+                                        font: { size: 10 }
+                                    }
+                                },
+                                y: {
+                                    stacked: true,
+                                    beginAtZero: true,
+                                    ticks: { 
+                                        stepSize: 1,
+                                        precision: 0 
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Downloads'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        font: { size: 10 },
+                                        padding: 8
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.raw + ' downloads';
+                                        }
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Downloads per Document (Top 10)',
+                                    font: { size: 14 }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // ---- Weekly Downloads Total Line Chart ----
+                var weeklyLineCtx = document.getElementById('weeklyDownloadsLineChart');
+                if (weeklyLineCtx) {
+                    var weeklyTotalData = @json($weeklyTotalChartData);
+                    new Chart(weeklyLineCtx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: weeklyTotalData.labels,
+                            datasets: [{
+                                label: 'Total Downloads',
+                                data: weeklyTotalData.data,
+                                borderColor: '#4e73df',
+                                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#4e73df',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 25,
+                                        font: { size: 10 }
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { 
+                                        stepSize: 1,
+                                        precision: 0 
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Total Downloads'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return 'Total: ' + context.raw + ' downloads';
+                                        }
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Weekly Download Trend',
+                                    font: { size: 14 }
+                                }
+                            }
+                        }
+                    });
+                }
             });
         </script>
     @endsection

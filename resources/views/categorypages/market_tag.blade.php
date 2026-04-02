@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-<script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
+<script src="{{ asset('public/assets/js/centralized-table-filter.js') . '?v=' . time() }}"></script>
 
 <style>
     .break-text {
@@ -226,13 +226,14 @@
                         'showFilters' => true,
                         'tableId' => 'example',
                         'filterOptions' => [
-                            'showAlphabetFilter' => true,
+                            'showAlphabetFilter' => true, 
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
-                            'showEffectiveDateFilter' => true,
+                            'showEffectiveDateFilter' => false,
                             'showVersionFilter' => false,
                             'showSearchBar' => true,
-                            'showStatusFilter' => false,
+                            'showStatusFilter' => true,
+                            'showMarketProductFilter' => false,
                             'years' => $years
                         ]
                     ]) 

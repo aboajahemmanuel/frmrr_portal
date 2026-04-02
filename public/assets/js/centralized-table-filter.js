@@ -32,6 +32,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
         effectiveDateEnd: '',
         version: '',
         status: '',
+        marketProduct: '',
         custom: {}
     };
 
@@ -68,16 +69,30 @@ function initCentralizedTableFilter(tableId, options = {}) {
         }
     }
 
+    let marketProductColIndex = -1;
+    for (let i = 0; i < headers.length; i++) {
+        if (headers[i].toLowerCase().includes('market product')) {
+            marketProductColIndex = i;
+            break;
+        }
+    }
+
     console.log('Status column index found:', statusColIndex);
 
-    console.log('Column indices - Title:', titleColIndex, 'Year:', yearColIndex, 'Entity:', entityColIndex, 'Effective Date:', effectiveDateColIndex, 'Version:', versionColIndex, 'Status:', statusColIndex);
+    console.log('Column indices - Title:', titleColIndex, 'Year:', yearColIndex, 'Entity:', entityColIndex, 'Effective Date:', effectiveDateColIndex, 'Version:', versionColIndex, 'Status:', statusColIndex, 'Market Product:', marketProductColIndex);
 
     // Filter and display rows
     function filterAndDisplayRows() {
         console.log('Current filters:', currentFilters);
         let visibleCount = 0;
 
-        rows.forEach((row, rowIndex) => {
+        // RE-FETCH rows dynamically since DataTables might have modified the DOM
+        const currentRows = Array.from(table.querySelectorAll('tbody tr'));
+
+        currentRows.forEach((row, rowIndex) => {
+            // Skip DataTables internal empty rows 
+            if (row.querySelector('.dataTables_empty')) return;
+
             let visible = true;
             const cells = row.querySelectorAll('td');
 
@@ -90,6 +105,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
             }
             const versionText = versionColIndex >= 0 ? cells[versionColIndex]?.textContent.trim() || '' : '';
             const statusText = statusColIndex >= 0 ? cells[statusColIndex]?.textContent.trim() || '' : '';
+            const marketProductText = marketProductColIndex >= 0 ? cells[marketProductColIndex]?.textContent.trim() || '' : '';
 
             // Log first few rows for debugging
             if (rowIndex < 3) {
@@ -211,6 +227,13 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 }
             }
 
+            // Market Product filter
+            if (visible && currentFilters.marketProduct) {
+                const selectedProduct = currentFilters.marketProduct.toLowerCase();
+                visible = visible && marketProductText.toLowerCase().includes(selectedProduct);
+                console.log('Market Product filter result for', selectedProduct, ':', visible);
+            }
+
             // Custom filters
             if (visible && options.customFilter) {
                 visible = visible && options.customFilter(row, cells, currentFilters);
@@ -260,6 +283,10 @@ function initCentralizedTableFilter(tableId, options = {}) {
             activeFilters.push('Status: ' + currentFilters.status);
         }
 
+        if (currentFilters.marketProduct) {
+            activeFilters.push('Market Product: ' + currentFilters.marketProduct);
+        }
+
         // Add custom filters to info
         if (currentFilters.custom) {
             Object.keys(currentFilters.custom).forEach(key => {
@@ -286,7 +313,10 @@ function initCentralizedTableFilter(tableId, options = {}) {
     function sortTable(columnIndex) {
         console.log('Sorting column:', columnIndex, 'Direction:', sortDirection);
 
-        const sortedRows = rows.slice().sort((a, b) => {
+        // Dynamically fetch rows
+        const currentRows = Array.from(table.querySelectorAll('tbody tr')).filter(row => !row.querySelector('.dataTables_empty'));
+
+        const sortedRows = currentRows.sort((a, b) => {
             const aCells = a.querySelectorAll('td');
             const bCells = b.querySelectorAll('td');
 
@@ -426,6 +456,15 @@ function initCentralizedTableFilter(tableId, options = {}) {
             });
         }
 
+        // Market Product filter
+        const marketProductFilter = document.getElementById('market-product-filter-' + tableId);
+        if (marketProductFilter) {
+            marketProductFilter.addEventListener('change', function (e) {
+                currentFilters.marketProduct = e.target.value;
+                filterAndDisplayRows();
+            });
+        }
+
         // Status filter
         const statusFilter = document.getElementById('status-filter-' + tableId);
         console.log('Looking for status filter:', 'status-filter-' + tableId);
@@ -463,6 +502,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 currentFilters.effectiveDateEnd = '';
                 if (versionFilter) versionFilter.value = '';
                 if (statusFilter) statusFilter.value = '';
+                if (marketProductFilter) marketProductFilter.value = '';
 
                 currentFilters = {
                     alphabet: '',
@@ -473,6 +513,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
                     effectiveDateEnd: '',
                     version: '',
                     status: '',
+                    marketProduct: '',
                     custom: {}
                 };
 
@@ -547,6 +588,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
             const effectiveDateEndFilter = document.getElementById('effective-date-end-filter-' + tableId);
             const versionFilter = document.getElementById('version-filter-' + tableId);
             const statusFilter = document.getElementById('status-filter-' + tableId);
+            const marketProductFilter = document.getElementById('market-product-filter-' + tableId);
 
             if (searchInput) searchInput.value = '';
             if (alphabetFilter) alphabetFilter.value = '';
@@ -556,6 +598,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
             if (effectiveDateEndFilter) effectiveDateEndFilter.value = '';
             if (versionFilter) versionFilter.value = '';
             if (statusFilter) statusFilter.value = '';
+            if (marketProductFilter) marketProductFilter.value = '';
 
             currentFilters = {
                 alphabet: '',
@@ -566,6 +609,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
                 effectiveDateEnd: '',
                 version: '',
                 status: '',
+                marketProduct: '',
                 custom: {}
             };
 

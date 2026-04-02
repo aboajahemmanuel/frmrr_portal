@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-    <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
+    <script src="{{ asset('public/assets/js/centralized-table-filter.js') . '?v=' . time() }}"></script>
     <style>
         .break-text {
             max-width: 200px;
@@ -123,6 +123,13 @@
                 info: true,
                 dom: 'lrtip' // Remove default search box
             });
+
+            setTimeout(function() {
+                var years = @json($years);
+                window.tableFilter = initCentralizedTableFilter('example', {
+                    years: years
+                });
+            }, 100);
         });
     </script>
 
@@ -173,22 +180,21 @@
 
                         <div class="row" style="width: 100%">
                             <div class="col-md-12">
-                                  @include('components.regulations.searchtable', [
+                                  @include('components.regulations.searchAdtable', [
                         'records' => $results, 
                         'isSubscribed' => $isSubscribed,
                         'showFilters' => true,
                         'tableId' => 'example',
                         'filterOptions' => [
-                            'showAlphabetFilter' => true,
+                            'showAlphabetFilter' => true, 
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
-                            'showEffectiveDateFilter' => true,
-                            'showVersionFilter' => true,
+                            'showEffectiveDateFilter' => false,
+                            'showVersionFilter' => false,
+                            'showSearchBar' => true,
                             'showStatusFilter' => true,
-                            // Ensure years is properly formatted as an array of strings
-                            'years' => $years->map(function($year) { 
-                                return is_object($year) && isset($year->name) ? $year->name : $year; 
-                            })->toArray()
+                            'showMarketProductFilter' => true,
+                            'years' => $years
                         ]
                     ]) 
 

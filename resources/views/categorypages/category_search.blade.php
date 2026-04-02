@@ -3,7 +3,7 @@
 @section('content')
     <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
+    <script src="{{ asset('public/assets/js/centralized-table-filter.js') . '?v=' . time() }}"></script>
     <style>
         .break-text {
             max-width: 200px;
@@ -197,3 +197,4 @@
 </body>
 
 </html>
+

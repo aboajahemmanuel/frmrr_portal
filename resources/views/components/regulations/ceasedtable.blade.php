@@ -171,17 +171,31 @@
 
 
 @php
-    // Sort records alphabetically by title
-    if ($records instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-        $records->setCollection($records->getCollection()->sortBy('title')->values());
-    } elseif ($records instanceof \Illuminate\Support\Collection) {
-        $records = $records->sortBy('title')->values();
-    }
+    // Expected variables:
+    // $records: Illuminate\Pagination\LengthAwarePaginator|Collection of Regulation
+    // $isSubscribed: bool
+    // $years: array (optional) for filter initializer used by parent
+    // $showFilters: bool (default: false) - whether to show filters
+    // $filterOptions: array (optional) - options for filter configuration
+    $showFilters = $showFilters ?? false;
+    $filterOptions = $filterOptions ?? [];
+    $tableId = $tableId ?? 'example';
+
+  
 @endphp
 
 <div style="background-color: #fff; padding: 20px; width: 100%">
-            <div class="row" style="width: 100%">
-                <div class="col-md-12">
+    <div class="row" style="width: 100%">
+        <div class="col-md-12">
+            @if($showFilters)
+            <div class="filter-wrapper">
+                @include('components.filters.table-filters', [
+                    'records' => $records,
+                    'tableId' => $tableId,
+                    'options' => $filterOptions
+                ])
+            </div>
+            @endif
                     @if (Auth::check())
                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
                             <div class="table-responsive-wrapper">

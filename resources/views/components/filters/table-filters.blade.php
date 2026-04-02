@@ -2,16 +2,22 @@
     // Expected variables:
     // $records: Collection of records to filter
     // $tableId: ID of the table to filter
-    // $options: Array of options for filter configuration
+    // $options (or $filterOptions): Array of options for filter configuration
     // $showAlphabetFilter: bool (default: true)
     // $showYearFilter: bool (default: true)
     // $showEntityFilter: bool (default: true)
     // $showEffectiveDateFilter: bool (default: false)
     // $showVersionFilter: bool (default: false)
     // $showMarketProductFilter: bool (default: false)
+    // $showStatusFilter: bool (default: true)
     // $years: array of years for year filter (optional)
+    
+    // Fallbacks
+    $options = $options ?? $filterOptions ?? [];
+    $showFilters = $showFilters ?? true;
 @endphp
 
+@if($showFilters)
 <style>
     .filter-container .filter-group.date-range-group {
         display: flex;
@@ -151,11 +157,46 @@
         <label for="status-filter-{{ $tableId }}">Status:</label>
         <select id="status-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Ceased">Ceased</option>
-            <option value="Repealed">Repealed</option>
-            <option value="Amended">Amended</option>
-            <option value="Superseded">Superseded</option>
+            @php
+                if (!isset($options['statuses'])) {
+                    try {
+                        $rawStatuses = \App\Models\Regulation::select('ceased')
+                            ->distinct()
+                            ->pluck('ceased');
+                            
+                        $statusesArray = [];
+                        foreach ($rawStatuses as $rawStatus) {
+                            if (is_null($rawStatus) || trim($rawStatus) === '') {
+                                if (!in_array('N/A', $statusesArray)) {
+                                    $statusesArray[] = 'N/A';
+                                }
+                                continue;
+                            }
+                            $parts = array_filter(preg_split('/[, \/]+/', $rawStatus));
+                            foreach ($parts as $part) {
+                                $part = trim($part);
+                                if (!empty($part) && !in_array($part, $statusesArray) && strtolower($part) !== 'active') {
+                                    $statusesArray[] = $part;
+                                }
+                            }
+                        }
+                        
+                        sort($statusesArray);
+                        $statuses = $statusesArray;
+                    } catch(\Exception $e) {
+                         $statuses = ['N/A', 'Ceased', 'Repealed', 'Amended', 'Superseded'];
+                    }
+                } else {
+                    $statuses = $options['statuses'];
+                }
+            @endphp
+            
+            @foreach($statuses as $status)
+                @php
+                    $statusValue = is_object($status) ? (isset($status->name) ? $status->name : (string)$status) : (string)$status;
+                @endphp
+                <option value="{{ $statusValue }}">{{ $statusValue }}</option>
+            @endforeach
         </select>
     </div>
     @endif
@@ -167,5 +208,6 @@
         <button class="clear-filters-btn" id="clear-filters-{{ $tableId }}">Clear Filters</button>
     </div>
 </div>
+@endif
 
 <div id="search-info-{{ $tableId }}" class="search-info" style="display: none;"></div>

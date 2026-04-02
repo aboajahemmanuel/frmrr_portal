@@ -1,11 +1,11 @@
-@extends('layouts.headerexternal')
+@extends('layouts.externalcategory')
 
 @section('content')
- <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
+  <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-    <script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
+    <script src="{{ asset('public/assets/js/centralized-table-filter.js') . '?v=' . time() }}"></script>
     <style>
         .filter-container { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; clear: both; width: 100%; }
         .dataTables_wrapper .dataTables_filter { float: none !important; text-align: left; margin-bottom: 15px; }
@@ -30,83 +30,114 @@
     </style>
     <script>
         $(document).ready(function() {
-            var years = @json($years);
+            console.log('Document ready, initializing table filter');
             
-            // Initialize centralized table filter with pagination disabled
-            window.tableFilter = initCentralizedTableFilter('example', {
-                years: years
-            });
+            // Small delay to ensure DOM is fully loaded
+            setTimeout(function() {
+                // Check if table exists
+                var tableElement = document.getElementById('example');
+                console.log('Table element found:', tableElement);
+                
+                var years = @json($years); 
+                console.log('Years data:', years);
+                
+                // Initialize centralized table filter with pagination disabled
+                console.log('Calling initCentralizedTableFilter');
+                window.tableFilter = initCentralizedTableFilter('example', {
+                    years: years
+                });
+                console.log('Table filter initialized:', window.tableFilter);
+            }, 100);
             
-       
+            // Add ceased button to filter container (after Clear Filters button)
+            @if ($regulations_ceased > 0)
+            setTimeout(function() {
+                var clearButton = $('#clear-filters-example');
+                if (clearButton.length) {
+                    var ceasedButton = $(`
+                        <div class="filter-group" style="align-self: flex-end; margin-left: 10px;">
+                            <a href="{{ route('ceasedDoc', $category->slug) }}" style="text-decoration: none;">
+                                <div class="button-container-sb" style="display: inline-block;">
+                                    <div class="gradient-buttons">
+                                        <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; display: flex; align-items: center;">
+                                            <div style="white-space: nowrap;">Show Ceased/Repealed/Amended/Superseded</div>
+                                            <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Arrow" style="width: 16px; height: 16px; margin-left: 5px;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `);
+                    clearButton.parent().after(ceasedButton);
+                }
+            }, 100);
+            @endif
         });
     </script>
-    <div class="info">
-        <div class="title">Search Results </div>
-        <br>
-
-        <form method="GET" action="{{ route('search_result') }}">
-            <div class="search">
-                <div class="search-box">
-                    <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
-                    <input required name="title" value="{{ $title }}" type="search" style="color: #000;" />
-                </div>
-                <a href="#" style="height: 100%;">
-                    <button style="height: 100%;" type="submit">
-                        <div class="search-full">Search</div>
-                    </button>
-                </a>
-            </div>
-        </form>
-    </div>
-    </div>
-    </section>
-
-    <div class="gl-flex">
-        <div class="tabs">
-        </div>
-    </div>
 
     <section class="gd-main-container">
-        @if (is_null($reg))
-            <img src="{{ asset('public/users/assets/illustration-search.svg') }}" height="250px" alt="No document purchased illustration" />
-            <div class="no-doc">Search Not Found</div>
-            <div class="get-in">
-                There is no search for the word <span>“{{ $title }}”</span>, refine
-                your search by trying another keyword 
-            </div>
-        @else
-            <div style="background-color: #fff; padding: 20px; width: 100%">
-                <div class="row" style="width: 100%">
-                    <div class="col-md-12">
-                        @include('components.regulations.searchtable', [
-                            'records' => $reg, 
-                            'isSubscribed' => $isSubscribed,
-                            'showFilters' => true,
-                            'filterOptions' => [
-                                'showAlphabetFilter' => true,
-                                'showYearFilter' => true,
-                                'showEntityFilter' => true,
-                                'showEffectiveDateFilter' => true,
-                                'showVersionFilter' => true,
-                                'years' => $years
-                            ]
-                        ])
+        <div class="hd-container">
 
-                        @if($reg->hasPages())
+        </div>
+        <div class="gl-flex">
+            <div class="tabs">
+                <div class="current">
+                   
+                        <p class="current-active" style="font-size: 24px;">A-Z {{ $category->name }}</p>
+                  
+
+                </div>
+               
+                <div class="active-line">
+                    <div class="line-active"></div>
+                    <div class="line-inactive"></div>
+                </div>
+            </div>
+        </div>
+        <div style="background-color: #fff; padding: 20px; width: 100%">
+            <div class="row" style="width: 100%">
+                <div class="col-md-12">
+               
+                    @include('components.regulations.searchAdtable', [
+                        'records' => $reg, 
+                        'isSubscribed' => $isSubscribed,
+                        'showFilters' => true,
+                        'tableId' => 'example',
+                        'filterOptions' => [
+                            'showAlphabetFilter' => true, 
+                            'showYearFilter' => true,
+                            'showEntityFilter' => true,
+                            'showEffectiveDateFilter' => false,
+                            'showVersionFilter' => false,
+                            'showSearchBar' => true,
+                            'showStatusFilter' => true,
+                            'years' => $years
+                        ]
+                    ]) 
+
+                    {{-- Pagination Info --}}
+                  @if($reg->hasPages())
                         <div class="mt-4 d-flex justify-content-center">
                             <nav aria-label="Regulations pagination">
-                                {{ $reg->links('vendor.pagination.bootstrap-4') }}
+                                {{ $reg->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
                             </nav>
                         </div>
                         @endif
-                    </div>
                 </div>
             </div>
-            <br>
+        </div>
 
-        @endif
 
-        <div class="gda-cards-container"></div>
+
+
+
+
+        <div class="gda-cards-container">
+
+
+
+          
+        </div>
     </section>
     </div>
 
@@ -114,4 +145,5 @@
 @endsection
 </div>
 </body>
+
 </html>

@@ -205,7 +205,7 @@
                             @endif
                         </td>
                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
-                          <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'Active' }}</span></td>
+                        <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'N/A' }}</span></td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
                         
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>

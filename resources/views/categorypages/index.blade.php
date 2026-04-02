@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-    <script src="{{ asset('public/assets/js/centralized-table-filter.js') }}"></script>
+    <script src="{{ asset('public/assets/js/centralized-table-filter.js') . '?v=' . time() }}"></script>
     <style>
         .filter-container { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; clear: both; width: 100%; }
         .dataTables_wrapper .dataTables_filter { float: none !important; text-align: left; margin-bottom: 15px; }
@@ -104,13 +104,13 @@
                         'showFilters' => true,
                         'tableId' => 'example',
                         'filterOptions' => [
-                            'showAlphabetFilter' => true,
+                            'showAlphabetFilter' => true, 
                             'showYearFilter' => true,
                             'showEntityFilter' => true,
                             'showEffectiveDateFilter' => false,
                             'showVersionFilter' => false,
                             'showSearchBar' => true,
-                            'showStatusFilter' => false,
+                            'showStatusFilter' => true,
                             'years' => $years
                         ]
                     ]) 

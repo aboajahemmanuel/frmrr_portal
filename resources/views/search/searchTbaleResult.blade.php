@@ -39,12 +39,13 @@
                                             <div class="spc-btw">
                                                 <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                                     @foreach ($categories as $category)
-                                                        <div class="catgory" style="display: flex; align-items: center;">
+                                                        <div class="custom-control custom-radio custom-control-sm" style="margin-right: 15px;">
                                                             <input type="radio" name="category_id"
                                                                 id="res_basic1_category_{{ $category->id }}"
+                                                                class="custom-control-input"
                                                                 value="{{ $category->id }}"
-                                                                @if (request('category_id') == $category->id) checked @endif style="margin-right: 5px;" />
-                                                            <label style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
+                                                                @if (request('category_id') == $category->id) checked @endif />
+                                                            <label class="custom-control-label" style="cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
                                                                 for="res_basic1_category_{{ $category->id }}">{{ $category->name }}</label>
                                                         </div>
                                                     @endforeach
@@ -126,12 +127,13 @@
 
                                             <div class="cb-gap" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                                                 @foreach ($categories as $category)
-                                                    <div class="catgory" style="display: flex; align-items: center;">
+                                                    <div class="custom-control custom-radio custom-control-sm" style="margin-right: 15px;">
                                                         <input type="radio" name="category_id"
                                                             id="res_basic2_category_{{ $category->id }}"
+                                                            class="custom-control-input"
                                                             value="{{ $category->id }}"
-                                                            @if (request('category_id') == $category->id) checked @endif style="margin-right: 5px;" />
-                                                        <label style="margin-bottom: 0px; cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
+                                                            @if (request('category_id') == $category->id) checked @endif />
+                                                        <label class="custom-control-label" style="cursor: pointer; font-weight: normal; color: #1d326d; font-size: 13px;"
                                                             for="res_basic2_category_{{ $category->id }}">{{ $category->name }}</label>
                                                     </div>
                                                 @endforeach
