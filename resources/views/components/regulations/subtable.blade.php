@@ -606,7 +606,8 @@
             <thead>
                 <tr>
                     <th style="text-align: center;">Title</th>
-                    
+                  
+                    <th style="text-align: center;">Status</th>
                    
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Year</th>
@@ -629,6 +630,8 @@
                                 {{ $result->formatted_title ?? $result->title }}
                             @endif
                         </td>
+
+                         <td style="text-align: center"><span class="badge badge-primary">{{ $result->ceased ? str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) : 'N/A' }}</span></td>
                         
                         <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
@@ -900,37 +903,7 @@
                                                     @endif
                                                 </div>
 
-                                                @php $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; }); @endphp
-                                                @if(isset($relatedDoc->nested_related_documents) && $activeNestedDocs->count() > 0)
-                                                    <div class="nested-related-docs">
-                                                        <small><strong>Active Related Documents:</strong></small>
-                                                        @foreach($activeNestedDocs as $nestedDoc)
-                                                            <div class="nested-doc-item">
-                                                                <div class="nested-doc-title"><em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}</div>
-                                                                <div class="related-doc-meta">
-                                                                    <span class="badge badge-primary">Active</span>
-                                                                    @if($nestedDoc->document_version)
-                                                                        <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
-                                                                    @endif
-                                                                    @if($nestedDoc->effective_date)
-                                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
-                                                                    @endif
-                                                                    @if($nestedDoc->issue_date)
-                                                                        <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
-                                                                    @endif
-                                                                </div>
-                                                                <div style="margin-top: 5px;">
-                                                                    @if($isSubscribed)
-                                                                        <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-book-read"></em> View</a>
-                                                                        <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-download"></em> Download</a>
-                                                                    @else
-                                                                        <a href="{{ route('subscribe') }}" class="btn btn-sm btn-outline-primary"><em class="icon ni ni-lock"></em> Restricted, subscribe to access</a>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
+                                               
                                             </div>
                                         @endforeach
                                     @else
