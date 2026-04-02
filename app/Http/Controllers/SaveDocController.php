@@ -7,6 +7,7 @@ use App\Models\Download;
 use App\Models\Regulation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class SaveDocController extends Controller
 {
@@ -63,20 +64,27 @@ class SaveDocController extends Controller
         $user = Auth::user();
         $regulation = Regulation::findOrFail($id);
 
-        // Log the download information
-        Download::create([
-            'user_id' => $user->id,
-            'regulation_id' => $regulation->id,
-        ]);
-
-        // Proceed with the download
         $filePath = public_path('pdf_documents/' . $regulation->regulation_doc);
 
-        if (file_exists($filePath)) {
-            return response()->download($filePath);
-        } else {
+        if (!file_exists($filePath)) {
             return redirect()->back()->with('error', 'File not found.');
         }
+
+        // Only log the download if the file exists, with a 30-second
+        // deduplication window to prevent duplicate entries from rapid clicks.
+        $recentlyLogged = Download::where('user_id', $user->id)
+            ->where('regulation_id', $regulation->id)
+            ->where('created_at', '>=', Carbon::now()->subSeconds(30))
+            ->exists();
+
+        if (!$recentlyLogged) {
+            Download::create([
+                'user_id' => $user->id,
+                'regulation_id' => $regulation->id,
+            ]);
+        }
+
+        return response()->download($filePath);
     }
 
 
