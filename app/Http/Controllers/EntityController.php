@@ -541,7 +541,7 @@ class EntityController extends Controller
                 Mail::to($user->email)->queue(new \App\Mail\NotifyUser($email_data));
             }
         } catch (\Exception $e) {
-            Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
+            // Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
         }
     }
 
@@ -576,7 +576,7 @@ class EntityController extends Controller
                 Mail::to($inputter->email)->queue(new \App\Mail\NotifyUserApplicationReject($emailData));
             }
         } catch (\Exception $e) {
-            Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
+            // Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
         }
     }
 
@@ -609,7 +609,7 @@ class EntityController extends Controller
                 Mail::to($user->email)->queue(new \App\Mail\NotifyUser($email_data));
             }
         } catch (\Exception $e) {
-            Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
+            // Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
         }
     }
 
