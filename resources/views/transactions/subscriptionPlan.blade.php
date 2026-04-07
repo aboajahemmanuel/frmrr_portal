@@ -209,7 +209,7 @@
 
                                                                         <ul class="link-list-opt no-bdr">
                                                                             @if ($transaction->admin_status == 1 || $transaction->admin_status == 2)
-                                                                                @can('transaction-edit')
+                                                                                @can('subscription-edit')
                                                                                     <li>
                                                                                         <a href="#" data-toggle="modal"
                                                                                             data-target="#editGroup-{{ $transaction->id }}">
