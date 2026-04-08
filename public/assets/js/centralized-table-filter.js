@@ -219,6 +219,9 @@ function initCentralizedTableFilter(tableId, options = {}) {
                     // For Active, check if the status text is exactly 'active' (meaning ceased field is null/empty)
                     visible = visible && (statusText === 'active');
                     console.log('Active filter result:', visible);
+                } else if (currentFilters.status === 'Empty Space') {
+                    visible = visible && (statusText === '');
+                    console.log('Empty Space filter result:', visible);
                 } else {
                     // For other statuses, check if the status text contains the selected status
                     const selectedStatus = currentFilters.status.toLowerCase();

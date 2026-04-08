@@ -169,7 +169,7 @@ class WelcomeController extends Controller
             Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
                 // Add your additional email addresses to this array
                 $recipients = [
-                    'tobiloba.bakare@fmdqgroup.com',
+                    'mbg@fmdqgroup.com',
                     'olamide.ige@fmdqgroup.com' // Replace with the actual email
                 ];
                 $message->to($recipients)

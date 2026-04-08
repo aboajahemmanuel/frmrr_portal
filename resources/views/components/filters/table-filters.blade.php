@@ -167,8 +167,8 @@
                         $statusesArray = [];
                         foreach ($rawStatuses as $rawStatus) {
                             if (is_null($rawStatus) || trim($rawStatus) === '') {
-                                if (!in_array('N/A', $statusesArray)) {
-                                    $statusesArray[] = 'N/A';
+                                if (!in_array('Empty Space', $statusesArray)) {
+                                    $statusesArray[] = 'Empty Space';
                                 }
                                 continue;
                             }
@@ -184,7 +184,7 @@
                         sort($statusesArray);
                         $statuses = $statusesArray;
                     } catch(\Exception $e) {
-                         $statuses = ['N/A', 'Ceased', 'Repealed', 'Amended', 'Superseded'];
+                         $statuses = ['Empty Space', 'Ceased', 'Repealed', 'Amended', 'Superseded'];
                     }
                 } else {
                     $statuses = $options['statuses'];
@@ -195,7 +195,7 @@
                 @php
                     $statusValue = is_object($status) ? (isset($status->name) ? $status->name : (string)$status) : (string)$status;
                 @endphp
-                <option value="{{ $statusValue }}">{{ $statusValue }}</option>
+                <option value="{{ $statusValue }}">{{ $statusValue === 'Empty Space' ? ' ' : $statusValue }}</option>
             @endforeach
         </select>
     </div>
