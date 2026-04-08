@@ -43,14 +43,14 @@ class BrowseController extends Controller
             ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
             ->exists();
         
-        $reg = $this->alphabeticalPaginate($category->id, null);
+         $reg = $this->alphabeticalPaginate($category->id, null);
 
         // Load page count for each regulation (legacy)
         $reg->each(function($regulation) {
             $regulation->page_count = $regulation->page_count;
         });
 
-        $regulations_ceased = Regulation::where('status', 1)
+         $regulations_ceased = Regulation::where('status', 1)
             ->where(function ($query) {
                 $query->whereNotNull('ceased')
                       ->where('ceased', '!=', 'Active')

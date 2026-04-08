@@ -41,9 +41,14 @@ trait AlphabeticalPaginatable
             $letter = $lc->letter;
             $count = $lc->count;
 
-            if ($currentGroup['count'] > 0 && ($currentGroup['count'] + $count > $targetPerPage)) {
-                $pageGroups[] = $currentGroup;
-                $currentGroup = ['letters' => [], 'count' => 0];
+            if ($currentGroup['count'] >= ($targetPerPage * 0.5)) {
+                $underflowIfSplit = $targetPerPage - $currentGroup['count'];
+                $overflowIfAdd = ($currentGroup['count'] + $count) - $targetPerPage;
+                
+                if ($overflowIfAdd >= $underflowIfSplit) {
+                    $pageGroups[] = $currentGroup;
+                    $currentGroup = ['letters' => [], 'count' => 0];
+                }
             }
 
             $currentGroup['letters'][] = $letter;
