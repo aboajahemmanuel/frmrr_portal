@@ -608,6 +608,7 @@
         </style>
         <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-auto-responsive="false" data-ordering="false">
             <thead>
+                
                 <tr>
                     <th style="text-align: center;">Title</th>
                   
