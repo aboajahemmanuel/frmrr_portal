@@ -43,7 +43,7 @@
                 <div class="row" style="width: 100%">
                     <div class="col-md-12">
                     </div>
-                        @include('components.regulations.table', [
+                        @include('components.regulations.subtable', [
                     'records' => $search, 
                     'isSubscribed' => $isSubscribed,
                     'showFilters' => true,

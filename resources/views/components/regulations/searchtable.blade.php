@@ -179,7 +179,7 @@
        <thead class="thead-dark">
                 <tr>
                     <th style="text-align: center;">Title</th>
-                  
+                    <th style="text-align: center"> Category</th>
                     <th style="text-align: center;">Subcategory</th> 
                      <th style="text-align: center;">Status</th>
                       <th style="text-align: center;">Year</th>
@@ -204,6 +204,7 @@
                                 {{ $result->formatted_title ?? $result->title }}
                             @endif
                         </td>
+                        <td style="text-align: center">{{ optional($result->category)->name }}</td>
                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
                         <td style="text-align: center">
                             @if($result->ceased)
