@@ -54,7 +54,7 @@ class RoleController extends Controller
         $canViewAllRoles = $user->hasPermissionTo('view-all-roles');
 
         // Fetch roles based on group_id or include all if the user has the required permission
-        $data = Role::where(function ($query) use ($user, $canViewAllRoles) {
+        $query = Role::where(function ($query) use ($user, $canViewAllRoles) {
             // Condition to filter roles by the user's group
             $query->where('group_id', $user->group_id);
 
@@ -62,9 +62,13 @@ class RoleController extends Controller
             if ($canViewAllRoles) {
                 $query->orWhereNotNull('id'); // This will include all roles
             }
-        })
-            ->orderBy('id', 'DESC')
-            ->get();
+        });
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $data = $query->orderBy('id', 'DESC')->paginate(10);
 
         // Required for the view
         $permission = Permission::where('status', 1)->orderBy('name', 'ASC')->get();

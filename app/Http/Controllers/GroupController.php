@@ -28,7 +28,6 @@ class GroupController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        
         $user = Auth::user();
         $permission = 'group-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
@@ -36,21 +35,25 @@ class GroupController extends Controller
             ->get();
 
 
-             // Check if the user has the 'view-all-categories' permission
+             // Check if the user has the 'view-all-groups' permission
         $canViewAllGroups = $user->hasPermissionTo('view-all-groups');
 
-        // Fetch categories based on group_id or include all if the user has the required permission
-        $data = Group::where(function ($query) use ($user, $canViewAllGroups) {
-            // Condition to filter categories by the user's group
+        // Fetch groups based on group_id or include all if the user has the required permission
+        $query = Group::where(function ($query) use ($user, $canViewAllGroups) {
+            // Condition to filter groups by the user's group
             $query->where('group_id', $user->group_id);
 
-            // If the user has permission to view all categories, include them
+            // If the user has permission to view all groups, include them
             if ($canViewAllGroups) {
-                $query->orWhereNotNull('id'); // This will include all categories
+                $query->orWhereNotNull('id'); // This will include all groups
             }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        });
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('groups.index', compact('data', 'authoriser'));
     }

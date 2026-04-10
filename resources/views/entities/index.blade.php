@@ -49,7 +49,7 @@
                             <div class="example-alert">
                                 @if (\Session::has('success'))
                                     <div class="alert alert-success alert-icon alert-dismissible">
-                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('success') }}<button
+                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('success') }} </strong><button
                                                 class="close" data-dismiss="alert"></button>
                                     </div>
                                 @endif
@@ -57,7 +57,7 @@
 
                                 @if (\Session::has('error'))
                                     <div class="alert alert-danger alert-icon alert-dismissible">
-                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('error') }}<button
+                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('error') }} </strong><button
                                                 class="close" data-dismiss="alert"></button>
                                     </div>
                                 @endif
@@ -74,16 +74,37 @@
                                             </ul>
                                             <button class="close" data-dismiss="alert"></button>
                                         </div>
+                                    </div>
                                 @endif
-
-
-
                             </div>
-                            <div class="card card-preview">
 
+                            <!-- Filter Section -->
+                            <div class="card card-bordered mb-4">
                                 <div class="card-inner">
+                                    <form action="{{ url()->current() }}" method="GET">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Entity Name</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="name" class="form-control" value="{{ request('name') }}" placeholder="Search by name">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8 text-right align-self-end">
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                                    <a href="{{ url()->current() }}" class="btn btn-light">Reset</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
 
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                            <div class="card card-preview">
+                                <div class="card-inner">
+                                    <table class="nk-tb-list nk-tb-ulist" data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th>#</th>
@@ -102,7 +123,7 @@
                                             @foreach ($data as $entity)
                                                 <tr class="nk-tb-item">
                                                     <td class="nk-tb-col nk-tb-col-check">
-                                                        {{ $loop->iteration }}
+                                                        {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                                     </td>
                                                     <td class="nk-tb-col">
                                                         <div class="user-card">
@@ -114,9 +135,6 @@
                                                             </div>
                                                         </div>
                                                     </td>
-
-
-
 
                                                     <td class="nk-tb-col tb-col-lg">
                                                         <span>
@@ -155,16 +173,11 @@
 
                                                     </td>
 
-
-
                                                     <td class="nk-tb-col tb-col-lg">
 
                                                         @if ($entity->admin_status == 2)
                                                             {{ $entity->note }}
                                                         @endif
-
-
-
 
                                                     </td>
                                                     <td class="nk-tb-col nk-tb-col-tools">
@@ -190,9 +203,6 @@
                                                                                     </li>
                                                                                 @endcan
 
-
-
-
                                                                                 @can('entity-delete')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#deleteGroup-{{ $entity->id }}"><em
@@ -200,8 +210,6 @@
                                                                                     </li>
                                                                                 @endcan
                                                                             @endif
-
-
 
                                                                             @if ($entity->admin_status == 0)
                                                                                 @can('entity-approve')
@@ -225,8 +233,6 @@
                                                                                             Changes</span></a>
                                                                                 </li>
                                                                             @endif
-
-
 
                                                                             @if ($entity->admin_status == 3)
                                                                                 @can('entity-approve')
@@ -290,11 +296,8 @@
                                                                                                     value="2">
                                                                                                 <textarea required class="form-control" name="note"></textarea>
 
-
                                                                                             </div>
                                                                                         </div>
-
-
 
                                                                                         <div class="col-12">
                                                                                             <ul
@@ -309,7 +312,6 @@
                                                                                                         <span
                                                                                                             class="btn-text">Submit</span>
                                                                                                     </button>
-
 
                                                                                                     <script>
                                                                                                         function loading(buttonId) {
@@ -349,6 +351,18 @@
 
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="card-inner">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted small">
+                                            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} entries
+                                        </div>
+                                        @if ($data->hasPages())
+                                            <div>
+                                                {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div><!-- .card-preview -->
                         </div><!-- .nk-block -->

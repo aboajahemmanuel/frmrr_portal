@@ -60,8 +60,35 @@
                             <div class="card card-preview">
 
                                 <div class="card-inner">
-
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist table-striped"
+                                    <div class="card-title-group">
+                                        <div class="card-title">
+                                            <h5 class="title">All Subscribers</h5>
+                                        </div>
+                                    </div>
+                                    <form action="{{ route('subscribers') }}" method="GET" class="mb-4">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Search by Customer Name</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="name" class="form-control"
+                                                            placeholder="Customer Name" value="{{ request('name') }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <div class="form-control-wrap">
+                                                        <button type="submit" class="btn btn-primary">Filter</button>
+                                                        <a href="{{ route('subscribers') }}"
+                                                            class="btn btn-outline-light">Reset</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <table class="nk-tb-list nk-tb-ulist table-striped"
                                         data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
@@ -82,7 +109,7 @@
 
 
 
-                                                    <td class="nk-tb-col"> {{ $loop->iteration }}</td>
+                                                    <td class="nk-tb-col"> {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
                                                     <td class="nk-tb-col"> {{ optional($transaction->user)->name }}</td>
                                                     <td class="nk-tb-col">{{ optional($transaction->subscriptionPlan)->name }}
                                                     </td>
@@ -125,6 +152,13 @@
 
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="card-inner">
+                                    <div class="nk-block-between-md g-3">
+                                        <div class="g">
+                                            {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                        </div>
+                                    </div>
                                 </div>
                             </div><!-- .card-preview -->
                         </div><!-- .nk-block -->

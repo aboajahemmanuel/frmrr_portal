@@ -1,90 +1,96 @@
 @extends('layouts.master')
 
 @section('content')
-
-
-
-
-    <!-- main header @e -->
-    <!-- content @s -->
-        <div class="nk-content ">
-            <div class="container-fluid">
-                <div class="nk-content-inner">
-                    <div class="nk-content-body">
-                        <div class="nk-block-head nk-block-head-sm">
-                            <div class="nk-block-between">
-                                <div class="nk-block-head-content">
-                                    <h3 class="nk-block-title page-title">Sub Categories</h3>
-                                    <div class="nk-block-des text-soft">
-
+    <div class="nk-content ">
+        <div class="container-fluid">
+            <div class="nk-content-inner">
+                <div class="nk-content-body">
+                    <div class="nk-block-head nk-block-head-sm">
+                        <div class="nk-block-between">
+                            <div class="nk-block-head-content">
+                                <h3 class="nk-block-title page-title">Sub Categories</h3>
+                                <div class="nk-block-des text-soft">
+                                </div>
+                            </div><!-- .nk-block-head-content -->
+                            <div class="nk-block-head-content">
+                                <div class="toggle-wrap nk-block-tools-toggle">
+                                    <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1"
+                                        data-target="more-options"><em class="icon ni ni-more-v"></em></a>
+                                    <div class="toggle-expand-content" data-content="more-options">
+                                        <ul class="nk-block-tools g-3">
+                                            @can('category-create')
+                                                <li class="nk-block-tools-opt">
+                                                    <a href="#" class="btn btn-icon btn-primary d-md-none"><em
+                                                            class="icon ni ni-plus"></em></a>
+                                                    <a href="#" data-toggle="modal" data-target="#addUser"
+                                                        class="btn btn-primary d-none d-md-inline-flex"><em
+                                                            class="icon ni ni-plus"></em><span>Add</span></a>
+                                                </li>
+                                            @endcan
+                                        </ul>
                                     </div>
-                                </div><!-- .nk-block-head-content -->
-                                <div class="nk-block-head-content">
-                                    <div class="toggle-wrap nk-block-tools-toggle">
-                                        <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1"
-                                            data-target="more-options"><em class="icon ni ni-more-v"></em></a>
-                                        <div class="toggle-expand-content" data-content="more-options">
-                                            <ul class="nk-block-tools g-3">
+                                </div>
+                            </div><!-- .nk-block-head-content -->
+                        </div><!-- .nk-block-between -->
+                    </div><!-- .nk-block-head -->
+                    <div class="nk-block nk-block-lg">
+                        <div class="example-alert">
+                            @if (\Session::has('success'))
+                                <div class="alert alert-success alert-icon alert-dismissible">
+                                    <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('success') }} </strong><button
+                                            class="close" data-dismiss="alert"></button>
+                                </div>
+                            @endif
 
-                                                @can('category-create')
-                                                    <li class="nk-block-tools-opt">
-                                                        <a href="#" class="btn btn-icon btn-primary d-md-none"><em
-                                                                class="icon ni ni-plus"></em></a>
-                                                        <a href="#" data-toggle="modal" data-target="#addUser"
-                                                            class="btn btn-primary d-none d-md-inline-flex"><em
-                                                                class="icon ni ni-plus"></em><span>Add</span></a>
-                                                    </li>
-                                                @endcan
+                            @if (\Session::has('error'))
+                                <div class="alert alert-danger alert-icon alert-dismissible">
+                                    <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('error') }} </strong><button
+                                            class="close" data-dismiss="alert"></button>
+                                </div>
+                            @endif
 
-                                                {{-- <li><a href="#" data-toggle="modal" data-target="#addLead"><span>Add Orgranigation</span></a></li>
-                                                        <li><a href="#"><span>Import Lead</span></a></li> --}}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div><!-- .nk-block-head-content -->
-                            </div><!-- .nk-block-between -->
-                        </div><!-- .nk-block-head -->
-                        <div class="nk-block nk-block-lg">
-
-                            <div class="example-alert">
-                                @if (\Session::has('success'))
-                                    <div class="alert alert-success alert-icon alert-dismissible">
-                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('success') }}<button
-                                                class="close" data-dismiss="alert"></button>
-                                    </div>
-                                @endif
-
-
-
-                                @if (\Session::has('error'))
+                            @if (count($errors) > 0)
+                                <div>
                                     <div class="alert alert-danger alert-icon alert-dismissible">
-                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('error') }}<button
-                                                class="close" data-dismiss="alert"></button>
+                                        <strong>Opps!</strong> Something went wrong, please check below errors.<br><br>
+                                        <ul>
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <button class="close" data-dismiss="alert"></button>
                                     </div>
-                                @endif
+                                </div>
+                            @endif
+                        </div>
 
-
-                                @if (count($errors) > 0)
-                                    <div>
-                                        <div class="alert alert-danger alert-icon alert-dismissible">
-                                            <strong>Opps!</strong> Something went wrong, please check below errors.<br><br>
-                                            <ul>
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                            <button class="close" data-dismiss="alert"></button>
-                                        </div>
-                                @endif
-
-
-
-                            </div>
-                            <div class="card card-preview">
-
+                            <!-- Filter Section -->
+                            <div class="card card-bordered mb-4">
                                 <div class="card-inner">
+                                    <form action="{{ url()->current() }}" method="GET">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Sub Category Name</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="name" class="form-control" value="{{ request('name') }}" placeholder="Search by name">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8 text-right align-self-end">
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                                    <a href="{{ url()->current() }}" class="btn btn-light">Reset</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
 
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                            <div class="card card-preview">
+                                <div class="card-inner">
+                                    <table class="nk-tb-list nk-tb-ulist" data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th>#</th>
@@ -107,7 +113,7 @@
                                             @foreach ($data as $category)
                                                 <tr class="nk-tb-item">
                                                     <td class="nk-tb-col nk-tb-col-check">
-                                                        {{ $loop->iteration }}
+                                                        {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                                     </td>
                                                     <td class="nk-tb-col">
                                                         <div class="user-card">
@@ -365,6 +371,18 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <div class="card-inner">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted small">
+                                            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} entries
+                                        </div>
+                                        @if ($data->hasPages())
+                                            <div>
+                                                {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                             </div><!-- .card-preview -->
                         </div><!-- .nk-block -->
                     </div>
@@ -531,7 +549,7 @@
                                                     for="lead-category-{{ $category->id }}">Category<span
                                                         style="color: red;">*</span></label>
                                                 <div class="form-control-wrap">
-                                                    <select required class="form-select" name="category_id" required>
+                                                    <select required class="form-select" name="category_id">
                                                         @foreach ($categories as $cate)
                                                             <option value="{{ $cate->id }}"
                                                                 @if ($cate->id == $category->category_id) selected @endif>

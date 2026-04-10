@@ -74,11 +74,34 @@
 
 
                             </div>
+                            </div>
+                            <!-- Filter Section -->
+                            <div class="card card-bordered mb-4">
+                                <div class="card-inner">
+                                    <form action="{{ url()->current() }}" method="GET">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Name</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="name" class="form-control" value="{{ request('name') }}" placeholder="Search by name">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8 text-right align-self-end">
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                                    <a href="{{ url()->current() }}" class="btn btn-light">Reset</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                             <div class="card card-preview">
 
                                 <div class="card-inner">
-
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                                    <table class="nk-tb-list nk-tb-ulist" data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th>#</th>
@@ -102,7 +125,7 @@
                                             @foreach ($data as $tag)
                                                 <tr class="nk-tb-item">
                                                     <td class="nk-tb-col nk-tb-col-check">
-                                                        {{ $loop->iteration }}
+                                                        {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                                     </td>
                                                     <td class="nk-tb-col">
                                                         <div class="user-card">
@@ -364,6 +387,18 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="card-inner">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted small">
+                                            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} entries
+                                        </div>
+                                        @if ($data->hasPages())
+                                            <div>
+                                                {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div><!-- .card-preview -->
                         </div><!-- .nk-block -->

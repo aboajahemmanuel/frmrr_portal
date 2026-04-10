@@ -162,7 +162,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::post('document-relationships/link-version-history', [DocumentRelationshipController::class, 'linkVersionHistory'])->name('document-relationships.link-version-history');
     
     // News routes
-    Route::get('news', [NewsController::class, 'index']);
+    Route::get('news', [NewsController::class, 'index'])->name('news');
     Route::get('add_news', [NewsController::class, 'add_news'])->name('add_news');
     Route::get('edit_news/{id}', [NewsController::class, 'edit_news'])->name('edit_news');
     Route::get('view_news/{id}', [NewsController::class, 'view_news'])->name('view_news');
@@ -289,13 +289,14 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('/subscriptionstatus/{id}', [TransactionController::class, 'Subcriptionstatus'])->name('Subcriptionstatus');
 
     // News management
-    Route::get('news', [NewsController::class, 'index']);
+    Route::get('news', [NewsController::class, 'index'])->name('news');
     Route::get('add_news', [NewsController::class, 'add_news'])->name('add_news');
     Route::get('edit_news/{id}', [NewsController::class, 'edit_news'])->name('edit_news');
     Route::get('view_news/{id}', [NewsController::class, 'view_news'])->name('view_news');
     Route::post('news/store', [NewsController::class, 'store'])->name('newsStore');
     Route::post('updateNews/{id}', [NewsController::class, 'update'])->name('updateNews');
     Route::post('deleteNews/{id}', [NewsController::class, 'delete'])->name('deleteNews');
+    Route::post('news_status/{id}', [NewsController::class, 'news_status'])->name('news_status');
 
     // Logs
     Route::get('/logActivity', [LogController::class, 'logActivity']);

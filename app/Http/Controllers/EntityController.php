@@ -46,7 +46,7 @@ class EntityController extends Controller
         $canViewAllGroups = $user->hasPermissionTo('view-all-entities');
 
         // Fetch categories based on group_id or include all if the user has the required permission
-        $data = Entity::where(function ($query) use ($user, $canViewAllGroups) {
+        $query = Entity::where(function ($query) use ($user, $canViewAllGroups) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
@@ -54,9 +54,14 @@ class EntityController extends Controller
             if ($canViewAllGroups) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        });
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('entities.index', compact('data', 'authoriser'));
     }

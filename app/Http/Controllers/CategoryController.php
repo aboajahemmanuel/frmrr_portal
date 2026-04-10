@@ -56,7 +56,7 @@ class CategoryController extends Controller
         $canViewAllCategories = $user->hasPermissionTo('view-all-categories');
 
         // Fetch categories based on group_id or include all if the user has the required permission
-        $data = Category::where(function ($query) use ($user, $canViewAllCategories) {
+        $query = Category::where(function ($query) use ($user, $canViewAllCategories) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
@@ -64,9 +64,14 @@ class CategoryController extends Controller
             if ($canViewAllCategories) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        });
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')->paginate(10);
+        
         return view('categories.index', compact('data', 'authoriser'));
     }
 

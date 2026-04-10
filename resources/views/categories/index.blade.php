@@ -72,16 +72,37 @@
                                             </ul>
                                             <button class="close" data-dismiss="alert"></button>
                                         </div>
+                                    </div>
                                 @endif
-
-
-
                             </div>
-                            <div class="card card-preview">
 
+                            <!-- Filter Section -->
+                            <div class="card card-bordered mb-4">
                                 <div class="card-inner">
+                                    <form action="{{ url()->current() }}" method="GET">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Name</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="name" class="form-control" value="{{ request('name') }}" placeholder="Search by name">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8 text-right align-self-end">
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                                    <a href="{{ url()->current() }}" class="btn btn-light">Reset</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
 
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                            <div class="card card-preview">
+                                <div class="card-inner">
+                                    <table class="nk-tb-list nk-tb-ulist" data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th>#</th>
@@ -102,40 +123,28 @@
                                             @foreach ($data as $category)
                                                 <tr class="nk-tb-item">
                                                     <td class="nk-tb-col nk-tb-col-check">
-                                                        {{ $loop->iteration }}
+                                                        {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                                     </td>
                                                     <td class="nk-tb-col">
                                                         <div class="user-card">
-
                                                             <div class="user-info">
                                                                 <span class="tb-lead">{{ $category->name }} <span
                                                                         class="dot dot-success d-md-none ml-1"></span></span>
-
                                                             </div>
                                                         </div>
                                                     </td>
-
-
-
-
                                                     <td class="nk-tb-col tb-col-lg">
                                                         <span>
                                                             @php
                                                                 $postdate = date_format($category->created_at, 'F d,Y');
-
                                                             @endphp
-
                                                             <?php
-                                                            
                                                             $timestamp = strtotime($postdate);
                                                             $newDateFormat = date('M. d, Y', $timestamp);
                                                             echo $newDateFormat;
-                                                            
                                                             ?>
-
                                                         </span>
                                                     </td>
-
                                                     <td class="nk-tb-col tb-col-lg">
                                                         @if ($category->admin_status == 0)
                                                             <span class="badge fmdq_Blue">Awaiting Approval<span>
@@ -146,28 +155,18 @@
                                                         @if ($category->admin_status == 2)
                                                             <span class="badge badge-danger">Rejected</span>
                                                         @endif
-
-
                                                         @if ($category->admin_status == 3)
                                                             <span class="badge badge-warning">Awaiting approval for
                                                                 delete</span>
                                                         @endif
-
                                                     </td>
-
-
                                                     <td class="nk-tb-col tb-col-lg">
-
                                                         @if ($category->admin_status == 2)
                                                             {{ $category->note }}
                                                         @endif
-
-
-
                                                     </td>
                                                     <td class="nk-tb-col nk-tb-col-tools">
                                                         <ul class="nk-tb-actions gx-1">
-
                                                             <li>
                                                                 <div class="drodown">
                                                                     <a href="#"
@@ -175,7 +174,6 @@
                                                                         data-toggle="dropdown"><em
                                                                             class="icon ni ni-more-h"></em></a>
                                                                     <div class="dropdown-menu dropdown-menu-right">
-
                                                                         <ul class="link-list-opt no-bdr">
                                                                             @if ($category->admin_status != 3)
                                                                                 @if ($category->admin_status != 0)
@@ -188,10 +186,6 @@
                                                                                             </a>
                                                                                         </li>
                                                                                     @endcan
-
-
-
-
                                                                                     @can('category-delete')
                                                                                         <li><a href="#" data-toggle="modal"
                                                                                                 data-target="#deleteGroup-{{ $category->id }}"><em
@@ -200,22 +194,13 @@
                                                                                     @endcan
                                                                                 @endif
                                                                             @endif
-
-
-                                                                            {{-- @php
-                                                                                $user = Auth::user()->group_id;
-
-                                                                            @endphp --}}
                                                                             @if ($category->admin_status == 0)
-                                                                                {{-- @if ($category->group_id == $user) --}}
                                                                                 @can('category-approve')
                                                                                     <li><a href="#" id="submit"
                                                                                             onclick="document.getElementById('approve-{{ $category->id }}').submit();"><em
                                                                                                 class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
                                                                                     </li>
                                                                                 @endcan
-
-
                                                                                 @can('category-reject')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#reject-{{ $category->id }}"><em
@@ -223,19 +208,13 @@
                                                                                     </li>
                                                                                 @endcan
                                                                             @endif
-                                                                            {{-- @endif --}}
-
-
-
                                                                             @if ($category->admin_status == 3)
-                                                                                {{-- @if ($category->group_id == $user) --}}
                                                                                 @can('category-approve')
                                                                                     <li><a href="#" id="submit"
                                                                                             onclick="document.getElementById('approve-{{ $category->id }}').submit();"><em
                                                                                                 class="icon ni ni-check-round-fill"></em><span>Approve</span></a>
                                                                                     </li>
                                                                                 @endcan
-
                                                                                 @can('category-reject')
                                                                                     <li><a href="#" data-toggle="modal"
                                                                                             data-target="#reject-{{ $category->id }}"><em
@@ -251,10 +230,7 @@
                                                                                         value="{{ $category->admin_status }}">
                                                                                 </form>
                                                                             @endif
-                                                                            {{-- @endif --}}
-
                                                                         </ul>
-
                                                                     </div>
                                                                 </div>
                                                             </li>
@@ -265,8 +241,6 @@
                                                             @csrf
                                                             <input name="status" value="1">
                                                         </form>
-
-
                                                         <div class="modal fade" role="dialog"
                                                             id="reject-{{ $category->id }}">
                                                             <div class="modal-dialog modal-dialog-centered modal-lg"
@@ -285,23 +259,16 @@
                                                                                     <div class="row gy-4">
                                                                                         <div class="col-md-12">
                                                                                             <div class="form-group">
-
                                                                                                 <label>Rejection Note</label>
                                                                                                 <input hidden name="status"
                                                                                                     value="2">
                                                                                                 <textarea required class="form-control" name="note"></textarea>
-
-
                                                                                             </div>
                                                                                         </div>
-
-
-
                                                                                         <div class="col-12">
                                                                                             <ul
                                                                                                 class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
                                                                                                 <li>
-
                                                                                                     <button
                                                                                                         class="btn btn-lg btn-primary btn-block"
                                                                                                         id="rejectSubmitBtn-{{ $category->id }}"
@@ -311,14 +278,11 @@
                                                                                                         <span
                                                                                                             class="btn-text">Submit</span>
                                                                                                     </button>
-
-
                                                                                                     <script>
                                                                                                         function loading(buttonId) {
                                                                                                             $("#" + buttonId + " .fa-spinner").show();
                                                                                                             $("#" + buttonId + " .btn-text").html("Processing...");
                                                                                                         }
-
                                                                                                         document.addEventListener('DOMContentLoaded', function() {
                                                                                                             document.getElementById('rejectForm-{{ $category->id }}').addEventListener('submit', function(event) {
                                                                                                                 if (this.checkValidity() === false) {
@@ -332,14 +296,11 @@
                                                                                                             }, false);
                                                                                                         });
                                                                                                     </script>
-
-
                                                                                                 </li>
                                                                                             </ul>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div><!-- .tab-pane -->
-
                                                                             </div><!-- .tab-content -->
                                                                         </form>
                                                                     </div><!-- .modal-body -->
@@ -349,9 +310,20 @@
                                                     </td>
                                                 </tr><!-- .nk-tb-item  -->
                                             @endforeach
-
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="card-inner">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted small">
+                                            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} entries
+                                        </div>
+                                        @if ($data->hasPages())
+                                            <div>
+                                                {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div><!-- .card-preview -->
                         </div><!-- .nk-block -->

@@ -47,8 +47,9 @@
                             <div class="example-alert">
                                 @if (\Session::has('success'))
                                     <div class="alert alert-success alert-icon alert-dismissible">
-                                        <em class="icon ni ni-check-circle"></em> <strong> {{ \Session::get('success') }}<button
-                                                class="close" data-dismiss="alert"></button>
+                                        <em class="icon ni ni-check-circle"></em> 
+                                        <strong>{{ \Session::get('success') }}</strong>
+                                        <button class="close" data-dismiss="alert"></button>
                                     </div>
                                 @endif
 
@@ -69,23 +70,45 @@
 
 
                             </div>
+
+                            <div class="card card-bordered card-preview mb-4">
+                                <div class="card-inner">
+                                    <form action="{{ route('news') }}" method="GET">
+                                        <div class="row gy-4">
+                                            <div class="col-lg-4 col-sm-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Title</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="title" class="form-control"
+                                                            placeholder="Search Title" value="{{ request('title') }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-6 d-flex align-items-end">
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                                    <a href="{{ route('news') }}" class="btn btn-outline-light">Reset</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
                             <div class="card card-preview">
 
                                 <div class="card-inner">
 
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                                    <table class="nk-tb-list nk-tb-ulist" data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
-                                                <th>#</th>
+                                                <th class="nk-tb-col"><span class="sub-text">#</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Title</span></th>
-                                                {{-- <th class="nk-tb-col"><span class="sub-text">news</span></th> --}}
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Created At</span></th>
-
+                                                <th class="nk-tb-col tb-col-lg text-center"><span class="sub-text">Status</span></th>
+                                                <th class="nk-tb-col tb-col-lg text-center"><span class="sub-text">Audit Trail</span></th>
                                                 <th class="nk-tb-col nk-tb-col-tools text-right">
-                                                </th>
-                                                <th class="nk-tb-col nk-tb-col-tools text-right">
-                                                </th>
-                                                <th class="nk-tb-col nk-tb-col-tools text-right">
+                                                    <span class="sub-text">Action</span>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -94,8 +117,8 @@
                                         <tbody>
                                             @foreach ($data as $news)
                                                 <tr class="nk-tb-item">
-                                                    <td class="nk-tb-col nk-tb-col-check">
-                                                        {{ $loop->iteration }}
+                                                    <td class="nk-tb-col">
+                                                        {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                                     </td>
                                                     <td class="nk-tb-col">
                                                         <div class="user-card">
@@ -349,6 +372,18 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <div class="card-inner">
+                                    <div class="nk-block-between-md g-3">
+                                        <div class="g">
+                                            {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                        </div>
+                                        <div class="g">
+                                            <div class="pagination-goto d-flex justify-content-center justify-content-md-start gx-3">
+                                                <div>Page {{ $data->currentPage() }} of {{ $data->lastPage() }}</div>
+                                            </div>
+                                        </div><!-- .pagination-goto -->
+                                    </div><!-- .nk-block-between -->
+                                </div>
                             </div>
 
                             <!-- .card-preview -->
@@ -461,8 +496,7 @@
                         <div class="modal-body modal-body-md">
                             <h5 class="title">View Changes</h5>
 
-                            <form id="editForm-{{ $news->id }}" method="POST"
-                                action="{{ route('userUpdate', $news->id) }}" enctype="multipart/form-data">
+                            <form id="editForm-{{ $news->id }}">
                                 @csrf
                                 <div class="tab-content">
                                     <div class="tab-pane active" id="infomation">

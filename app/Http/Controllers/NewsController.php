@@ -42,7 +42,7 @@ class NewsController extends Controller
         $canViewAllGroups = $user->hasPermissionTo('view-all-news');
 
         // Fetch categories based on group_id or include all if the user has the required permission
-        $data = News::where(function ($query) use ($user, $canViewAllGroups) {
+        $query = News::where(function ($query) use ($user, $canViewAllGroups) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
@@ -50,10 +50,14 @@ class NewsController extends Controller
             if ($canViewAllGroups) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        });
 
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('news_alert.index', compact('data', 'authoriser'));
     }

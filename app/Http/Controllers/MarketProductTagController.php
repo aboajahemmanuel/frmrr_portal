@@ -48,7 +48,7 @@ class MarketProductTagController extends Controller
         $canViewAllMarketTag = $user->hasPermissionTo('View-All-Market-Product-Tag');
 
         // Fetch categories based on group_id or include all if the user has the required permission
-        $data = MarketProductTag::where(function ($query) use ($user, $canViewAllMarketTag) {
+        $query = MarketProductTag::where(function ($query) use ($user, $canViewAllMarketTag) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
@@ -56,9 +56,13 @@ class MarketProductTagController extends Controller
             if ($canViewAllMarketTag) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        });
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')->paginate(10);
         
         return view('market_product_tags.index', compact('data', 'authoriser'));
     }

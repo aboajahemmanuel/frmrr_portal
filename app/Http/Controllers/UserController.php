@@ -44,7 +44,25 @@ class UserController extends Controller
 
         
         //$data = User::all();
-        $data = User::orderBy('created_at', 'desc')->get();
+        $query = User::orderBy('created_at', 'desc');
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('group_id')) {
+            $query->where('group_id', $request->group_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $data = $query->paginate(10);
 
 
 
@@ -77,20 +95,33 @@ class UserController extends Controller
         $canViewAllUsers = $user->hasPermissionTo('view-all-users');
 
         // Fetch categories based on group_id or include all if the user has the required permission
-        $data = User::where(function ($query) use ($user, $canViewAllUsers) {
+        $query = User::where(function ($query) use ($user, $canViewAllUsers) {
             // Condition to filter categories by the user's group
-            $query->where('group_id', $user->group_id);
+            if (!$canViewAllUsers) {
+                $query->where('group_id', $user->group_id);
+            }
             $query->where('usertype', '=', 'internal');
             $query->where('status', '!=', 4);
-            $query->orderBy('created_at', 'desc');
+        });
 
-            // If the user has permission to view all categories, include them
-            if ($canViewAllUsers) {
-                $query->orWhereNotNull('id'); // This will include all categories
-            }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('group_id')) {
+            $query->where('group_id', $request->group_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $data = $query->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         
 
@@ -110,10 +141,27 @@ class UserController extends Controller
             ->role($role)
             ->get();
 
-        $data = User::where('usertype', 'internal')
+        $query = User::where('usertype', 'internal')
             ->whereIn('status', [4, 5])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('group_id')) {
+            $query->where('group_id', $request->group_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $data = $query->paginate(10);
 
         $groups = Group::where('status', 1)->get();
         $roles  = Role::where('status', 1)->pluck('name', 'name');
@@ -123,15 +171,21 @@ class UserController extends Controller
 
     public function ExternalUsers(Request $request)
     {
-        // return "2";
-        //$data = User::all();
-        //  $data = User::where('usertype', '=', 'external')->orderBy('created_at', 'desc')->get();
+        $query = User::with('subscriptions')->where('usertype', '=', 'external');
 
-        $data = User::with('subscriptions')->where('usertype', '=', 'external')->get();
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
 
-        // return   $data = User::whereHas('subscriptions', function ($query) {
-        //     $query->where('status', 1);
-        // })->get();
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('company_name')) {
+            $query->where('company_name', 'like', '%' . $request->company_name . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('users.external', compact('data'));
     }

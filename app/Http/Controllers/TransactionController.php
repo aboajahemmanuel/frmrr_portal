@@ -42,7 +42,17 @@ class TransactionController extends Controller
         }
 
 
-        $data = Subscription::orderBy('created_at', 'desc')->get();
+        $query = Subscription::with(['user', 'subscriptionPlan'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('name')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->name . '%');
+            });
+        }
+
+        $data = $query->paginate(10);
+        
         return view('transactions.subscribers', compact('data'));
     }
 
@@ -67,7 +77,7 @@ class TransactionController extends Controller
         $canViewAllMarketTag = $user->hasPermissionTo('view-all-subscriptions');
 
         // Fetch categories based on group_id or include all if the user has the required permission
-        $data = SubscriptionPlan::where(function ($query) use ($user, $canViewAllMarketTag) {
+        $query = SubscriptionPlan::where(function ($query) use ($user, $canViewAllMarketTag) {
             // Condition to filter categories by the user's group
             $query->where('group_id', $user->group_id);
 
@@ -75,10 +85,15 @@ class TransactionController extends Controller
             if ($canViewAllMarketTag) {
                 $query->orWhereNotNull('id'); // This will include all categories
             }
-        })
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
+        });
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $data = $query->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return view('transactions.subscriptionPlan', compact('data', 'authoriser'));
     }
 

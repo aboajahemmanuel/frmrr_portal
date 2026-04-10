@@ -70,9 +70,69 @@
 
 
                             </div>
+                            </div>
+                            <!-- Filter Section -->
+                            <div class="card card-bordered mb-4">
+                                <div class="card-inner">
+                                    <form action="{{ url()->current() }}" method="GET">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">Name</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="name" class="form-control" value="{{ request('name') }}" placeholder="Search by name">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">Email</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" name="email" class="form-control" value="{{ request('email') }}" placeholder="Search by email">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label class="form-label">Group</label>
+                                                    <div class="form-control-wrap">
+                                                        <select name="group_id" class="form-select form-control">
+                                                            <option value="">All Groups</option>
+                                                            @foreach ($groups as $group)
+                                                                <option value="{{ $group->id }}" {{ request('group_id') == $group->id ? 'selected' : '' }}>{{ $group->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label class="form-label">Status</label>
+                                                    <div class="form-control-wrap">
+                                                        <select name="status" class="form-select form-control">
+                                                            <option value="">All Status</option>
+                                                            <option value="4" {{ request('status') === '4' ? 'selected' : '' }}>Disabled</option>
+                                                            <option value="5" {{ request('status') === '5' ? 'selected' : '' }}>Awaiting Approval</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <div class="form-control-wrap">
+                                                        <button type="submit" class="btn btn-primary">Filter</button>
+                                                        <a href="{{ url()->current() }}" class="btn btn-light">Reset</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                             <div class="card card-preview">
                                 <div class="card-inner">
-                                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                                    <table class="nk-tb-list nk-tb-ulist" data-auto-responsive="false">
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th>#</th>
@@ -99,7 +159,7 @@
                                             @endphp
                                                 <tr class="nk-tb-item">
                                                     <td class="nk-tb-col nk-tb-col-check">
-                                                        {{ $loop->iteration }}
+                                                        {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                                     </td>
                                                       <td class="nk-tb-col">
                                                         <div class="user-card">
@@ -477,6 +537,18 @@
 
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="card-inner">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted small">
+                                            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} entries
+                                        </div>
+                                        @if ($data->hasPages())
+                                            <div>
+                                                {{ $data->appends(request()->input())->links('vendor.pagination.bootstrap-4') }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div><!-- .card-preview -->
                         </div><!-- .nk-block -->
