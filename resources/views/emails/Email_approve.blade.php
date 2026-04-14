@@ -110,7 +110,7 @@
                                         has been
                                         approved</p>
                                     <p style="margin-bottom: 10px;">Kindly <a
-                                            href="http://101-php-01.fmdqgroup.com/fmrr_dev/dashboard">login</a> to
+                                            href="{{ config('app.url') }}/dashboard">login</a> to
                                         view details</p>
 
 
