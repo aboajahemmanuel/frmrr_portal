@@ -191,7 +191,7 @@ class AuthController extends Controller
                 'regex:/[a-z]/',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
-                'regex:/[@$!%*.#?&]/',
+                'regex:/[!@#$%^&*()_\-+=\[\]{}|\\:;"\'\'<>,.?\/~`]/',
             ],
         ]);
 
@@ -301,7 +301,7 @@ class AuthController extends Controller
                 'regex:/[a-z]/',       // must contain at least one lowercase letter
                 'regex:/[A-Z]/',       // must contain at least one uppercase letter
                 'regex:/[0-9]/',       // must contain at least one digit
-                'regex:/[@$!%*.#?&]/', // must contain a special character
+                'regex:/[!@#$%^&*()_\-+=\[\]{}|\\:;"\'\'<>,.?\/~`]/', // must contain a special character
             ],
             // 'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required',
@@ -365,7 +365,7 @@ class AuthController extends Controller
                 'regex:/[a-z]/',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
-                'regex:/[@.$!%*#?&]/',
+                'regex:/[!@#$%^&*()_\-+=\[\]{}|\\:;"\'\'<>,.?\/~`]/',
             ],
             'password_confirmation' => 'required',
         ], [
