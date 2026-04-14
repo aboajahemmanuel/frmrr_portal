@@ -112,7 +112,7 @@
 
 
                                     <p style="color: black;"><b>Link : <a
-                                                href="https://adgtest.fmdqgroup.com/fmrr_dev/login">https://adgtest.fmdqgroup.com/fmrr_dev</a>
+                                                href="http://101-php-01.fmdqgroup.com/fmrr_dev/login">http://101-php-01.fmdqgroup.com/fmrr_dev</a>
                                         </b></p>
 
                                     <p style="color: black;"><b> Email : {{ $email }} </b></p>

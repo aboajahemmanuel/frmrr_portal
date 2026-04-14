@@ -110,7 +110,7 @@
                                         has been created and is awaiting your review and approval.</p>
 
                                     <p style="margin-bottom: 10px;">Kindly <a
-                                            href="https://adgtest.fmdqgroup.com/fmrr_dev/dashboard">login</a> to
+                                            href="http://101-php-01.fmdqgroup.com/fmrr_dev/dashboard">login</a> to
                                         view details</p>
 
 
