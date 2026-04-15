@@ -29,6 +29,10 @@ class NewsController extends Controller
     public function index(Request $request)
     {
 
+         if (!Auth::user()->hasPermissionTo('news-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $user = Auth::user();
 
 
@@ -62,41 +66,20 @@ class NewsController extends Controller
         return view('news_alert.index', compact('data', 'authoriser'));
     }
 
-    // public function index(Request $request)
-    // {
-
-    //     $user = Auth::user();
-    //     $roles = 'Content_Owner_Authoriser';
-
-    //     // $authoriser = User::where('group_id', $user->group_id)
-    //     //     ->role($role)
-    //     //     ->get();
-
-
-    //     // $roles = ['Super_Administrator_Authoriser', 'Super_Administrator_Inputter', 'Content_Owner_Authoriser'];
-
-    //     return  $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-    //         ->whereHas('roles', function ($query) use ($roles) {
-    //             $query->whereIn('name', $roles);
-    //         })
-    //         ->get();
-
-
-    //     $data = News::orderBy('created_at', 'desc')->where('group_id', $user->group_id)->get();
-    //     return view('news_alert.index', compact('data', 'authoriser'));
-    // }
-
+   
 
     public function add_news(Request $request)
     {
 
+         if (!Auth::user()->hasPermissionTo('news-create')) {
+            abort(403, 'Unauthorized action.');
+        }
 
         $user = Auth::user();
         $permission = 'news-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
             ->permission($permission)
             ->get();
-
 
 
 
@@ -107,6 +90,10 @@ class NewsController extends Controller
 
     public function edit_news(Request $request, $id)
     {
+
+         if (!Auth::user()->hasPermissionTo('news-edit')) {
+            abort(403, 'Unauthorized action.');
+        }
         $user = Auth::user();
         $permission = 'news-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
@@ -129,6 +116,10 @@ class NewsController extends Controller
 
     public function view_news(Request $request, $id)
     {
+
+        //  if (!Auth::user()->hasPermissionTo('news-view')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
         $user = Auth::user();
         $permission = 'news-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
