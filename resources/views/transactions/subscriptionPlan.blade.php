@@ -117,6 +117,7 @@
                                                 <th class="nk-tb-col"><span class="sub-text">Name</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Price</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Duration</span></th>
+                                                <th class="nk-tb-col"><span class="sub-text">Description</span></th>
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Created At</span></th>
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Status</span></th>
 
@@ -162,6 +163,18 @@
 
                                                             <div class="user-info">
                                                                 <span class="tb-lead">{{ $transaction->duration }} <span
+                                                                        class="dot dot-success d-md-none ml-1"></span></span>
+
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+
+                                                    <td class="nk-tb-col">
+                                                        <div class="user-card">
+
+                                                            <div class="user-info">
+                                                                <span class="tb-lead">{{ $transaction->description }} <span
                                                                         class="dot dot-success d-md-none ml-1"></span></span>
 
                                                             </div>
