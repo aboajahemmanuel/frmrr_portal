@@ -134,16 +134,35 @@ class UserController extends Controller
     public function Deactivated(Request $request)
     {
 
+        
+        if (!Auth::user()->hasPermissionTo('user-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+      
         $user = Auth::user();
-        $role = 'Super_Administrator_Authoriser';
+        $permission = 'user-approve';
 
-        $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
+            ->permission($permission)
             ->get();
 
-        $query = User::where('usertype', 'internal')
-            ->whereIn('status', [4, 5])
-            ->orderBy('created_at', 'desc');
+
+
+
+        // Check if the user has the 'view-all-categories' permission
+        $canViewAllUsers = $user->hasPermissionTo('view-all-users');
+
+        // Fetch categories based on group_id or include all if the user has the required permission
+        $query = User::where(function ($query) use ($user, $canViewAllUsers) {
+            // Condition to filter categories by the user's group
+            if (!$canViewAllUsers) {
+                $query->where('group_id', $user->group_id);
+            }
+            $query->where('usertype', '=', 'internal');
+            $query->whereIn('status', [4, 5]);
+
+            
+        });
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -161,7 +180,10 @@ class UserController extends Controller
             $query->where('status', $request->status);
         }
 
-        $data = $query->paginate(10);
+        $data = $query->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        
 
         $groups = Group::where('status', 1)->get();
         $roles  = Role::where('status', 1)->pluck('name', 'name');
