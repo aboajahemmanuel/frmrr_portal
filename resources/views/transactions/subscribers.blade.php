@@ -113,9 +113,14 @@
                                                     <td class="nk-tb-col"> {{ optional($transaction->user)->name }}</td>
                                                     <td class="nk-tb-col">{{ optional($transaction->subscriptionPlan)->name }}
                                                     </td>
-                                                    <td class="nk-tb-col">{{ $transaction->start_date }}
+                                                    <td class="nk-tb-col">
+
+
+                                                    {{ \Carbon\Carbon::parse($transaction->start_date)->format('M. d, Y') }}
                                                     </td>
-                                                    <td class="nk-tb-col">{{ $transaction->end_date }}</td>
+                                                    <td class="nk-tb-col">
+                                                        {{ \Carbon\Carbon::parse($transaction->end_date)->format('M. d, Y') }}
+                                                    </td>
 
                                                     <td class="nk-tb-col">
                                                         @if (\Carbon\Carbon::parse($transaction->end_date)->lt(\Carbon\Carbon::now()))
@@ -130,18 +135,7 @@
                                                     </td>
 
                                                     <td class="nk-tb-col">
-                                                        @php
-                                                            $postdate = date_format($transaction->created_at, 'F d,Y');
-
-                                                        @endphp
-
-                                                        <?php
-                                                        
-                                                        $timestamp = strtotime($postdate);
-                                                        $newDateFormat = date('M. d, Y', $timestamp);
-                                                        echo $newDateFormat;
-                                                        
-                                                        ?>
+                                                        {{ \Carbon\Carbon::parse($transaction->created_at)->format('M. d, Y') }}
 
 
                                                     </td>
