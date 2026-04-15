@@ -92,13 +92,11 @@ class NewsController extends Controller
 
 
         $user = Auth::user();
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
-
+        $permission = 'news-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+            ->permission($permission)
             ->get();
+
 
 
 
