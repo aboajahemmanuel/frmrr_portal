@@ -116,10 +116,10 @@
                                                     <td class="nk-tb-col">
 
 
-                                                    {{ \Carbon\Carbon::parse($transaction->start_date)->format('M. d, Y') }} {{ \Carbon\Carbon::parse($transaction->created_at)->format('h:i A') }}
+                                                    {{ \Carbon\Carbon::parse($transaction->start_date)->format('M. j, Y') }} {{ \Carbon\Carbon::parse($transaction->created_at)->format('h:i A') }}
                                                     </td>
                                                     <td class="nk-tb-col">
-                                                        {{ \Carbon\Carbon::parse($transaction->end_date)->format('M. d, Y') }} {{ \Carbon\Carbon::parse($transaction->created_at)->format('h:i A') }}
+                                                        {{ \Carbon\Carbon::parse($transaction->end_date)->format('M. j, Y') }} {{ \Carbon\Carbon::parse($transaction->created_at)->format('h:i A') }}
                                                     </td>
 
                                                     <td class="nk-tb-col">
@@ -135,7 +135,7 @@
                                                     </td>
 
                                                     <td class="nk-tb-col">
-                                                        {{ \Carbon\Carbon::parse($transaction->created_at)->format('M. d, Y h:i A') }}
+                                                        {{ \Carbon\Carbon::parse($transaction->created_at)->format('M. j, Y h:i A') }}
 
 
                                                     </td>
