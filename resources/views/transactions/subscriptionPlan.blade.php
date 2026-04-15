@@ -117,6 +117,7 @@
                                                 <th class="nk-tb-col"><span class="sub-text">Name</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Price</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Duration</span></th>
+                                                <th class="nk-tb-col"><span class="sub-text">Notification Days</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Description</span></th>
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Created At</span></th>
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Status</span></th>
@@ -163,6 +164,18 @@
 
                                                             <div class="user-info">
                                                                 <span class="tb-lead">{{ $transaction->duration }} <span
+                                                                        class="dot dot-success d-md-none ml-1"></span></span>
+
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+
+                                                    <td class="nk-tb-col">
+                                                        <div class="user-card">
+
+                                                            <div class="user-info">
+                                                                <span class="tb-lead">{{ $transaction->notification_days }} <span
                                                                         class="dot dot-success d-md-none ml-1"></span></span>
 
                                                             </div>
@@ -476,6 +489,17 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group">
+                                                <label class="form-label" for="lead-name">Notification Before Expiration (Days) <span
+                                                        style="color: red">*</span> </label>
+                                                <div class="form-control-wrap">
+                                                    <input name="notification_days" required type="number" class="form-control"
+                                                        id="lead-name">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
                                                 <label class="form-label" for="lead-name">Description <span
                                                         style="color: red">*</span></label>
                                                 <div class="form-control-wrap">
@@ -580,6 +604,18 @@
                                                             style="color: red">*</span> </label>
                                                     <div class="form-control-wrap">
                                                         <input name="duration" required value="{{ $transaction->duration }}"
+                                                            type="number" class="form-control" id="lead-name">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="lead-name">Notification Before Expiration (Days) <span
+                                                            style="color: red">*</span> </label>
+                                                    <div class="form-control-wrap">
+                                                        <input name="notification_days" required value="{{ $transaction->notification_days }}"
                                                             type="number" class="form-control" id="lead-name">
                                                     </div>
                                                 </div>

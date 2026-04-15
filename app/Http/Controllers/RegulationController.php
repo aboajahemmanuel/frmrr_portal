@@ -516,10 +516,14 @@ class RegulationController extends Controller
         $months     = DB::table('months')->get();
 
         $user = Auth::user();
-        $role = 'Content_Owner_Authoriser';
 
-        $authoriser = User::where('group_id', $user->group_id)
-            ->role($role)
+        if (!Auth::user()->hasPermissionTo('document-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $permission = 'document-approve';
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
+            ->permission($permission)
             ->get();
         $statuses = DB::table('doc_type')->get();
 
