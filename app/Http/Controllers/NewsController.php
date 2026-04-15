@@ -108,13 +108,11 @@ class NewsController extends Controller
     public function edit_news(Request $request, $id)
     {
         $user = Auth::user();
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
-
+        $permission = 'news-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+            ->permission($permission)
             ->get();
+
 
         $news = News::where('id', $id)->first();
 
@@ -132,12 +130,9 @@ class NewsController extends Controller
     public function view_news(Request $request, $id)
     {
         $user = Auth::user();
-        $roles = ['Super_Administrator_Authoriser', 'Content_Owner_Authoriser'];
-
+        $permission = 'news-approve';
         $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
-            ->whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })
+            ->permission($permission)
             ->get();
         $news = News::where('id', $id)->first();
 
