@@ -21,11 +21,6 @@
                                             data-target="more-options"><em class="icon ni ni-more-v"></em></a>
                                         <div class="toggle-expand-content" data-content="more-options">
                                             <ul class="nk-block-tools g-3">
-
-
-
-
-
                                             </ul>
                                         </div>
                                     </div>
@@ -33,6 +28,12 @@
                             </div><!-- .nk-block-between -->
                         </div><!-- .nk-block-head -->
                         <div class="nk-block nk-block-lg">
+                            @if($regulation->admin_status == 2)
+                                <div class="alert alert-fill alert-danger alert-icon mb-3">
+                                    <em class="icon ni ni-cross-circle"></em>
+                                    <strong>Rejected:</strong> {{ $regulation->note ?? 'No reason provided.' }}
+                                </div>
+                            @endif
 
                             <div class="example-alert">
                                 @if (\Session::has('success'))
@@ -847,6 +848,7 @@
                                                         </div>
                                                     </div>
 
+                                                    
                                                     <script>
                                                         $(document).ready(function() {
                                                             $('#related-documents-select').select2();
@@ -859,6 +861,25 @@
 
                                             </div><!-- .tab-content -->
                                         </form>
+
+                                        @if($regulation->admin_status == 0)
+                                            <div class="row g-3 mt-4">
+                                                @can('document-approve')
+                                                    <div class="col-auto">
+                                                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); document.getElementById('approve-doc-form').submit();">
+                                                            <em class="icon ni ni-check-round-fill"></em><span>Approve Document</span>
+                                                        </a>
+                                                    </div>
+                                                @endcan
+                                                @can('document-reject')
+                                                    <div class="col-auto">
+                                                        <a href="#" class="btn btn-danger" data-toggle="modal" data-target="#rejectDocumentModal">
+                                                            <em class="icon ni ni-cross-circle-fill"></em><span>Reject Document</span>
+                                                        </a>
+                                                    </div>
+                                                @endcan
+                                            </div>
+                                        @endif
                                     </div><!-- .modal-body -->
                                 </div>
                             </div><!-- .card-preview -->
@@ -969,4 +990,75 @@
         </script>
         <!-- content @e -->
         <!-- @@ Group Add Modal @e -->
+
+        @if($regulation->admin_status == 0)
+            {{-- Approve Form --}}
+            <form id="approve-doc-form" action="{{ route('RegStatus', $regulation->id) }}" method="POST" style="display: none;">
+                @csrf
+                <input type="hidden" name="status" value="1">
+            </form>
+
+            {{-- Reject Modal --}}
+            <div class="modal fade" id="rejectDocumentModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a>
+                        <div class="modal-body modal-body-md">
+                            <h5 class="title">Reject Document: {{ $regulation->title }}</h5>
+                            <form action="{{ route('RegStatus', $regulation->id) }}" method="POST" id="regulationRejectForm">
+                                @csrf
+                                <input type="hidden" name="status" value="2">
+                                <div class="row gy-4">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label" for="rejection-note">Rejection Reason <span class="text-danger">*</span></label>
+                                            <div class="form-control-wrap">
+                                                <textarea name="note" id="rejection-note" class="form-control" placeholder="Enter reason for rejection" required></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
+                                            <li>
+                                                <button type="submit" class="btn btn-lg btn-primary" id="rejectSubmitBtn">
+                                                    <i class="fas fa-spinner fa-spin" style="display:none;"></i>
+                                                    <span class="btn-text">Submit Rejection</span>
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <a href="#" data-dismiss="modal" class="link link-light">Cancel</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <script>
+                                function loading(buttonId) {
+                                    const btn = document.getElementById(buttonId);
+                                    if (btn) {
+                                        const spinner = btn.querySelector(".fa-spinner");
+                                        const text = btn.querySelector(".btn-text");
+                                        if (spinner) spinner.style.display = "inline-block";
+                                        if (text) text.innerHTML = "Processing...";
+                                        btn.disabled = true;
+                                    }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const rejectForm = document.getElementById('regulationRejectForm');
+                                    if (rejectForm) {
+                                        rejectForm.addEventListener('submit', function(event) {
+                                            if (this.checkValidity()) {
+                                                loading('rejectSubmitBtn');
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
+                        </div><!-- .modal-body -->
+                    </div><!-- .modal-content -->
+                </div><!-- .modal-dialog -->
+            </div><!-- .modal -->
+        @endif
     @endsection
