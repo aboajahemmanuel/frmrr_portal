@@ -98,7 +98,7 @@
 
                             ?></div>
                       <div class="news-title">
-                          {{ substr($news->title, 0, 23) }}
+                          {{ substr($news->title, 0, 20) }}
 
 
                       </div>
