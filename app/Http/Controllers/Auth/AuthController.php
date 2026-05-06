@@ -266,7 +266,7 @@ class AuthController extends Controller
         Mail::send('emails.forgetpassword', $email_data, function ($message) use ($email_data) {
             $message->to($email_data['email'])
                 ->subject('Reset Password')
-                ->from('no-reply@fmdqgroup.com', 'Financial Markets Regulations & Rules Repository Portal');
+                ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
         });
 
         return back()->with('success', 'We have e-mailed your password reset link!');

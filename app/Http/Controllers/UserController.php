@@ -362,7 +362,8 @@ class UserController extends Controller
             Mail::send('emails.ActiondeletePending', $email_data, function ($message) use ($email_data) {
                 $message->to($email_data['email'])
                     ->subject('Awaiting Approval')
-                    ->from('no-reply@fmdqgroup.com', 'Financial Markets Regulations & Rules Repository Portal');
+                ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+
             });
         }
 

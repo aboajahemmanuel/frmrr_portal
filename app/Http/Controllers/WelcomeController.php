@@ -175,7 +175,8 @@ class WelcomeController extends Controller
                 $message->to($recipients)
                     ->replyTo($email_data['email'])
                     ->subject('New Feedback Received: ' . $email_data['subject'])
-                    ->from('no-reply@fmdqgroup.com', 'FMRR Portal');
+                    ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+
             });
 
             return redirect()->back()->with('success', 'Thank you for your Feedback.');
