@@ -7,7 +7,7 @@
                 <img src="{{ asset('public/users/assets/FMDQ-Logo.png') }}" alt="FMDQlogo" />
             </div>
             <div class="app-name">
-                <p>Financial Markets Regulations & Rules Repository Portal <p>
+                <p>Financial Market Rules & Regulations Portal <p>
             </div>
             <div class="tabs">
                 <div class="current">
