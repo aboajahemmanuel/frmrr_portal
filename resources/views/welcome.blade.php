@@ -279,32 +279,31 @@
 
     /* Plans Container */
     .plans-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        display: flex;
+        flex-wrap: wrap;
         justify-content: center;
-        gap: 25px;
-        max-width: 1200px;
+        gap: 30px;
+        max-width: 1300px;
         width: 100%;
+        margin: 0 auto;
     }
 
     /* Plan Card - scoped under .pricing-container to avoid global .card conflicts */
     .pricing-container .plan-card {
         flex: 1;
-        min-width: 250px;
-        max-width: 300px;
-        background: linear-gradient(135deg, #1a3a8f 0%, #0c2b70 100%);
-        border-radius: 15px;
-        padding: 30px;
+        min-width: 280px;
+        max-width: 320px;
+        background: linear-gradient(145deg, #1a3a8f 0%, #0c2b70 100%);
+        border-radius: 20px;
+        padding: 30px 25px;
         color: white;
-        box-shadow: 0 10px 25px rgba(12, 43, 112, 0.2);
-        transition: all 0.3s ease;
+        box-shadow: 0 15px 35px rgba(12, 43, 112, 0.25);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         display: flex;
         flex-direction: column;
         position: relative;
         overflow: hidden;
-        width: auto;
-        min-height: auto;
-        perspective: none;
+        min-height: 350px;
     }
 
     .pricing-container .plan-card:hover {
@@ -346,17 +345,23 @@
     }
 
     .pricing-container .plan-card .plan-card-title {
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 16px;
+        font-weight: 700;
         display: block;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
     }
 
     .pricing-container .plan-card .plan-card-price {
-        font-size: 32px;
-        font-weight: 800;
+        font-size: clamp(22px, 4vw, 28px);
+        font-weight: 900;
         position: relative;
         color: white;
+        word-break: break-word;
+        line-height: 1.1;
+        margin: 10px 0;
     }
 
     .pricing-container .plan-card .plan-card-price::after {
@@ -471,20 +476,40 @@
     }
 
     /* Responsive Adjustments */
-    @media (max-width: 900px) {
+    @media (max-width: 1200px) {
+        .plans-container {
+            max-width: 800px;
+        }
+        .pricing-container .plan-card {
+            min-width: 300px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pricing-body-header h2 {
+            font-size: 28px;
+        }
+        
         .plans-container {
             flex-direction: column;
             align-items: center;
         }
-        
+
         .pricing-container .plan-card {
-            max-width: 100%;
             width: 100%;
+            max-width: 400px;
+            min-height: auto;
+            margin-bottom: 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pricing-container {
+            padding: 20px 10px;
         }
         
-        .pricing-container .plan-card.highlighted {
-            order: -1;
-            margin-bottom: 10px;
+        .pricing-container .plan-card {
+            padding: 25px 15px;
         }
     }
 </style>

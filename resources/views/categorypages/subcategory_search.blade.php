@@ -8,7 +8,19 @@
     <script src="{{ asset('public/assets/js/centralized-table-filter.js') . '?v=' . time() }}"></script>
     <style>
         .break-text { max-width: 200px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; }
-        .filter-container { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; clear: both; width: 100%; }
+        .filter-container { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end; flex-wrap: wrap; clear: both; width: 100%; }
+        .form-control-select .custom-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: left 0.75rem center !important;
+            background-size: 8px 10px !important;
+            background-color: #fff !important;
+            padding-left: 1.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        .form-control-select::after {
+            display: none !important;
+        }
         .dataTables_wrapper .dataTables_filter { float: none !important; text-align: left; margin-bottom: 15px; }
         .dataTables_wrapper .dataTables_length { float: none !important; margin-bottom: 10px; }
         .filter-group { display: flex; flex-direction: column; gap: 5px; }

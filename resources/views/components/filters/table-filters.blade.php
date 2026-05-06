@@ -202,9 +202,7 @@
     @endif
    
     <div class="filter-group">
-         <br>
-    <br>
-    
+        <label>&nbsp;</label>
         <button class="clear-filters-btn" id="clear-filters-{{ $tableId }}">Clear Filters</button>
     </div>
 </div>

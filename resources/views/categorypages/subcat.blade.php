@@ -25,6 +25,19 @@
             clear: both;
             width: 100%;
         }
+
+        .form-control-select .custom-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: left 0.75rem center !important;
+            background-size: 8px 10px !important;
+            background-color: #fff !important;
+            padding-left: 1.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        .form-control-select::after {
+            display: none !important;
+        }
         
         .dataTables_wrapper .dataTables_filter {
             float: none !important;
@@ -212,7 +225,7 @@
                 var ceasedButton = $(`
                     <div class="filter-group" style="align-self: flex-end; margin-left: 10px;">
                         <a href="{{ route('subCatceasedDoc', $subcategory->slug) }}" style="text-decoration: none;">
-                            <div class="button-container-sb" style="display: inline-block;">
+                            <div class="button-container-sb" style="display: inline-block; margin-top: 40px;">
                                 <div class="gradient-buttons"> 
                                     <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; display: flex; align-items: center;">
                                         <div style="white-space: nowrap;">Show Ceased/Repealed/Amended/Superseded</div>

@@ -188,7 +188,7 @@
                     <th style="text-align: center;">Effective Date</th>
                     <th style="text-align: center;">Entity</th>
                     <th style="text-align: center;">Market Product</th>
-                    <th style="text-align: center;">Related Docs</th>
+                    <th style="text-align: center;">Related Documents</th>
                     <th style="text-align: center;">Action</th>
                 </tr>
             </thead>
@@ -212,8 +212,8 @@
                         </td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
                         <!-- <td style="text-align: center">{{ $result->document_version }}</td> -->
-                        <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
-                        <td style="text-align: center">{{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}</td>
+                        <td style="text-align: center">{{ str_replace('May.', 'May', str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y'))) }}</td>
+                        <td style="text-align: center">{{ str_replace('May.', 'May', str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y'))) }}</td>
                         <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                         <td style="text-align: center">
                             @php
@@ -370,14 +370,14 @@
                                                                             <p><strong>Version:</strong> {{ $relatedDoc->document_version }}</p>
                                                                         @endif
                                                                         @if($relatedDoc->effective_date)
-                                                                            <p><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</p>
+                                                                            <p><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y')) }}</p>
                                                                         @endif
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         @if($relatedDoc->entity)
                                                                             <p><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</p>
                                                                         @endif
-                                                                        <p><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</p>
+                                                                        <p><strong>Issue Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y')) }}</p>
                                                                     </div>
                                                                 </div>
                                                                 
@@ -428,10 +428,10 @@
                                     <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                 @endif
                                 @if($nestedDoc->effective_date)
-                                    <span class="ms-2"><strong>Effective:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                    <span class="ms-2"><strong>Effective:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
                                 @endif
                                 @if($nestedDoc->issue_date)
-                                    <span class="ms-2"><strong>Issue:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                    <span class="ms-2"><strong>Issue:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y')) }}</span>
                                 @endif
                             </div>
                         </div>
@@ -540,7 +540,7 @@
                                                         <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
                                                     @endif
                                                     @if($relatedDoc->effective_date)
-                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y')) }}</span>
                                                     @endif
                                                     @if($relatedDoc->entity)
                                                         <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
@@ -577,10 +577,10 @@
                                                                             <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                                                         @endif
                                                                         @if($nestedDoc->effective_date)
-                                                                            <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                            <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
                                                                         @endif
                                                                         @if($nestedDoc->issue_date)
-                                                                            <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                            <span><strong>Issue Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y')) }}</span>
                                                                         @endif
                                                                     </div>
                                                                     <div style="margin-top: 5px;">
@@ -653,7 +653,7 @@
                     <th style="text-align: center;">Effective Date</th>
                     <th style="text-align: center;">Entity</th>
                     <th style="text-align: center;">Market Product</th>
-                    <th style="text-align: center;">Related Docs</th>
+                    <th style="text-align: center;">Related Documents</th>
                     <th style="text-align: center;">Action</th>
                 </tr>
             </thead>
@@ -685,8 +685,8 @@
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
 
                        
-                        <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
-                        <td style="text-align: center">{{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}</td>
+                        <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}</td>
+                        <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}</td>
                         <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                        
                         <td style="text-align: center">
@@ -859,14 +859,14 @@
                                                         <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
                                                     @endif
                                                     @if($relatedDoc->effective_date)
-                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y')) }}</span>
                                                     @endif
                                                     @if($relatedDoc->entity)
                                                         <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
                                                     @endif
 
                                                     @if($relatedDoc->issue_date)
-                                                        <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                        <span><strong>Issue Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->issue_date)->format('M. j, Y')) }}</span>
                                                     @endif
                                                 </div>
                                                 <div style="margin-top: 8px;">
@@ -922,7 +922,7 @@
                         <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                     @endif
                     @if($nestedDoc->effective_date)
-                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
                     @endif
                 </div>
                 <div style="margin-top: 5px;">
@@ -992,7 +992,7 @@
                                                         <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
                                                     @endif
                                                     @if($relatedDoc->effective_date)
-                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y')) }}</span>
                                                     @endif
                                                     @if($relatedDoc->entity)
                                                         <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
@@ -1049,10 +1049,10 @@
                                                                         <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                                                     @endif
                                                                     @if($nestedDoc->effective_date)
-                                                                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
                                                                     @endif
                                                                     @if($nestedDoc->issue_date)
-                                                                        <span><strong>Issue Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') }}</span>
+                                                                        <span><strong>Issue Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y')) }}</span>
                                                                     @endif
                                                                 </div>
                                                                 <div style="margin-top: 5px;">
@@ -1153,7 +1153,7 @@
                 <th style="text-align: center;">Effective Date</th>
                 <th style="text-align: center;">Entity</th>
                 <th style="text-align: center;">Market Product</th>
-                <th style="text-align: center;">Related Docs</th>
+                <th style="text-align: center;">Related Documents</th>
                 <th style="text-align: center;">Action</th>
             </tr>
         </thead>
@@ -1170,9 +1170,9 @@
                         @endif
                     </td>
                     <td style="text-align: center">{{ $result->document_version }}</td>
-                    <td style="text-align: center">{{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}</td>
+                    <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}</td>
                     <td style="text-align: center">{{ optional($result->year)->name }}</td>
-                    <td style="text-align: center">{{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}</td>
+                    <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}</td>
                     <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                     <td style="text-align: center">
                         @php
@@ -1263,7 +1263,7 @@
                                                     <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
                                                 @endif
                                                 @if($relatedDoc->effective_date)
-                                                    <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y') }}</span>
+                                                    <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($relatedDoc->effective_date)->format('M. j, Y')) }}</span>
                                                 @endif
                                                 @if($relatedDoc->entity)
                                                     <span><strong>Entity:</strong> {{ $relatedDoc->entity->name }}</span>
@@ -1302,7 +1302,7 @@
                         <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                     @endif
                     @if($nestedDoc->effective_date)
-                        <span><strong>Effective Date:</strong> {{ \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') }}</span>
+                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
                     @endif
                 </div>
                 <div style="margin-top: 5px;">

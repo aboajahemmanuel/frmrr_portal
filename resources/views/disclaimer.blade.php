@@ -173,8 +173,8 @@
         </div>
         <h1 class="disclaimer-header">Legal Disclaimer</h1>
         
-        <div class="">
-            <p>The content provided on this Portal is for general informational purposes only and does not constitute legal, financial, or professional advice</p>
+        <div class="" style="text-align: justify;">
+            <p>The content provided on this Portal is for general informational purposes only and does not constitute legal, financial, or professional advice.</p>
             
             <p>While FMDQ Securities Exchange Limited ("<strong>FMDQ Exchange</strong>") endeavours to ensure the accuracy, completeness, and timeliness of the information presented, FMDQ Exchange</p>
             <ul style="list-style-type: square;">
@@ -184,9 +184,9 @@
                 <li>disclaims all liability for any losses or damages, whether direct, indirect, or consequential, arising from the use of, or inability to use, the Portal or its content</li>
             </ul>
             
-            <p>By accessing and using this Portal, you agree to these terms and assume full responsibility for your use of the information provided herein</p>
+            <p>By accessing and using this Portal, you agree to these terms and assume full responsibility for your use of the information provided herein.</p>
             
-            <p>By clicking "Accept" below, you acknowledge that you have read, understood, and agree to be bound by the above terms and conditions</p>
+            <p>By clicking "Accept" below, you acknowledge that you have read, understood, and agree to be bound by the above terms and conditions.</p>
         </div>
         
         <div class="disclaimer-actions">
@@ -197,7 +197,7 @@
             
             <a href="{{ route('logout') }}" class="btn btn-disclaimer btn-logout" 
                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                Logout
+                Log out
             </a>
         </div>
         

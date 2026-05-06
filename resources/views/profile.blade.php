@@ -3,6 +3,20 @@
 @section('content')
     <link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <style>
+        .form-control-select .custom-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: left 0.75rem center !important;
+            background-size: 8px 10px !important;
+            background-color: #fff !important;
+            padding-left: 1.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        .form-control-select::after {
+            display: none !important;
+        }
+    </style>
     <section class="profile-main">
 
         <div class="profile-content">
@@ -10,8 +24,8 @@
                 <div class="profile-left-side-container">
                     <p class="profile-left-side-header">{{ Auth::user()->name }}</p>
                     @if ($isSubscribed)
-                        <div class="profile-sub-status">
-                            <p>Subscription</p>
+                        <div class="profile-sub-status" style="display: flex; flex-direction: row; align-items: center;">
+                            <p style="margin: 0; margin-right: 5px;">Subscription</p>
 
                             <div class="">
 
@@ -99,10 +113,10 @@
                         <div class="profile-rsmc-mid">
                             <ul class="nav nav-tabs">
                                 <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#tabItem1">Saved Documents</a>
+                                    <a class="nav-link active" data-toggle="tab" href="#tabItem1">Documents Saved</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#tabItem2">Downloaded Documents</a>
+                                    <a class="nav-link" data-toggle="tab" href="#tabItem2">Documents Downloaded</a>
                                 </li>
 
                             </ul>
@@ -113,7 +127,7 @@
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th class="nk-tb-col">S/N</th>
-                                                <th class="nk-tb-col">Name of the Document</th>
+                                                <th class="nk-tb-col">Title</th>
                                                 <th class="nk-tb-col">Date</th>
                                                 <th class="nk-tb-col">Action</th>
 
