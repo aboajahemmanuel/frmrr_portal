@@ -141,19 +141,7 @@
                                                     <td class="nk-tb-col">{{ $loop->iteration }}</td>
                                                     <td class="nk-tb-col"> {{ optional($save->regulation)->title }}</td>
                                                     <td class="nk-tb-col">
-                                                        @php
-                                                            $saveDate = date_format($save->created_at, 'F d,Y');
-
-                                                        @endphp
-
-                                                        <?php
-                                                        
-                                                        $timestamp = strtotime($saveDate);
-                                                        $saveDate = date('M. d, Y', $timestamp);
-                                                        echo $saveDate;
-                                                        
-                                                        ?>
-
+                                                        {{ str_replace('May.', 'May', \Carbon\Carbon::parse($save->created_at)->format('M. d, Y')) }}
                                                     </td>
 
                                                     <td class="tb-odr-action">
@@ -213,19 +201,7 @@
                                                     <td class="nk-tb-col">{{ optional($download->regulation)->title }}
                                                     </td>
                                                     <td class="nk-tb-col">
-                                                        @php
-                                                            $downloadDate = date_format($download->created_at, 'F d,Y');
-
-                                                        @endphp
-
-                                                        <?php
-                                                        
-                                                        $timestamp = strtotime($downloadDate);
-                                                        $downloadDate = date('M. d, Y', $timestamp);
-                                                        echo $downloadDate;
-                                                        
-                                                        ?>
-
+                                                        {{ str_replace('May.', 'May', \Carbon\Carbon::parse($download->created_at)->format('M. d, Y')) }}
                                                     </td>
 
 
@@ -286,14 +262,14 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="email-address">Email address</label>
+                            <label class="form-label" for="email-address">Email Address</label>
                             <div class="form-control-wrap">
                                 <input type="email" value="{{ Auth::user()->email }}" name="email"
                                     class="form-control" id="email-address" required>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="phone-no">Phone No</label>
+                            <label class="form-label" for="phone-no">Phone Number</label>
                             <div class="form-control-wrap">
                                 <input type="number" value="{{ Auth::user()->phone }}" name="phone"
                                     class="form-control" id="phone-no">
