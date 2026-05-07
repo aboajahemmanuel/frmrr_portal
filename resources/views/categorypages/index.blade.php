@@ -69,10 +69,10 @@
                     var ceasedButton = $(`
                         <div class="filter-group" style="margin-left: 10px;">
                             <label>&nbsp;</label>
-                            <a href="{{ route('ceasedDoc', $category->slug) }}" style="text-decoration: none;">
-                                <div class="button-container-sb" style="display: inline-block;">
-                                    <div class="gradient-buttons">
-                                        <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; display: flex; align-items: center;">
+                            <a href="{{ route('ceasedDoc', $category->slug) }}" style="text-decoration: none; display: block;">
+                                <div class="button-container-sb" style="display: block;">
+                                    <div class="gradient-buttons" style="margin: 0 !important;">
+                                        <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; display: flex; align-items: center; justify-content: center; height: 38px; box-sizing: border-box;">
                                             <div style="white-space: nowrap;">Show Ceased/Repealed/Amended/Superseded</div>
                                             <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Arrow" style="width: 16px; height: 16px; margin-left: 5px;" />
                                         </div>

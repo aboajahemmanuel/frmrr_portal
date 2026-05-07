@@ -47,7 +47,7 @@
                     @endif
                     <div class="profile-horizontal-line"></div>
                     <div class="profile-profile-details">
-                        <div class="profile-title">Email</div>
+                        <div class="profile-title">Email Address</div>
                         <div class="profile-info">{{ Auth::user()->email }}</div>
                     </div>
 
@@ -141,7 +141,7 @@
                                                     <td class="nk-tb-col">{{ $loop->iteration }}</td>
                                                     <td class="nk-tb-col"> {{ optional($save->regulation)->title }}</td>
                                                     <td class="nk-tb-col">
-                                                        {{ str_replace('May.', 'May', \Carbon\Carbon::parse($save->created_at)->format('M. d, Y')) }}
+                                                        {{ str_replace('May.', 'May', \Carbon\Carbon::parse($save->created_at)->format('M. j, Y')) }}
                                                     </td>
 
                                                     <td class="tb-odr-action">
@@ -201,7 +201,7 @@
                                                     <td class="nk-tb-col">{{ optional($download->regulation)->title }}
                                                     </td>
                                                     <td class="nk-tb-col">
-                                                        {{ str_replace('May.', 'May', \Carbon\Carbon::parse($download->created_at)->format('M. d, Y')) }}
+                                                        {{ str_replace('May.', 'May', \Carbon\Carbon::parse($download->created_at)->format('M. j, Y')) }}
                                                     </td>
 
 
@@ -289,7 +289,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-lg btn-primary">Save Informations</button>
+                            <button type="submit" class="btn btn-lg btn-primary">Save Information</button>
                         </div>
                     </form>
                 </div>

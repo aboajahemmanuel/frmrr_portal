@@ -131,11 +131,11 @@
                                                 </td>
                                                 <td style="text-align: center">{{ $result->document_version }}</td>
                                                 <td style="text-align: center">
-                                                    {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
+                                                    {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}
                                                 </td>
                                                 <td style="text-align: center">{{ $result->year->name }}</td>
                                                 <td style="text-align: center">
-                                                    {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                                    {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}
                                                 </td>
                                                 <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                                 <td style="text-align: center">
@@ -143,7 +143,7 @@
                                             </td>
 
                                              <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->ceased_date)->format('M. d, Y') }}
+                                                {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->ceased_date)->format('M. j, Y')) }}
                                             </td>
                                                 <td class="tb-odr-action"
                                                     style="display: flex; align-items: center; justify-content: center">
@@ -272,7 +272,8 @@
 
 
                                             <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                                                                                {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}
+
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                              <td style="text-align: center">
@@ -280,7 +281,8 @@
                                             </td>
 
                                              <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->ceased_date)->format('M. d, Y') }}
+                                                                                                {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->ceased_date)->format('M. j, Y')) }}
+
                                             </td>
                                            
                                             <td class="tb-odr-action"
@@ -407,7 +409,8 @@
 
 
                                             <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                                                                                {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}
+
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                              <td style="text-align: center">
@@ -415,7 +418,8 @@
                                             </td>
 
                                              <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->ceased_date)->format('M. d, Y') }}
+                                                                                                {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->ceased_date)->format('M. j, Y')) }}
+
                                             </td>
                                            
                                             <td class="tb-odr-action"

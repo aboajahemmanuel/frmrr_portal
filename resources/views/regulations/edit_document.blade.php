@@ -280,7 +280,7 @@
 
                                                         <div class="col-md-4">
                                                             <div class="form-group">
-                                                                <label class="form-label" for="market-product-tags-edit">Market Product Tags</label>
+                                                                <label class="form-label" for="market-product-tags-edit">Market Products</label>
                                                                 <div class="form-control-wrap">
                                                                     <select class="form-control" name="market_product_tags[]" id="market-product-tags-edit" multiple>
                                                                         @foreach ($marketProductTags as $tag)

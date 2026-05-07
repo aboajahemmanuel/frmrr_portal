@@ -14,9 +14,9 @@
                         <div class="nk-block-head nk-block-head-sm">
                             <div class="nk-block-between">
                                 <div class="nk-block-head-content">
-                                    <h3 class="nk-block-title page-title">Market Product Tags</h3>
+                                    <h3 class="nk-block-title page-title">Market Products</h3>
                                     <div class="nk-block-des text-soft">
-                                        <p>Manage market product tags for the system</p>
+                                        <p>Manage market products for the system</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -414,7 +414,7 @@
                 <div class="modal-content">
                     <a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a>
                     <div class="modal-body modal-body-md">
-                        <h5 class="title">Add New Market Product Tag</h5>
+                        <h5 class="title">Add New Market Products</h5>
                         <form method="POST" action="{{ route('market-product-tags.store') }}">
                             @csrf
                             <div class="tab-content">

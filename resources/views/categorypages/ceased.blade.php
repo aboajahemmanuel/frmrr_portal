@@ -70,10 +70,10 @@
                 var backButton = $(`
                     <div class="filter-group" style="margin-left: 10px;">
                         <label>&nbsp;</label>
-                        <a href="{{ route('categorypages', $category->slug) }}" style="text-decoration: none;">
-                            <div class="button-container-sb" style="display: inline-block;">
-                                <div class="gradient-buttons" style="background: #1d326d; border-radius: 5px;">
-                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; color: white;">
+                        <a href="{{ route('categorypages', $category->slug) }}" style="text-decoration: none; display: block;">
+                            <div class="button-container-sb" style="display: block;">
+                                <div class="gradient-buttons" style="background: #1d326d; border-radius: 5px; margin: 0 !important;">
+                                    <div class="gradient-button-content" style="padding: 8px 12px; font-size: 14px; color: white; display: flex; align-items: center; justify-content: center; height: 38px; box-sizing: border-box;">
                                         <div style="white-space: nowrap;">< Go back</div>
                                     </div>
                                 </div>

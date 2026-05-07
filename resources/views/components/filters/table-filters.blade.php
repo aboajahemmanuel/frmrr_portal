@@ -50,14 +50,14 @@
 <div class="filter-container">
     @if($options['showSearchBar'] ?? false)
     <div class="filter-group">
-        <label for="table-search-{{ $tableId }}">Search:</label>
+        <label for="table-search-{{ $tableId }}">Search</label>
         <input type="text" id="table-search-{{ $tableId }}" class="filter-select" placeholder="Search documents...">
     </div>
     @endif
 
     @if($options['showAlphabetFilter'] ?? true)
     <div class="filter-group">
-        <label for="alphabet-filter-{{ $tableId }}">First Letter :</label>
+        <label for="alphabet-filter-{{ $tableId }}">First Letter </label>
         <select id="alphabet-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Letters</option>
             @foreach(range('A', 'Z') as $letter)
@@ -69,7 +69,7 @@
 
     @if(($options['showYearFilter'] ?? true) && !empty($options['years']))
     <div class="filter-group">
-        <label for="year-filter-{{ $tableId }}">Year:</label>
+        <label for="year-filter-{{ $tableId }}">Year</label>
         <select id="year-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Years</option>
             @foreach($options['years'] as $year)
@@ -91,7 +91,7 @@
 
     @if($options['showEntityFilter'] ?? false)
     <div class="filter-group">
-        <label for="entity-filter-{{ $tableId }}">Entity:</label>
+        <label for="entity-filter-{{ $tableId }}">Entity</label>
         <select id="entity-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Entities</option>
             @php
@@ -116,7 +116,7 @@
 
     @if($options['showEffectiveDateFilter'] ?? true)
     <div class="filter-group date-range-group">
-        <label for="effective-date-start-filter-{{ $tableId }}">Effective Date Range:</label>
+        <label for="effective-date-start-filter-{{ $tableId }}">Effective Date Range</label>
         <div class="date-range-container">
             <input type="date" id="effective-date-start-filter-{{ $tableId }}" class="filter-select" placeholder="Start date">
             <span>to</span>
@@ -127,7 +127,7 @@
 
     @if($options['showMarketProductFilter'] ?? true)
     <div class="filter-group">
-        <label for="market-product-filter-{{ $tableId }}">Market Product:</label>
+        <label for="market-product-filter-{{ $tableId }}">Market Products</label>
         <select id="market-product-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Market Products</option>
             @php
@@ -154,7 +154,7 @@
     
     @if($options['showStatusFilter'] ?? true)
     <div class="filter-group">
-        <label for="status-filter-{{ $tableId }}">Status:</label>
+        <label for="status-filter-{{ $tableId }}">Status</label>
         <select id="status-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Statuses</option>
             @php

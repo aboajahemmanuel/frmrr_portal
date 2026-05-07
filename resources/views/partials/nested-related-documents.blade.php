@@ -35,14 +35,14 @@
                     </div>
                     <div style="width: 15%; min-width: 100px; text-align: center;">
                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                            {{ $nestedDoc->effective_date ? \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y') : 'N/A' }}
+                            {{ $nestedDoc->effective_date ? str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) : 'N/A' }}
                         @else
                             <span class="text-muted">-</span>
                         @endif
                     </div>
                     <div style="width: 15%; min-width: 100px; text-align: center;">
                         @if ($isSubscribed || Auth::user()->usertype == 'internal')
-                            {{ $nestedDoc->issue_date ? \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y') : 'N/A' }}
+                            {{ $nestedDoc->issue_date ? str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->issue_date)->format('M. j, Y')) : 'N/A' }}
                         @else
                             <span class="text-muted">-</span>
                         @endif

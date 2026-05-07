@@ -79,7 +79,7 @@ function initCentralizedTableFilter(tableId, options = {}) {
 
     console.log('Status column index found:', statusColIndex);
 
-    console.log('Column indices - Title:', titleColIndex, 'Year:', yearColIndex, 'Entity:', entityColIndex, 'Effective Date:', effectiveDateColIndex, 'Version:', versionColIndex, 'Status:', statusColIndex, 'Market Product:', marketProductColIndex);
+    console.log('Column indices - Title:', titleColIndex, 'Year:', yearColIndex, 'Entity:', entityColIndex, 'Effective Date:', effectiveDateColIndex, 'Version:', versionColIndex, 'Status:', statusColIndex, 'Market Products:', marketProductColIndex);
 
     // Filter and display rows
     function filterAndDisplayRows() {

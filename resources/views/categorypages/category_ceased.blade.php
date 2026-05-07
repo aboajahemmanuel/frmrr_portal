@@ -183,11 +183,11 @@
                                                 </td>
                                                 <td style="text-align: center">{{ $result->document_version }}</td>
                                                 <td style="text-align: center">
-                                                    {{ \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y') }}
+                                                    {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}
                                                 </td>
                                                 <td style="text-align: center">{{ optional($result->year)->name }}</td>
                                                 <td style="text-align: center">
-                                                    {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                                    {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}
                                                 </td>
                                                 <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                                 <td style="text-align: center">
@@ -333,7 +333,7 @@
 
 
                                             <td style="text-align: center">
-                                                {{ \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y') }}
+                                                {{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}
                                             </td>
                                             <td style="text-align: center">{{ optional($result->entity)->name }}</td>
                                             <td style="text-align: center">

@@ -8,7 +8,7 @@
         <h2 style="color: #2c3e50;">Subscription Renewal Notice</h2>
         <p>Dear {{ $subscription->user->name }},</p>
         
-        <p>This is a polite reminder that your current subscription (<strong>{{ $plan->name }}</strong>) will expire in <strong>{{ $plan->notification_days }} days</strong>, on <strong>{{ \Carbon\Carbon::parse($subscription->end_date)->format('M. d, Y') }}</strong>.</p>
+        <p>This is a polite reminder that your current subscription (<strong>{{ $plan->name }}</strong>) will expire in <strong>{{ $plan->notification_days }} days</strong>, on <strong>{{ str_replace('May.', 'May', \Carbon\Carbon::parse($subscription->end_date)->format('M. j, Y')) }}</strong>.</p>
         
         <p>To ensure uninterrupted access to your benefits, please renew your plan as soon as possible.</p>
         
