@@ -1,4 +1,4 @@
-@extends('layouts.external')
+@extends('layouts.externalnews')
 
 @section('content')
     <section class="main-container">

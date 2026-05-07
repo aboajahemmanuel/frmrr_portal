@@ -198,10 +198,10 @@
                         <td>
                             @if ($result->doc_preview == 1)
                                 <a href="#" data-toggle="modal" data-target="#pdfModal-{{ $result->id }}">
-                                    {{ $result->formatted_title ?? $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                    {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }} <em class="icon ni ni-zoom-in"></em>
                                 </a>
                             @else
-                                {{ $result->formatted_title ?? $result->title }}
+                                {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }}
                             @endif
                         </td>
                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
@@ -663,10 +663,10 @@
                         <td>
                             @if ($result->doc_preview == 1)
                                 <a href="#" data-toggle="modal" data-target="#pdfModal-{{ $result->id }}">
-                                    {{ $result->formatted_title ?? $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                    {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }} <em class="icon ni ni-zoom-in"></em>
                                 </a>
                             @else
-                                {{ $result->formatted_title ?? $result->title }}
+                                {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }}
                             @endif
                         </td>
                          {{-- <td style="text-align: center">
@@ -1163,10 +1163,10 @@
                     <td>
                         @if ($result->doc_preview == 1)
                             <a href="#" data-toggle="modal" data-target="#pdfModal-{{ $result->id }}">
-                                {{ $result->formatted_title ?? $result->title }} <em class="icon ni ni-zoom-in"></em>
+                                {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }} <em class="icon ni ni-zoom-in"></em>
                             </a>
                         @else
-                            {{ $result->formatted_title ?? $result->title }}
+                            {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }}
                         @endif
                     </td>
                     <td style="text-align: center">{{ $result->document_version }}</td>
