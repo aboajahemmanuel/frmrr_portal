@@ -159,7 +159,7 @@
 
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Created At</span></th>
                                                 <th class="nk-tb-col tb-col-lg"><span class="sub-text">Status</span></th>
-                                                <th class="nk-tb-col tb-col-lg"><span class="sub-text"></span></th>
+                                                <!-- <th class="nk-tb-col tb-col-lg"><span class="sub-text"></span></th> -->
 
                                                 <th class="nk-tb-col nk-tb-col-tools text-right">
                                                 </th>
@@ -256,7 +256,7 @@
                                                     </td>
 
 
-                                                    <td class="nk-tb-col tb-col-lg">
+                                                    <!-- <td class="nk-tb-col tb-col-lg">
 
                                                         @if ($user->status == 1)
                                                             {{ $user->note }}
@@ -264,7 +264,7 @@
 
 
 
-                                                    </td>
+                                                    </td> -->
 
                                                     <td class="nk-tb-col nk-tb-col-tools">
                                                         <ul class="nk-tb-actions gx-1">

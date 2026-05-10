@@ -8,7 +8,10 @@ use App\Models\Subscription;
 use Illuminate\Http\Request;
 use App\Models\SubscriptionPlan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redirect;
 use App\Models\SubscriptionPlansPending;
 use App\Helpers\LogActivity;
 
@@ -135,7 +138,7 @@ class TransactionController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be advised that a new Subscription Plan (' . $action . ') has been created and is awaiting your review and approval.';
-        LogActivity::addToLog(' Subscription Plan (' . $request['name'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Subscription Plan (' . $request['name'] . ') Subscription Plan creation Request submitted by ' . Auth::user()->name);
 
 
 
@@ -158,343 +161,175 @@ class TransactionController extends Controller
 
     public function updateSubcription(Request $request, $id)
     {
-        $user_id = Auth::user()->id;
-        $user = User::find($user_id);
+        try {
+            return DB::transaction(function () use ($request, $id) {
+                $subscription = SubscriptionPlan::findOrFail($id);
+                $subscription->admin_status = 0;
+                $subscription->save();
 
-        // return $request;
-        $subscription = SubscriptionPlan::findOrFail($id);
+                $pending = new SubscriptionPlansPending();
+                $pending->subscription_plans_id = $subscription->id;
+                $pending->name = $request->name;
+                $pending->duration = $request->duration;
+                $pending->price = $request->price;
+                $pending->description = $request->description;
+                $pending->notification_days = $request->notification_days ?? 0;
+                $pending->inputer_id = Auth::id();
+                $pending->status = 0;
+                $pending->action_type = 'Edit';
+                $pending->save();
 
-        $subscription->admin_status = 0;
+                $action = $request->name;
+                $title = "Please be advised that a new Subscription Plan ($action) has been updated and is awaiting your review and approval.";
+                LogActivity::addToLog(" Subscription Plan ($action) Subscription Plan Update Request by " . Auth::user()->name);
 
+                $authoriser = User::findOrFail($request->authorizer_id);
+                $this->InsertnotifyUsers($action, $title, $authoriser->email);
+                $this->insertNotifyInputter($action, "Please be advised subscription ($action) has been updated.", Auth::user()->email);
 
-        $subscription->save();
-
-
-
-        $subscription_pending = new  SubscriptionPlansPending;
-
-        $subscription_pending->subscription_plans_id =  $subscription->id;
-        $subscription_pending->name =  $request->name;
-        $subscription_pending->duration =  $request->duration;
-        $subscription_pending->price =  $request->price;
-        $subscription_pending->description =  $request->description;
-        $subscription_pending->notification_days = $request->notification_days ?? 0;
-        $subscription->group_id = $user->group_id;
-
-
-        $subscription_pending->inputer_id = Auth::user()->id;
-        $subscription_pending->status = 0;
-        $subscription_pending->action_type = 'Edit';
-
-        $subscription_pending->save();
-
-
-        $action =  $request['name'];
-        $title = 'Please be advised that a new Subscription Plan (' . $action . ') has been updated and is awaiting your review and approval.';
-
-        LogActivity::addToLog(' Subscription Plan (' . $request['name'] . ') updated by ' . Auth::user()->name);
-
-
-
-
-
-        $authorise_email =  User::where('id', $request->authorizer_id)->first();
-
-
-        $authorise_email =  $authorise_email->email;
-
-        // Notify users after the application is created
-        $this->InsertnotifyUsers($action, $title, $authorise_email);
-
-
-
-        $inputter_email = Auth::user()->email;
-        $inputter_title = 'Please be advised  subscription (' . $action . ') has been updated.';
-        $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-        return redirect()->back()->with('success', 'Subscription plan updated successfully.');
+                return redirect()->back()->with('success', 'Subscription plan updated successfully.');
+            });
+        } catch (\Exception $e) {
+            Log::error('Subscription update request failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
-
-
 
     public function deleteSubcription(Request $request, $id)
     {
+        try {
+            return DB::transaction(function () use ($request, $id) {
+                $subscription = SubscriptionPlan::findOrFail($id);
+                $subscription->admin_status = 3;
+                $subscription->save();
 
-        $user_id = Auth::user()->id;
-        $user = User::find($user_id);
+                $pending = new SubscriptionPlansPending();
+                $pending->subscription_plans_id = $id;
+                $pending->inputer_id = Auth::id();
+                $pending->status = 0;
+                $pending->action_type = 'Delete';
+                $pending->save();
 
+                $action = $subscription->name;
+                $title = "Please be advised that the Subscription plan ($action) has been deleted and is awaiting your review and approval.";
+                LogActivity::addToLog(" Subscription Plan ($action) Subscription Plan Deletion Request by " . Auth::user()->name);
 
-        $subscription = SubscriptionPlan::find($id);
+                $authoriser = User::findOrFail($request->authorizer_id);
+                $this->InsertnotifyUsers($action, $title, $authoriser->email);
+                $this->insertNotifyInputter($action, "Please be advised subscription ($action) has been deleted.", Auth::user()->email);
 
-        $subscription->admin_status = 3;
-
-        $subscription->save();
-
-
-
-
-
-        $subscription_pending = new  SubscriptionPlansPending;
-        $subscription_pending->subscription_plans_id =  $id;
-        $subscription_pending->inputer_id = Auth::user()->id;
-        $subscription_pending->status = 0;
-        $subscription_pending->action_type = 'Delete';
-
-        $subscription_pending->save();
-
-
-
-        $action =  $subscription->name;
-        $title = 'Please be advised that the Subscription plan (' . $action . ') has been deleted and is awaiting your review and approval.';
-
-        LogActivity::addToLog(' Subscription Plan (' . $request['name'] . ') deleted by ' . Auth::user()->name);
-
-
-
-        $authorise_email =  User::where('id', $request->authorizer_id)->first();
-
-
-        $authorise_email =  $authorise_email->email;
-
-        // Notify users after the application is created
-        $this->InsertnotifyUsers($action, $title, $authorise_email);
-
-
-        $inputter_email = Auth::user()->email;
-        $inputter_title = 'Please be advised  subscription (' . $action . ') has been deleted .';
-        $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-        return redirect()->back()->with('success', 'Subscription plan deleted successfully.');
+                return redirect()->back()->with('success', 'Subscription plan deleted successfully.');
+            });
+        } catch (\Exception $e) {
+            Log::error('Subscription deletion request failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
-
-
-
-
-
-
-
-
-
-
 
     public function Subcriptionstatus(Request $request, $id)
     {
-        // return $request;
+        $subscription = SubscriptionPlan::find($id);
+        $pending = SubscriptionPlansPending::where('subscription_plans_id', $id)
+            ->where('status', 0)
+            ->whereNull('authorizer_id')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-        $update_status = SubscriptionPlan::find($id);
-        $update_status_pending = SubscriptionPlansPending::where('subscription_plans_id', $id)->where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->orderBy('created_at', 'desc')->first();
-
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 1) {
-            $update_status_pending->status = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-
-
-            LogActivity::addToLog(' Subscription Plan (' . $update_status->title . ') Delete request approved by ' . Auth::user()->name);
-
-
-
-            $action = $update_status->name;
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised Subscription Plan (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-
-            SubscriptionPlan::find($id)->delete();
-
-
-
-            $this->ApprovenotifyDeletion($action);
-
-
-
-            return redirect()->back()->with('success', 'Request approved.');
+        if (!$pending) {
+            return redirect()->back()->with('error', 'No pending request found for this subscription plan.');
         }
 
-
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
-            $update_status->name =  $update_status_pending->name;
-            $update_status->duration =  $update_status_pending->duration;
-            $update_status->price =  $update_status_pending->price;
-            $update_status->description =  $update_status_pending->description;
-            $update_status->notification_days =  $update_status_pending->notification_days;
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' Subscription Plan (' . $update_status->title . ') Update request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised Subscription Plan (' . $action . ') Update  request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 1) {
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' Subscription Plan (' . $update_status->title . ') Insert request approved by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised Subscription Plan (' . $action . ') Insert  request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-
-            LogActivity::addToLog(' Subscription Plan (' . $update_status->title . ') Request rejected by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised Subscription Plan (' . $action . ') Request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-
-            LogActivity::addToLog(' Subscription Plan (' . $update_status->title . ') Request rejected by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised Subscription Plan (' . $action . ') Request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->status = 1;
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-
-            LogActivity::addToLog(' Subscription Plan (' . $update_status->title . ') Request rejected by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised Subscription Plan (' . $action . ') Request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return redirect()->back()->with('success', 'Request rejected.');
+        try {
+            return DB::transaction(function () use ($request, $subscription, $pending) {
+                if ($request->status == 1) {
+                    $this->processSubscriptionApproval($subscription, $pending);
+                    $msg = 'Request approved successfully.';
+                } else {
+                    $this->processSubscriptionRejection($request, $subscription, $pending);
+                    $msg = 'Request rejected.';
+                }
+
+                $this->logAndNotifySubscriptionSuccess($subscription, $pending, $request->status);
+
+                return redirect()->back()->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Subscription status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+    private function processSubscriptionApproval($subscription, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        switch ($pending->action_type) {
+            case 'Delete':
+                $subscription->delete();
+                break;
+            case 'Edit':
+                $subscription->name = $pending->name;
+                $subscription->duration = $pending->duration;
+                $subscription->price = $pending->price;
+                $subscription->description = $pending->description;
+                $subscription->notification_days = $pending->notification_days;
+                $subscription->status = 1;
+                $subscription->admin_status = 1;
+                $subscription->save();
+                break;
+            case 'Insert':
+                $subscription->status = 1;
+                $subscription->admin_status = 1;
+                $subscription->save();
+                break;
+        }
+    }
+
+    private function processSubscriptionRejection($request, $subscription, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        $subscription->note = $request->note;
+        $subscription->admin_status = ($pending->action_type == 'Insert') ? $request->status : 1;
+        if ($pending->action_type == 'Edit') {
+            $subscription->status = 1;
+        } elseif ($pending->action_type == 'Insert') {
+            $subscription->status = $request->status;
+        }
+        $subscription->save();
+    }
+
+    private function logAndNotifySubscriptionSuccess($subscription, $pending, $decision)
+    {
+        $action = $subscription->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            $type = ($pending->action_type == 'Insert') ? 'Creation' : $pending->action_type;
+            $title = "Subscription Plan ($action) $type request approved.";
+            LogActivity::addToLog(" Subscription Plan ($action) Subscription Plan $type Request approved by " . Auth::user()->name);
+
+            if ($pending->action_type == 'Delete') {
+                $this->ApprovenotifyDeletion($action);
+            } else {
+                $this->ApprovenotifyUsersnew($action);
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'Creation' : $pending->action_type;
+            $title = "Subscription Plan ($action) $type request rejected.";
+            LogActivity::addToLog(" Subscription Plan ($action) Subscription Plan $type Request rejected by " . Auth::user()->name);
+        }
+
+        $this->insertNotifyInputter($action, "Please be advised $title", $inputter_email);
+    }
+
 
 
 

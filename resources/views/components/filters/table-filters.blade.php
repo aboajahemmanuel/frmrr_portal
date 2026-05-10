@@ -51,7 +51,7 @@
     @if($options['showSearchBar'] ?? false)
     <div class="filter-group">
         <label for="table-search-{{ $tableId }}">Search</label>
-        <input type="text" id="table-search-{{ $tableId }}" class="filter-select" placeholder="Search documents...">
+        <input type="text" id="table-search-{{ $tableId }}" class="filter-select" placeholder="Type in to search">
     </div>
     @endif
 

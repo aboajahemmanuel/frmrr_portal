@@ -105,7 +105,7 @@ class MarketProductTagController extends Controller
         $action = $request['name'];
         $title = 'Please be advised that a new Market Product Tag (' . $action . ') has been created and is awaiting your review and approval.';
         $inputter_title = 'Please be advised that a new Market Product Tag (' . $action . ') has been created.';
-        LogActivity::addToLog('Market Product Tag (' . $request['name'] . ') created by ' . Auth::user()->name);
+        LogActivity::addToLog('Market Product Tag (' . $request['name'] . ')Market Product Tag creation request by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
         $authorise_email = $authorise_email->email;
@@ -186,7 +186,7 @@ class MarketProductTagController extends Controller
         $action = $request['name'];
         $title = 'Please be informed the Market Product Tag (' . $action . ') has been updated and is awaiting your review and approval.';
 
-        LogActivity::addToLog('Market Product Tag (' . $request['name'] . ') updated by ' . Auth::user()->name);
+        LogActivity::addToLog('Market Product Tag (' . $request['name'] . ') Market Product Tag update request by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
         $authorise_email = $authorise_email->email;
@@ -228,7 +228,7 @@ class MarketProductTagController extends Controller
         $action = $tag->name;
         $title = 'Please be advised that the Market Product Tag (' . $action . ') has been deleted and is awaiting your review and approval.';
 
-        LogActivity::addToLog('Market Product Tag (' . $tag->name . ') deleted by ' . Auth::user()->name);
+        LogActivity::addToLog('Market Product Tag (' . $tag->name . ') Market Product Tag deletion request by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
         $authorise_email = $authorise_email->email;
@@ -254,155 +254,114 @@ class MarketProductTagController extends Controller
     {
         $update_status = MarketProductTag::find($id);
         $update_status_pending = MarketProductTagPending::where('status', 0)
-            ->where('authorizer_id', null)
+            ->whereNull('authorizer_id')
             ->where('market_product_tag_id', $id)
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // Check if pending record exists
         if (!$update_status_pending) {
             return redirect()->back()->with('error', 'No pending request found for this tag.');
         }
 
-        // Handle Delete approval
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 1) {
-            $update_status_pending->status = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
+        try {
+            return DB::transaction(function () use ($request, $update_status, $update_status_pending) {
+                if ($request->status == 1) {
+                    $this->processTagApproval($update_status, $update_status_pending);
+                    $msg = 'Request approved.';
+                } else {
+                    $this->processTagRejection($request, $update_status, $update_status_pending);
+                    $msg = 'Request rejected.';
+                }
 
-            $action = $update_status->name;
+                $this->logAndNotifyTagSuccess($update_status, $update_status_pending, $request->status);
 
-            LogActivity::addToLog('Market Product Tag (' . $update_status->name . ') Delete request approved by ' . Auth::user()->name);
+                return Redirect::to('market-product-tags')->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Tag status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
 
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Market Product Tag (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
+    private function processTagApproval($tag, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
 
-            MarketProductTag::find($id)->delete();
-            $this->ApprovenotifyDeletion($action);
+        switch ($pending->action_type) {
+            case 'Delete':
+                $tag->delete();
+                break;
+            case 'Edit':
+                $tag->name = $pending->name;
+                $tag->description = $pending->description;
+                $tag->slug = Str::slug($pending->name);
+                $tag->status = 1;
+                $tag->admin_status = 1;
+                $tag->save();
+                break;
+            case 'Insert':
+                $tag->status = 1;
+                $tag->admin_status = 1;
+                $tag->save();
+                break;
+        }
+    }
 
-            return Redirect::to('market-product-tags')->with('success', 'Request approved.');
+    private function processTagRejection($request, $tag, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        $tag->note = $request->note;
+        $tag->admin_status = $request->status;
+
+        switch ($pending->action_type) {
+            case 'Insert':
+                $tag->status = $request->status;
+                break;
+            case 'Delete':
+                $tag->admin_status = 1;
+                break;
+        }
+        $tag->save();
+    }
+
+    private function logAndNotifyTagSuccess($tag, $pending, $decision)
+    {
+        $action = $tag->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            switch ($pending->action_type) {
+                case 'Delete':
+                    $this->ApprovenotifyDeletion($action);
+                    $title = "Market Product Tag ($action) Market Product Tag Delete request approved.";
+                    LogActivity::addToLog("Market Product Tag ($action) Market Product Tag deletion request approved by " . Auth::user()->name);
+                    break;
+                case 'Edit':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Market Product Tag ($action) Market Product Tag update request approved.";
+                    LogActivity::addToLog("Market Product Tag ($action) Market Product Tag update request approved by " . Auth::user()->name);
+                    break;
+                case 'Insert':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Market Product Tag ($action) Market Product Tag creation request approved.";
+                    LogActivity::addToLog("Market Product Tag ($action) Market Product Tag creation request approved by " . Auth::user()->name);
+                    break;
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'creation' : strtolower($pending->action_type);
+            $title = "Market Product Tag ($action) Market Product Tag $type request rejected.";
+            LogActivity::addToLog("Market Product Tag ($action) Market Product Tag $type request rejected by " . Auth::user()->name);
         }
 
-        // Handle Edit approval
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
-            $update_status->name = $update_status_pending->name;
-            $update_status->description = $update_status_pending->description;
-            $update_status->slug = Str::slug($update_status_pending->name);
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id();
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog('Market Product Tag (' . $update_status->name . ') Update request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Market Product Tag (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('market-product-tags')->with('success', 'Request approved.');
-        }
-
-        // Handle Insert approval
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 1) {
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id();
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $this->ApprovenotifyUsersnew($action);
-            
-            LogActivity::addToLog('Market Product Tag (' . $update_status->name . ') Insert request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Market Product Tag (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('market-product-tags')->with('success', 'Request approved.');
-        }
-
-        // Handle Insert rejection
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 2) {
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-            LogActivity::addToLog('Market Product Tag (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Market Product Tag (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('market-product-tags')->with('success', 'Request rejected.');
-        }
-
-        // Handle Edit rejection
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 2) {
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-            LogActivity::addToLog('Market Product Tag (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Market Product Tag (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('market-product-tags')->with('success', 'Request rejected.');
-        }
-
-        // Handle Delete rejection
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 2) {
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-            LogActivity::addToLog('Market Product Tag (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Market Product Tag (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('market-product-tags')->with('success', 'Request rejected.');
-        }
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
     }
 
     private function insertNotifyUsers($action, $title, $authorise_email)

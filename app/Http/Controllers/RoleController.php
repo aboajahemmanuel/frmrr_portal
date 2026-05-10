@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use DB;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use App\Models\PendingRole;
 use Illuminate\Http\Request;
 // use Spatie\Permission\Models\Role;
@@ -30,11 +31,7 @@ class RoleController extends Controller
         $this->middleware('permission:role-delete', ['only' => ['destroy']]);
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+ 
     public function index(Request $request)
     {
 
@@ -76,11 +73,7 @@ class RoleController extends Controller
         return view('roles.index', compact('data', 'permission', 'authoriser'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+   
     public function create()
     {
         $permission = Permission::get();
@@ -88,34 +81,13 @@ class RoleController extends Controller
         return view('roles.create', compact('permission'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    // public function store(Request $request)
-    // {
-    //     $this->validate($request, [
-    //         'name' => 'required|unique:roles,name',
-    //         'permission' => 'required',
-    //     ]);
-
-    //     $role = Role::create(['name' => $request->input('name')]);
-    //     $role->syncPermissions($request->input('permission'));
-
-    //     return redirect()->back()->with('success', 'Role created successfully.');
-    // }
-
-
-
     public function store(Request $request)
     {
         // Validate the request
         $this->validate($request, [
             'name' => 'required|unique:roles,name',
             'permission' => 'required|array',
-            'authorizer_id' => 'required|exists:users,id', // Validate the authorizer_id as an existing user
+            'authorizer_id' => 'required|exists:users,id',
         ]);
 
         // Create a new role with the user's group_id
@@ -138,7 +110,7 @@ class RoleController extends Controller
         ]);
 
         // Log the role creation activity
-        LogActivity::addToLog('Role (' . $request->input('name') . ') role created by ' . Auth::user()->name);
+        LogActivity::addToLog('Role (' . $request->input('name') . ') role creation request by ' . Auth::user()->name);
 
         // Prepare the action and title for notification
         $action = $request->input('name');
@@ -162,12 +134,6 @@ class RoleController extends Controller
 
 
 
-
-
-
-
-
-
     public function reject($id)
     {
         $update_status_pending = PendingRole::findOrFail($id);
@@ -178,11 +144,7 @@ class RoleController extends Controller
 
 
 
-
-
-
-
-    public function update(Request $request, $id)
+  public function update(Request $request, $id)
     {
         // return $request;
         // Validate the request data
@@ -228,7 +190,7 @@ class RoleController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be advised that the Role (' . $action . ') has been updated and is awaiting your review and approval.';
-        LogActivity::addToLog(' Role (' . $request['name'] . ')  update  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Role (' . $request['name'] . ') role update request  by ' . Auth::user()->name);
 
 
         $authorise_email =  User::where(
@@ -281,7 +243,7 @@ class RoleController extends Controller
 
         $action =  $role->name;
         $title = 'Please be advised that the Role (' . $action . ') has been deleted and is awaiting your review and approval.';
-        LogActivity::addToLog(' Role (' . $request['name'] . ') delelted   by ' . Auth::user()->name);
+        LogActivity::addToLog(' Role (' . $request['name'] . ') role delete request  by ' . Auth::user()->name);
 
 
 
@@ -308,230 +270,101 @@ class RoleController extends Controller
 
     public function rolestatus(Request $request, $id)
     {
+        $role = Role::find($id);
+        $pending = PendingRole::where('role_id', $id)
+            ->where('status', 0)
+            ->whereNull('authorizer_id')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-        //return $request;
-
-        $update_status = Role::find($id);
-        $update_status_pending = PendingRole::where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->where('role_id', $id)->orderBy('created_at', 'desc')->first();
-
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 1) {
-            //  $update_status_pending->status = 1;
-            //return "here";
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Delete request approved by ' . Auth::user()->name);
-
-            Role::find($id)->delete();
-
-
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnewDEL($action);
-
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Role (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('roles')->with('success', 'Request approved.');
-            // return redirect()->back()->with('success', 'Request approved.');
+        if (!$pending) {
+            return redirect()->back()->with('error', 'No pending request found for this role.');
         }
 
+        try {
+            return DB::transaction(function () use ($request, $role, $pending) {
+                if ($request->status == 1) {
+                    $this->processRoleApproval($role, $pending);
+                    $msg = 'Request approved successfully.';
+                } else {
+                    $this->processRoleRejection($request, $role, $pending);
+                    $msg = 'Request rejected.';
+                }
 
+                $this->logAndNotifyRoleSuccess($role, $pending, $request->status);
 
+                return Redirect::to('roles')->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Role status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
 
+    private function processRoleApproval($role, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
 
+        switch ($pending->action_type) {
+            case 'Delete':
+                $role->delete();
+                break;
+            case 'Edit':
+                $permissions = json_decode($pending->permissions, true);
+                $role->name = $pending->name;
+                $role->admin_status = 1;
+                $role->syncPermissions($permissions);
+                $role->save();
+                break;
+            case 'Insert':
+                $role->status = 1;
+                $role->admin_status = 1;
+                $role->save();
+                break;
+        }
+    }
 
+    private function processRoleRejection($request, $role, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
 
+        $role->note = $request->note;
+        $role->admin_status = ($pending->action_type == 'Insert') ? $request->status : 1;
+        if ($pending->action_type == 'Insert') {
+            $role->status = $request->status;
+        }
+        $role->save();
+    }
 
+    private function logAndNotifyRoleSuccess($role, $pending, $decision)
+    {
+        $action = $role->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
 
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
+        if ($isApprove) {
+            $type = ($pending->action_type == 'Insert') ? 'creation' : strtolower($pending->action_type);
+            $title = "Role ($action) role $type request approved.";
+            LogActivity::addToLog(" Role ($action) role $type request approved by " . Auth::user()->name);
 
-
-
-
-            // Check if the role already exists
-            $role = Role::find($id);
-
-            // Decode permissions from JSON if necessary
-            $permissions = json_decode($update_status_pending->permissions, true);
-
-            $role->name = $update_status_pending->name;
-            $role->admin_status = 1;
-            $role->syncPermissions($permissions); // Sync permissions
-            $role->save();
-
-
-
-
-            $update_status_pending->authorizer_id = Auth::id();
-            $update_status_pending->status = 1;
-            $update_status_pending->save();
-
-
-
-
-
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Update request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Role (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('roles')->with('success', 'Request approved.');
+            if ($pending->action_type == 'Delete') {
+                $this->ApprovenotifyUsersnewDEL($action);
+            } else {
+                $this->ApprovenotifyUsersnew($action);
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'creation' : strtolower($pending->action_type);
+            $title = "Role ($action) role $type request rejected.";
+            LogActivity::addToLog(" Role ($action) role $type request rejected by " . Auth::user()->name);
         }
 
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 1) {
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Insert request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Role (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('roles')->with('success', 'Request approved.');
-        }
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Role (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return Redirect::to('roles')->with('success', 'Request rejected.');
-
-            //return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Role (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return Redirect::to('roles')->with('success', 'Request rejected.');
-
-            //return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Role (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return Redirect::to('roles')->with('success', 'Request rejected.');
-
-            //return redirect()->back()->with('success', 'Request rejected.');
-        }
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
     }
 
 

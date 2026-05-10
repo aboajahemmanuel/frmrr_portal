@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Models\EntityPending;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use App\Helpers\LogActivity;
@@ -104,7 +106,7 @@ class EntityController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be advised that a new Entity (' . $action . ') has been created and is awaiting your review and approval.';
-        LogActivity::addToLog(' Entity (' . $request['name'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Entity (' . $request['name'] . ') Entity creation request created  by ' . Auth::user()->name);
 
 
 
@@ -161,10 +163,6 @@ class EntityController extends Controller
             return redirect()->back()->with('error', 'An entity with the given name already exists.');
         }
 
-        // If no duplicate exists, proceed with the update
-        //$entity->update($request->all());
-
-
 
         $entity->admin_status = $request->input('status');
         $entity->group_id = $user->group_id;
@@ -195,7 +193,7 @@ class EntityController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be informed  the Entity (' . $action . ') has been updated and is awaiting your review and approval.';
-        LogActivity::addToLog(' Entity (' . $request['name'] . ') updated  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Entity (' . $request['name'] . ') Entity update request created  by ' . Auth::user()->name);
 
 
 
@@ -247,11 +245,11 @@ class EntityController extends Controller
 
         $action =  $entity->name;
         $title = 'Please be advised that the group(' . $action . ') has been deleted and is awaiting your review and approval.';
-        LogActivity::addToLog(' Entity (' . $entity->name . ') deleted  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Entity (' . $entity->name . ') Entity deletion request created  by ' . Auth::user()->name);
 
 
         $inputter_email = Auth::user()->email;
-        $inputter_title = 'Please be advised that  Entity (' . $action . ') has been deleted.';
+        $inputter_title = 'Please be advised that  Entity (' . $action . ') Entity deletion request created.';
         $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
 
@@ -273,231 +271,115 @@ class EntityController extends Controller
 
     public function entitystatus(Request $request, $id)
     {
-        //  return        $request;
-
         $update_status = Entity::find($id);
-        $update_status_pending = EntityPending::where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->where('entity_id', $id)->orderBy('created_at', 'desc')->first();
+        $update_status_pending = EntityPending::where('status', 0)
+            ->whereNull('authorizer_id')
+            ->where('entity_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 1) {
-            $update_status_pending->status = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-
-            Entity::find($id)->delete();
-
-
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyDeletion($action);
-
-            LogActivity::addToLog(' Entity (' . $update_status->name . ') Delete request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Entity (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('entities')->with('success', 'Request approved.');
-
-            //return redirect()->back()->with('success', 'Request approved.');
+        if (!$update_status_pending) {
+            return redirect()->back()->with('error', 'No pending request found for this entity.');
         }
 
+        try {
+            return DB::transaction(function () use ($request, $update_status, $update_status_pending) {
+                if ($request->status == 1) {
+                    $this->processEntityApproval($update_status, $update_status_pending);
+                    $msg = 'Request approved.';
+                } else {
+                    $this->processEntityRejection($request, $update_status, $update_status_pending);
+                    $msg = 'Request rejected.';
+                }
 
+                $this->logAndNotifyEntitySuccess($update_status, $update_status_pending, $request->status);
 
+                return Redirect::to('entities')->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Entity status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
 
+    private function processEntityApproval($entity, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
 
+        switch ($pending->action_type) {
+            case 'Delete':
+                $entity->delete();
+                break;
+            case 'Edit':
+                $entity->name = $pending->name;
+                $entity->status = 1;
+                $entity->admin_status = 1;
+                $entity->save();
+                break;
+            case 'Insert':
+                $entity->status = 1;
+                $entity->admin_status = 1;
+                $entity->save();
+                break;
+        }
+    }
 
+    private function processEntityRejection($request, $entity, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
 
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
-            $update_status->name = $update_status_pending->name;
+        $entity->note = $request->note;
+        $entity->admin_status = $request->status;
 
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
+        switch ($pending->action_type) {
+            case 'Insert':
+                $entity->status = $request->status;
+                break;
+            case 'Delete':
+            case 'Edit':
+                $entity->admin_status = 1;
+                break;
+        }
+        $entity->save();
+    }
 
+    private function logAndNotifyEntitySuccess($entity, $pending, $decision)
+    {
+        $action = $entity->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
 
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' Entity (' . $update_status->name . ') Update request approved by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Entity (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-            return Redirect::to('entities')->with('success', 'Request approved.');
-
-            // return redirect()->back()->with('success', 'Request approved successfully.');
+        if ($isApprove) {
+            switch ($pending->action_type) {
+                case 'Delete':
+                    $this->ApprovenotifyDeletion($action);
+                    $title = "Entity ($action) Entity deletion request approved.";
+                    LogActivity::addToLog(" Entity ($action) Entity deletion request approved by " . Auth::user()->name);
+                    break;
+                case 'Edit':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Entity ($action) Entity update request approved.";
+                    LogActivity::addToLog(" Entity ($action) Entity update request approved by " . Auth::user()->name);
+                    break;
+                case 'Insert':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Entity ($action) Entity creation request approved.";
+                    LogActivity::addToLog(" Entity ($action) Entity creation request approved by " . Auth::user()->name);
+                    break;
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'creation' : strtolower($pending->action_type);
+            $title = "Entity ($action) Entity $type request rejected.";
+            LogActivity::addToLog(" Entity ($action) Entity $type request rejected by " . Auth::user()->name);
         }
 
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 1) {
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' Entity (' . $update_status->name . ') Insert request approved by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Entity (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('entities')->with('success', 'Request approved.');
-
-
-            // return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Entity (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Entity (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('entities')->with('success', 'Request rejected.');
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 2) {
-
-            // return $request->note;
-
-            //$update_status->status = $request->status;
-            $update_status->admin_status = 1;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Entity (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Entity (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('entities')->with('success', 'Request rejected.');
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-        if (
-            $update_status_pending->action_type == 'Edit' && $request->status == 2
-        ) {
-
-            // return $request->note;
-
-            // $update_status->status = 1;
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Entity (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Entity (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('entities')->with('success', 'Request rejected.');
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
     }
 
 

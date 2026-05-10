@@ -48,7 +48,7 @@
                         <div class="search-box">
                             <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
                             <input required name="title" value="{{ $title }}" type="search"
-                                placeholder="search" />
+                                placeholder="Type in to search" />
                         </div>
                         <a href="#" style="height: 100%;">
                             <button style="height: 100%;" type="submit">

@@ -138,7 +138,7 @@ class SubcategoryController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be advised that a new Sub Category (' . $action . ') has been created and is awaiting your review and approval.';
-        LogActivity::addToLog(' Subcategory (' . $request['name'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Subcategory (' . $request['name'] . ') Sub Category created  by ' . Auth::user()->name);
 
 
 
@@ -229,7 +229,7 @@ class SubcategoryController extends Controller
         $action =  $request['name'];
         $title = 'Please be informed  the Category (' . $action . ') has been updated and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Subcategory (' . $request['name'] . ') updated  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Subcategory (' . $request['name'] . ') Sub Category updated  by ' . Auth::user()->name);
 
 
 
@@ -285,7 +285,7 @@ class SubcategoryController extends Controller
         $action =  $category->name;
         $title = 'Please be advised that the Category (' . $action . ') has been deleted and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Subcategory (' . $request['name'] . ') deleted  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Subcategory (' . $request['name'] . ') Sub Category deleted  by ' . Auth::user()->name);
 
 
 
@@ -338,7 +338,7 @@ class SubcategoryController extends Controller
             $this->ApprovenotifyDeletion($action);
 
 
-            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Delete request approved by ' . Auth::user()->name);
+            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Sub Category delete request approved by ' . Auth::user()->name);
 
             return Redirect::to('subcategories')->with('success', 'Request approved.');
 
@@ -346,10 +346,7 @@ class SubcategoryController extends Controller
             $inputter_email = Auth::user()->email;
             $inputter_title = 'Please be advised that  Subcategory (' . $action . ') Delete request approved.';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-            //return redirect()->back()->with('success', 'Request approved.');
         }
-
-
 
 
 
@@ -375,7 +372,7 @@ class SubcategoryController extends Controller
             $this->ApprovenotifyUsersnew($action);
 
 
-            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Update request approved by ' . Auth::user()->name);
+            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Sub Category update request approved by ' . Auth::user()->name);
 
 
             $inputter_email = Auth::user()->email;
@@ -385,7 +382,6 @@ class SubcategoryController extends Controller
             return Redirect::to('subcategories')->with('success', 'Request approved.');
 
 
-            //return redirect()->back()->with('success', 'Request approved successfully.');
         }
 
 
@@ -415,20 +411,15 @@ class SubcategoryController extends Controller
             $this->ApprovenotifyUsersnew($action);
 
 
-            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Insert request approved by ' . Auth::user()->name);
+            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Sub Category creation request approved by ' . Auth::user()->name);
 
 
             $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Subcategory (' . $action . ') Insert request approved.';
+            $inputter_title = 'Please be advised that  Subcategory (' . $action . ') Sub Category creation request approved.';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
 
             return Redirect::to('subcategories')->with('success', 'Request approved.');
 
-
-            //return redirect()->back()->with('success', 'Request approved successfully.');
         }
 
 
@@ -437,7 +428,6 @@ class SubcategoryController extends Controller
 
         if ($update_status_pending->action_type == 'Insert' &&  $request->status == 2) {
 
-            // return $request->note;
 
             $update_status->status = $request->status;
             $update_status->admin_status = $request->status;
@@ -461,10 +451,10 @@ class SubcategoryController extends Controller
             $this->ApprovenotifyReject($action, $note);
 
 
-            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
+            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Sub Category creation request rejected by ' . Auth::user()->name);
 
             $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Subcategory (' . $action . ')  Request rejected .';
+            $inputter_title = 'Please be advised that  Subcategory (' . $action . ') Sub Category creation request rejected.';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
 
@@ -473,8 +463,6 @@ class SubcategoryController extends Controller
 
 
         if ($update_status_pending->action_type == 'Delete' &&  $request->status == 2) {
-
-            // return $request->note;
 
             $update_status->admin_status = 1;
             $update_status_pending->status = 1;
@@ -493,10 +481,10 @@ class SubcategoryController extends Controller
             $this->ApprovenotifyReject($action, $note);
 
 
-            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
+            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Sub Category delete request rejected by ' . Auth::user()->name);
 
             $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Subcategory (' . $action . ')  Request rejected .';
+            $inputter_title = 'Please be advised that  Subcategory (' . $action . ') Sub Category delete request rejected .';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
 
@@ -525,10 +513,10 @@ class SubcategoryController extends Controller
             $this->ApprovenotifyReject($action, $note);
 
 
-            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
+            LogActivity::addToLog(' Subcategory (' . $update_status->name . ') Sub Category update request rejected by ' . Auth::user()->name);
 
             $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Subcategory (' . $action . ')  Request rejected .';
+            $inputter_title = 'Please be advised that  Subcategory (' . $action . ') Sub Category update request rejected .';
             $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
 

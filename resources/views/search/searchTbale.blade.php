@@ -326,7 +326,7 @@ entityBox.addEventListener("click", function (e) {
                                         <div class="w-33">
                                             <div class="si-title" style="margin-top: 4px;">Entity</div>
                                             <div class="autocomplete-wrapper">
-                                                <input type="text" id="entityInput" class="si-input-box-s" placeholder="Type to search entities..." autocomplete="off">
+                                                <input type="text" id="entityInput" class="si-input-box-s" placeholder="Type in to search entities..." autocomplete="off">
                                                 <input type="hidden" name="entity_id" id="entityHidden">
                                                 <div id="entitySuggestionBox" class="autocomplete-box"></div>
                                                 <button type="button" class="dropdown-btn" id="entityDropdownBtn">▼</button>
@@ -338,7 +338,7 @@ entityBox.addEventListener("click", function (e) {
                                                 
                                             </div>
                                             <div class="autocomplete-wrapper">
-                                                <input type="text" id="statusInput" class="si-input-box-s" placeholder="Type to search statuses..." autocomplete="off">
+                                                <input type="text" id="statusInput" class="si-input-box-s" placeholder="Type in to search statuses..." autocomplete="off">
                                                 <input type="hidden" name="ceasedRepealed" id="statusHidden">
                                                 <div id="statusSuggestionBox" class="autocomplete-box"></div>
                                                 <button type="button" class="dropdown-btn" id="statusDropdownBtn">▼</button>

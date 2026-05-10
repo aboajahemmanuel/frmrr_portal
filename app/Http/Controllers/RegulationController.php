@@ -278,7 +278,7 @@ class RegulationController extends Controller
         $action = $request['title'];
         $title  = 'Please be advised that a new Document (' . $action . ') has been uploaded and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Document  (' . $request['title'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Document  (' . $request['title'] . ') Document creation request  by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
 
@@ -432,7 +432,7 @@ class RegulationController extends Controller
         $action = $request['title'];
         $title  = 'Please be advised that a new Document (' . $action . ') has been updated and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Document  (' . $request['title'] . ') updated  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Document  (' . $request['title'] . ') Document update request by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
 
@@ -658,7 +658,7 @@ class RegulationController extends Controller
         $action = $regulation->title;
         $title  = 'Please be advised that a  Document (' . $action . ') has been deleted and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Document  (' . $request['title'] . ') deleted by ' . Auth::user()->name);
+        LogActivity::addToLog(' Document  (' . $request['title'] . ') Document delete request by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
 
@@ -733,276 +733,140 @@ class RegulationController extends Controller
         ]);
     }
 
-    public function regstatus(Request $request, $id) {
+    public function regstatus(Request $request, $id)
+    {
+        $regulation = Regulation::find($id);
+        $approval = DocumentApproval::where('regulation_id', $id)
+            ->whereNull('authoriser_id')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-        // return $request;
+        if (!$approval) {
+            return redirect()->back()->with('error', 'No pending approval request found for this document.');
+        }
 
-        $user_id = Auth::user()->id;
-        $user    = User::find($user_id);
+        try {
+            return DB::transaction(function () use ($request, $regulation, $approval) {
+                if ($request->status == 1) {
+                    $this->processRegulationApproval($regulation, $approval);
+                    $msg = 'Request approved successfully.';
+                } else {
+                    $this->processRegulationRejection($request, $regulation, $approval);
+                    $msg = 'Request rejected.';
+                }
 
-        $authoriser_time     = Carbon::now();
-        $userId              = Auth::user()->id;
-         $update_admin_status = regulation::find($id);
+                $this->logAndNotifyRegulationSuccess($regulation, $approval, $request->status);
 
-        $regulation_approval = DocumentApproval::where('regulation_id', $id)->where(
-            'authoriser_id',
-            null
-        )->orderBy('created_at', 'desc')->first();
+                return redirect()->back()->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Regulation status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
 
-        $update_admin_status->admin_status = $request['admin_status'];
-        $update_admin_status->note         = $request['note'];
+    private function processRegulationApproval($regulation, $approval)
+    {
+        $authoriser_time = Carbon::now();
+        $approval->status = 1;
+        $approval->authoriser_id = Auth::id();
+        $approval->authoriser_time = $authoriser_time;
+        $approval->save();
 
-        if ($regulation_approval->action_type == 'Insert' && $request->status == 1) {
+        if ($approval->action_type == 'Delete') {
+            $regulation->admin_status = 1;
+            $regulation->save();
+            $regulation->delete();
+            return;
+        }
 
-            $regulation_approval->status          = $request->status;
-            $update_admin_status->status          = $request->status;
-            $update_admin_status->admin_status    = $request->status;
-            $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated
-            $regulation_approval->authoriser_time = $authoriser_time;
+        if ($approval->action_type == 'Edit') {
+            $regulation->title = $approval->title;
+            $regulation->effective_date = $approval->effective_date;
+            $regulation->issue_date = $approval->issue_date;
+            $regulation->document_version = $approval->document_version;
+            $regulation->year_id = $approval->year_id;
+            $regulation->month_id = $approval->month_id;
+            $regulation->entity_id = $approval->entity_id;
+            $regulation->category_id = $approval->category_id;
+            $regulation->subcategory_id = $approval->subcategory_id;
+            $regulation->alpha_id = $approval->alpha_id;
+            $regulation->document_tag = $approval->document_tag;
+            $regulation->ceased_date = $approval->ceased_date;
+            $regulation->ceased = $approval->ceased;
+            $regulation->slug = $approval->slug;
+            $regulation->group_id = $approval->group_id;
+            $regulation->regulation_doc = $approval->regulation_doc;
+            $regulation->doc_preview = $approval->doc_preview;
+            $regulation->doc_preview_count = $approval->doc_preview_count;
+            $regulation->market_product_tag = $approval->market_product_tag;
+        }
 
-            // Copy related_docs from approval record to regulation
-            $update_admin_status->related_docs = $regulation_approval->related_docs;
+        $regulation->status = 1;
+        $regulation->admin_status = 1;
+        $regulation->related_docs = $approval->related_docs;
+
+        if (!empty($approval->temp_nested_related_docs)) {
+            $regulation->nested_related_docs = $approval->temp_nested_related_docs;
             
-            // Copy nested related documents from approval record to regulation
-            if (!empty($regulation_approval->temp_nested_related_docs)) {
-                $update_admin_status->nested_related_docs = $regulation_approval->temp_nested_related_docs;
-            }
-            
-            $update_admin_status->save();
-            $regulation_approval->save();
-            
-            // Process nested related documents if they exist in the approval record
-            if (!empty($regulation_approval->temp_nested_related_docs)) {
-                $nestedRelatedDocs = json_decode($regulation_approval->temp_nested_related_docs, true);
-                if (is_array($nestedRelatedDocs)) {
-                    // Remove existing relationships for this document
-                    \App\Models\DocumentRelationship::where('source_document_id', $update_admin_status->id)->delete();
-                    
-                    // Create new relationships
-                    foreach ($nestedRelatedDocs as $relatedDocId) {
-                        $documentRelationship = new \App\Models\DocumentRelationship();
-                        $documentRelationship->source_document_id = $update_admin_status->id;
-                        $documentRelationship->related_document_id = $relatedDocId;
-                        $documentRelationship->relationship_type = (isset(json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId])) 
-                            ? json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId] 
-                            : 'Related';
-                        $documentRelationship->notes = (isset(json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId])) 
-                            ? json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId] 
-                            : null;
-                        $documentRelationship->is_active = true;
-                        $documentRelationship->created_by = Auth::id();
-                        $documentRelationship->group_id = $update_admin_status->group_id;
-                        $documentRelationship->save();
-                    }
+            $nestedRelatedDocs = json_decode($approval->temp_nested_related_docs, true);
+            if (is_array($nestedRelatedDocs)) {
+                \App\Models\DocumentRelationship::where('source_document_id', $regulation->id)->delete();
+                
+                $relationshipTypes = json_decode($approval->temp_relationship_types, true) ?: [];
+                $relationshipNotes = json_decode($approval->temp_relationship_notes, true) ?: [];
+
+                foreach ($nestedRelatedDocs as $relatedDocId) {
+                    $relationship = new \App\Models\DocumentRelationship();
+                    $relationship->source_document_id = $regulation->id;
+                    $relationship->related_document_id = $relatedDocId;
+                    $relationship->relationship_type = $relationshipTypes[$relatedDocId] ?? 'Related';
+                    $relationship->notes = $relationshipNotes[$relatedDocId] ?? null;
+                    $relationship->is_active = true;
+                    $relationship->created_by = Auth::id();
+                    $relationship->group_id = $regulation->group_id;
+                    $relationship->save();
                 }
             }
+        }
+        $regulation->save();
+    }
 
-            $action = $update_admin_status->title;
+    private function processRegulationRejection($request, $regulation, $approval)
+    {
+        $approval->status = $request->status;
+        if (isset($approval->admin_status)) {
+            $approval->admin_status = $request->status;
+        }
+        $approval->note = $request->note;
+        $approval->authoriser_id = Auth::id();
+        $approval->authoriser_time = Carbon::now();
+        $approval->save();
 
+        $regulation->note = $request->note;
+        $regulation->admin_status = ($approval->action_type == 'Insert') ? $request->status : 1;
+        $regulation->save();
+    }
+
+    private function logAndNotifyRegulationSuccess($regulation, $approval, $decision)
+    {
+        $action = $regulation->title;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
             $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog('Document  (' . $update_admin_status->title . ') Insert request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Document (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // Redirect back to the previous page instead of regulations page
-            return redirect()->back()->with('success', 'Request approved successfully.');
+            $type = ($approval->action_type == 'Insert') ? 'creation' : strtolower($approval->action_type);
+            $title = "Document ($action) $type request approved.";
+            LogActivity::addToLog("Document ($action) Document $type request approved by " . Auth::user()->name);
+        } else {
+            $this->ApprovenotifyReject($action, $approval->note);
+            $type = ($approval->action_type == 'Insert') ? 'creation' : strtolower($approval->action_type);
+            $title = "Document ($action) Document $type request rejected.";
+            LogActivity::addToLog("Document ($action) Document $type request rejected by " . Auth::user()->name);
         }
 
-        if ($regulation_approval->action_type == 'Edit' && $request->status == 1) {
-
-            $update_admin_status->admin_status = $request->status;
-            // $update_admin_status->admin_status = $request->status;
-            $update_admin_status->title            = $regulation_approval->title;
-            $update_admin_status->effective_date   = $regulation_approval->effective_date;
-            $update_admin_status->issue_date       = $regulation_approval->issue_date;
-            $update_admin_status->document_version = $regulation_approval->document_version;
-            $update_admin_status->year_id          = $regulation_approval->year_id;
-            $update_admin_status->month_id         = $regulation_approval->month_id;
-            $update_admin_status->entity_id        = $regulation_approval->entity_id;
-            $update_admin_status->category_id      = $regulation_approval->category_id;
-            $update_admin_status->subcategory_id   = $regulation_approval->subcategory_id;
-            $update_admin_status->alpha_id         = $regulation_approval->alpha_id;
-            $update_admin_status->document_tag     = $regulation_approval->document_tag;
-            $update_admin_status->ceased_date      = $regulation_approval->ceased_date;
-            $update_admin_status->ceased           = $regulation_approval->ceased;
-            $update_admin_status->slug             = $regulation_approval->slug;
-            $update_admin_status->group_id         = $regulation_approval->group_id;
-            $update_admin_status->regulation_doc   = $regulation_approval->regulation_doc;
-            $update_admin_status->doc_preview      = $regulation_approval->doc_preview;
-            $update_admin_status->related_docs      = $regulation_approval->related_docs;
-            $update_admin_status->doc_preview_count = $regulation_approval->doc_preview_count;
-            $update_admin_status->market_product_tag = $regulation_approval->market_product_tag;
-
-            $regulation_approval->status          = $request->status;
-            $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated
-            $regulation_approval->authoriser_time = $authoriser_time;
-
-            // Copy related_docs from approval record to regulation
-            $update_admin_status->related_docs = $regulation_approval->related_docs;
-            
-            // Copy nested related documents from approval record to regulation
-            if (!empty($regulation_approval->temp_nested_related_docs)) {
-                $update_admin_status->nested_related_docs = $regulation_approval->temp_nested_related_docs;
-            }
-            
-            $update_admin_status->save();
-            $regulation_approval->save();
-            
-            // Process nested related documents if they exist in the approval record
-            if (!empty($regulation_approval->temp_nested_related_docs)) {
-                $nestedRelatedDocs = json_decode($regulation_approval->temp_nested_related_docs, true);
-                if (is_array($nestedRelatedDocs)) {
-                    // Remove existing relationships for this document
-                    \App\Models\DocumentRelationship::where('source_document_id', $update_admin_status->id)->delete();
-                    
-                    // Create new relationships
-                    foreach ($nestedRelatedDocs as $relatedDocId) {
-                        $documentRelationship = new \App\Models\DocumentRelationship();
-                        $documentRelationship->source_document_id = $update_admin_status->id;
-                        $documentRelationship->related_document_id = $relatedDocId;
-                        $documentRelationship->relationship_type = (isset(json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId])) 
-                            ? json_decode($regulation_approval->temp_relationship_types, true)[$relatedDocId] 
-                            : 'Related';
-                        $documentRelationship->notes = (isset(json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId])) 
-                            ? json_decode($regulation_approval->temp_relationship_notes, true)[$relatedDocId] 
-                            : null;
-                        $documentRelationship->is_active = true;
-                        $documentRelationship->created_by = Auth::id();
-                        $documentRelationship->group_id = $update_admin_status->group_id;
-                        $documentRelationship->save();
-                    }
-                }
-            }
-
-            $action = $update_admin_status->title;
-
-            $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog(' Document   (' . $update_admin_status->title . ') Update request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Document (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            // Redirect back to the previous page instead of regulations page
-            return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-        if ($regulation_approval->action_type == 'Delete' && $request->status == 1) {
-
-            $update_admin_status->admin_status = $request->status;
-
-            $regulation_approval->status          = $request->status;
-            $regulation_approval->authoriser_id   = Auth::id(); // Assuming the user is authenticated
-            $regulation_approval->authoriser_time = $authoriser_time;
-
-            $regulation_approval->save();
-
-            $action = $update_admin_status->title;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' Document  (' . $update_admin_status->title . ') Delete request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Document (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            Regulation::find($id)->delete();
-
-            // Redirect back to the previous page instead of regulations page
-            return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-        if ($regulation_approval->action_type == 'Edit' && $request->status == 2) {
-
-            // return $request->note;
-            $update_admin_status->admin_status    = 1;
-            $regulation_approval->admin_status    = $request->status;
-            $regulation_approval->note            = $request->note;
-            $update_admin_status->note            = $request->note;
-            $regulation_approval->authoriser_time = $authoriser_time;
-            $regulation_approval->authoriser_id   = Auth::user()->id;
-
-            $update_admin_status->save();
-            $regulation_approval->save();
-
-            $action = $update_admin_status->title;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Document (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            LogActivity::addToLog(' Document (' . $update_admin_status->title . ') Request rejected by ' . Auth::user()->name);
-
-            // $this->notifyUsersOfRejection($update_admin_status->name, $request->note);
-            // Redirect back to the previous page instead of regulations page
-            return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-        if ($regulation_approval->action_type == 'Insert' && $request->status == 2) {
-
-            //  return $request->note;
-
-            $update_admin_status->admin_status    = $request->status;
-            $regulation_approval->admin_status    = $request->status;
-            $regulation_approval->note            = $request->note;
-            $update_admin_status->note            = $request->note;
-            $regulation_approval->authoriser_time = $authoriser_time;
-            $regulation_approval->authoriser_id   = Auth::user()->id;
-
-            $update_admin_status->save();
-            $regulation_approval->save();
-
-            $action = $update_admin_status->title;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Document (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            LogActivity::addToLog(' Document (' . $update_admin_status->title . ') Request rejected by ' . Auth::user()->name);
-
-            // $this->notifyUsersOfRejection($update_admin_status->name, $request->note);
-            // Redirect back to the previous page instead of regulations page
-            return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-        if ($regulation_approval->action_type == 'Delete' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_admin_status->admin_status    = 1;
-            $regulation_approval->status          = $request->status;
-            $regulation_approval->note            = $request->note;
-            $update_admin_status->note            = $request->note;
-            $regulation_approval->authoriser_time = $authoriser_time;
-            $regulation_approval->authoriser_id   = Auth::user()->id;
-
-            $update_admin_status->save();
-            $regulation_approval->save();
-
-            $action = $update_admin_status->title;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Document (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            LogActivity::addToLog(' Document (' . $update_admin_status->title . ') Request rejected by ' . Auth::user()->name);
-
-            // $this->notifyUsersOfRejection($update_admin_status->name, $request->note);
-            // Redirect back to the previous page instead of regulations page
-            return redirect()->back()->with('success', 'Request rejected.');
-        }
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
     }
 
     public function admin_statusceased(Request $request, $id)

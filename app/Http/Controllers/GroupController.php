@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use App\Helpers\LogActivity;
+use Illuminate\Support\Facades\DB;
 
 class GroupController extends Controller
 {
@@ -96,7 +97,7 @@ class GroupController extends Controller
         $action =  $request['name'];
         $title = 'Please be advised that a new Group (' . $action . ') has been created and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Group (' . $request['name'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog('Group (' . $request['name'] . ') Group creation request by ' . Auth::user()->name);
 
 
 
@@ -175,7 +176,7 @@ class GroupController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be informed  the group (' . $action . ') has been updated and is awaiting your review and approval.';
-        LogActivity::addToLog(' Group (' . $request['name'] . ') updated by ' . Auth::user()->name);
+        LogActivity::addToLog(' Group (' . $request['name'] . ')  Group update request by ' . Auth::user()->name);
 
 
 
@@ -226,7 +227,7 @@ class GroupController extends Controller
 
         $action =  $group->name;
         $title = 'Please be advised that the group(' . $action . ') has been deleted and is awaiting your review and approval.';
-        LogActivity::addToLog(' Group (' . $request['name'] . ') deleted by ' . Auth::user()->name);
+        LogActivity::addToLog(' Group (' . $group->name . ') Group deletion request by ' . Auth::user()->name);
 
 
 
@@ -259,209 +260,115 @@ class GroupController extends Controller
 
     public function groupstatus(Request $request, $id)
     {
-        //  return        $request;
-
         $update_status = Group::find($id);
-        $update_status_pending = GroupPending::where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->where('group_id', $id)->orderBy('created_at', 'desc')->first();
+        $update_status_pending = GroupPending::where('status', 0)
+            ->whereNull('authorizer_id')
+            ->where('group_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 1) {
-            $update_status_pending->status = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-            LogActivity::addToLog(' Group (' . $update_status->name . ') Delete request approved by ' . Auth::user()->name);
-
-            $action = $update_status->name;
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Group (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            Group::find($id)->delete();
-
-
-
-
-
-            $this->ApprovenotifyDeletion($action);
-
-
-
-
-            return Redirect::to('groups')->with('success', 'Request approved.');
-            //return redirect()->back()->with('success', 'Request approved.');
+        if (!$update_status_pending) {
+            return redirect()->back()->with('error', 'No pending request found for this group.');
         }
 
-
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
-            $update_status->name = $update_status_pending->name;
-            $update_status->status = $request->status;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Update request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Group (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('groups')->with('success', 'Request approved.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 1) {
-
-            $update_status->status = $request->status;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Insert request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Group (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('groups')->with('success', 'Request approved.');
-        }
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Delete'  && $request->status == 2) {
-
-
-            $update_status->status = 2;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Group (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('groups')->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 2) {
-
-
-
-            $update_status->status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Group (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('groups')->with('success', 'Request rejected.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Role (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that Group (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('groups')->with('success', 'Request rejected.');
-
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            //return redirect()->back()->with('success', 'Request rejected.');
+        try {
+            return DB::transaction(function () use ($request, $update_status, $update_status_pending) {
+                if ($request->status == 1) {
+                    $this->processGroupApproval($update_status, $update_status_pending);
+                    $msg = 'Request approved.';
+                } else {
+                    $this->processGroupRejection($request, $update_status, $update_status_pending);
+                    $msg = 'Request rejected.';
+                }
+
+                $this->logAndNotifyGroupSuccess($update_status, $update_status_pending, $request->status);
+
+                return Redirect::to('groups')->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Group status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+    private function processGroupApproval($group, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::user()->id;
+        $pending->save();
+
+        switch ($pending->action_type) {
+            case 'Delete':
+                $group->delete();
+                break;
+            case 'Edit':
+                $group->name = $pending->name;
+                $group->status = 1;
+                $group->save();
+                break;
+            case 'Insert':
+                $group->status = 1;
+                $group->save();
+                break;
+        }
+    }
+
+    private function processGroupRejection($request, $group, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::user()->id;
+        $pending->save();
+
+        $group->note = $request->note;
+
+        switch ($pending->action_type) {
+            case 'Delete':
+            case 'Edit':
+                $group->status = 1;
+                break;
+            case 'Insert':
+                $group->status = 2;
+                break;
+        }
+        $group->save();
+    }
+
+    private function logAndNotifyGroupSuccess($group, $pending, $decision)
+    {
+        $action = $group->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            switch ($pending->action_type) {
+                case 'Delete':
+                    $this->ApprovenotifyDeletion($action);
+                    $title = "Group ($action) Delete request approved.";
+                    LogActivity::addToLog(" Group ($action) Group deletion request approved by " . Auth::user()->name);
+                    break;
+                case 'Edit':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Group ($action) Update request approved.";
+                    LogActivity::addToLog(" Group ($action) Group update request approved by " . Auth::user()->name);
+                    break;
+                case 'Insert':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Group ($action) Group creation request approved.";
+                    LogActivity::addToLog("Group ($action) Group creation request approved by " . Auth::user()->name);
+                    break;
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'creation' : strtolower($pending->action_type);
+            $title = "Group ($action) Group $type request rejected.";
+            LogActivity::addToLog("Group ($action) Group $type request rejected by " . Auth::user()->name);
+        }
+
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
+    }
+
+
 
 
 

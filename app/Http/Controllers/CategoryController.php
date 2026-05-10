@@ -142,7 +142,7 @@ class CategoryController extends Controller
         $action =  $request['name'];
         $title = 'Please be advised that a new Category (' . $action . ') has been created and is awaiting your review and approval.';
         $inputter_title = 'Please be advised that a new Category (' . $action . ') has been created.';
-        LogActivity::addToLog(' Category (' . $request['name'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Category (' . $request['name'] . ') Category creation request  by ' . Auth::user()->name);
 
 
 
@@ -244,7 +244,7 @@ class CategoryController extends Controller
         $action =  $request['name'];
         $title = 'Please be informed  the Category (' . $action . ') has been updated and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Category (' . $request['name'] . ') updated  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Category (' . $request['name'] . ') Category update request by ' . Auth::user()->name);
 
 
 
@@ -299,7 +299,7 @@ class CategoryController extends Controller
         $action =  $category->name;
         $title = 'Please be advised that the Category (' . $action . ') has been deleted and is awaiting your review and approval.';
 
-        LogActivity::addToLog(' Category (' . $request['name'] . ') deleted  by ' . Auth::user()->name);
+        LogActivity::addToLog(' Category (' . $request['name'] . ') Category delete request by ' . Auth::user()->name);
 
 
 
@@ -343,231 +343,121 @@ class CategoryController extends Controller
 
     public function catstatus(Request $request, $id)
     {
-
-
         $update_status = Category::find($id);
-        $update_status_pending = CategoriesPending::where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->where('category_id', $id)->orderBy('created_at', 'desc')->first();
+        $update_status_pending = CategoriesPending::where('status', 0)
+            ->whereNull('authorizer_id')
+            ->where('category_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 1) {
-            $update_status_pending->status = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            LogActivity::addToLog(' Category (' . $update_status->name . ') Delete request approved by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Category (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            Category::find($id)->delete();
-
-
-
-
-
-            $this->ApprovenotifyDeletion($action);
-
-
-
-
-
-
-            return Redirect::to('categories')->with('success', 'Request approved.');
-
-
-            // return redirect()->back()->with('success', 'Request approved.');
+        if (!$update_status_pending) {
+            return redirect()->back()->with('error', 'No pending request found for this category.');
         }
 
-
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
-            $update_status->name = $update_status_pending->name;
-            $update_status->description = $update_status_pending->description;
-            $update_status->display_on_menu = $update_status_pending->display_on_menu;
-            $update_status->abbreviation = $update_status_pending->abbreviation;
-            $update_status->abbreviation_description = $update_status_pending->abbreviation_description;
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' Category (' . $update_status->name . ') Update request approved by ' . Auth::user()->name);
-
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Category (' . $action . ') Update request approved by.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('categories')->with('success', 'Request approved.');
-
-
-            // return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 1) {
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            // Ensure abbreviation fields from pending are applied as well
-            $update_status->abbreviation = $update_status_pending->abbreviation;
-            $update_status->abbreviation_description = $update_status_pending->abbreviation_description;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-            LogActivity::addToLog(' Category (' . $update_status->name . ') Insert request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Category (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('categories')->with('success', 'Request approved.');
-
-
-            //return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 2) {
-
-
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Category (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Category (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('categories')->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' &&  $request->status == 2) {
-
-
-
-            $update_status->admin_status = $request->status;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Category (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Category (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('categories')->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 2) {
-
-
-
-            $update_status->admin_status = 1;
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' Category (' . $update_status->name . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that  Category (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('categories')->with('success', 'Request rejected.');
+        try {
+            return DB::transaction(function () use ($request, $update_status, $update_status_pending) {
+                if ($request->status == 1) {
+                    $this->processCategoryApproval($update_status, $update_status_pending);
+                    $msg = 'Request approved.';
+                } else {
+                    $this->processCategoryRejection($request, $update_status, $update_status_pending);
+                    $msg = 'Request rejected.';
+                }
+
+                $this->logAndNotifyCategorySuccess($update_status, $update_status_pending, $request->status);
+
+                return Redirect::to('categories')->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Category status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+    private function processCategoryApproval($category, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        switch ($pending->action_type) {
+            case 'Delete':
+                $category->delete();
+                break;
+            case 'Edit':
+                $category->name = $pending->name;
+                $category->description = $pending->description;
+                $category->display_on_menu = $pending->display_on_menu;
+                $category->abbreviation = $pending->abbreviation;
+                $category->abbreviation_description = $pending->abbreviation_description;
+                $category->status = 1;
+                $category->admin_status = 1;
+                $category->save();
+                break;
+            case 'Insert':
+                $category->status = 1;
+                $category->admin_status = 1;
+                $category->abbreviation = $pending->abbreviation;
+                $category->abbreviation_description = $pending->abbreviation_description;
+                $category->save();
+                break;
+        }
+    }
+
+    private function processCategoryRejection($request, $category, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        $category->note = $request->note;
+        $category->admin_status = $request->status;
+
+        switch ($pending->action_type) {
+            case 'Insert':
+                $category->status = $request->status;
+                break;
+            case 'Delete':
+                $category->admin_status = 1;
+                break;
+        }
+        $category->save();
+    }
+
+    private function logAndNotifyCategorySuccess($category, $pending, $decision)
+    {
+        $action = $category->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            switch ($pending->action_type) {
+                case 'Delete':
+                    $this->ApprovenotifyDeletion($action);
+                    $title = "Category ($action) delete request approved.";
+                    LogActivity::addToLog(" Category ($action) Category delete request approved by " . Auth::user()->name);
+                    break;
+                case 'Edit':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Category ($action) Update request approved.";
+                    LogActivity::addToLog(" Category ($action) Category update request approved by " . Auth::user()->name);
+                    break;
+                case 'Insert':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "Category ($action) Insert request approved.";
+                    LogActivity::addToLog(" Category ($action) Category create request approved by " . Auth::user()->name);
+                    break;
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'create' : strtolower($pending->action_type);
+            $title = "Category ($action) $type request rejected.";
+            LogActivity::addToLog(" Category ($action) Category $type request rejected by " . Auth::user()->name);
+        }
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
+    }
+
 
 
 

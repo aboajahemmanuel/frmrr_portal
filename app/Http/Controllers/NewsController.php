@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\NewsPending;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use App\Helpers\LogActivity;
@@ -177,7 +179,7 @@ class NewsController extends Controller
 
         $action =  $request['title'];
         $title = 'Please be advised that a new News Alert (' . $action . ') has been created and is awaiting your review and approval.';
-        LogActivity::addToLog(' News Alert  (' . $request['title'] . ') created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' News Alert  (' . $request['title'] . ')  News Alert creation request by ' . Auth::user()->name);
 
 
 
@@ -257,7 +259,7 @@ class NewsController extends Controller
 
         $action =  $request['name'];
         $title = 'Please be informed  the News alert (' . $action . ') has been updated and is awaiting your review and approval.';
-        LogActivity::addToLog(' News Alert  (' . $request['title'] . ') updated   by ' . Auth::user()->name);
+        LogActivity::addToLog(' News Alert  (' . $request['title'] . ') News Alert update request by ' . Auth::user()->name);
 
 
 
@@ -313,7 +315,7 @@ class NewsController extends Controller
 
         $action =  $group->name;
         $title = 'Please be advised that the News alert (' . $action . ') has been deleted and is awaiting your review and approval.';
-        LogActivity::addToLog(' News Alert  (' . $request['title'] . ') deleted  by ' . Auth::user()->name);
+        LogActivity::addToLog(' News Alert  (' . $request['title'] . ') News Alert deletion request by ' . Auth::user()->name);
 
 
 
@@ -349,233 +351,118 @@ class NewsController extends Controller
 
     public function news_status(Request $request, $id)
     {
-        // return        $request;
-
         $update_status = News::find($id);
-        $update_status_pending = NewsPending::where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->where('news_id', $id)->orderBy('created_at', 'desc')->first();
+        $update_status_pending = NewsPending::where('status', 0)
+            ->whereNull('authorizer_id')
+            ->where('news_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-
-
-        if ($update_status_pending->action_type == 'Delete' &&  $request->status == 1) {
-            $update_status_pending->status = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-            LogActivity::addToLog(' News Alert  (' . $update_status->title . ') Delete request approved by ' . Auth::user()->name);
-
-            News::find($id)->delete();
-
-
-
-            $action = $update_status->title;
-
-            $this->ApprovenotifyDeletion($action);
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised News Alert (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('news')->with('success', 'Request approved.');
+        if (!$update_status_pending) {
+            return redirect()->back()->with('error', 'No pending request found for this news alert.');
         }
 
-
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
-            $update_status->title = $update_status_pending->title;
-            $update_status->news_content = $update_status_pending->news_content;
-
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->title;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' News Alert  (' . $update_status->title . ') Update request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised News Alert (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            return Redirect::to('news')->with('success', 'Request approved.');
-        }
-
-
-
-        if ($update_status_pending->action_type == 'Insert' &&  $request->status == 1) {
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->title;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            LogActivity::addToLog(' News Alert  (' . $update_status->title . ') Insert request approved by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised News Alert (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-            return Redirect::to('news')->with('success', 'Request approved.');
-        }
-
-
-
-
-
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->status = $request->status;
-            $update_status->admin_status = $request->status;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' News Alert  (' . $update_status->title . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised News Alert (' . $action . ') Request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return Redirect::to('news')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 2) {
-
-            // return $request->note;
-
-            // $update_status->status = $request->status;
-            $update_status->admin_status = 1;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' News Alert  (' . $update_status->title . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised News Alert (' . $action . ') Request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return Redirect::to('news')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-
-
-
-        if ($update_status_pending->action_type == 'Edit' &&  $request->status == 2) {
-
-            // return $request->note;
-
-            $update_status->admin_status = 1;
-
-            $update_status_pending->status = $request->status;
-            $update_status_pending->note = $request->note;
-            $update_status->note = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note = $request->note;
-
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' News Alert  (' . $update_status->title . ') Request rejected by ' . Auth::user()->name);
-
-
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised News Alert (' . $action . ') Request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-
-
-            // $this->notifyUsersOfRejection($update_status->name, $request->note);
-            return Redirect::to('news')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
+        try {
+            return DB::transaction(function () use ($request, $update_status, $update_status_pending) {
+                if ($request->status == 1) {
+                    $this->processNewsApproval($update_status, $update_status_pending);
+                    $msg = 'Request approved.';
+                } else {
+                    $this->processNewsRejection($request, $update_status, $update_status_pending);
+                    $msg = 'Request rejected.';
+                }
+
+                $this->logAndNotifyNewsSuccess($update_status, $update_status_pending, $request->status);
+
+                return Redirect::to('news')->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('News status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+    private function processNewsApproval($news, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        switch ($pending->action_type) {
+            case 'Delete':
+                $news->delete();
+                break;
+            case 'Edit':
+                $news->title = $pending->title;
+                $news->news_content = $pending->news_content;
+                $news->status = 1;
+                $news->admin_status = 1;
+                $news->save();
+                break;
+            case 'Insert':
+                $news->status = 1;
+                $news->admin_status = 1;
+                $news->save();
+                break;
+        }
+    }
+
+    private function processNewsRejection($request, $news, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        $news->note = $request->note;
+        $news->admin_status = $request->status;
+
+        switch ($pending->action_type) {
+            case 'Insert':
+                $news->status = $request->status;
+                break;
+            case 'Delete':
+            case 'Edit':
+                $news->admin_status = 1;
+                break;
+        }
+        $news->save();
+    }
+
+    private function logAndNotifyNewsSuccess($news, $pending, $decision)
+    {
+        $action = $news->title;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            switch ($pending->action_type) {
+                case 'Delete':
+                    $this->ApprovenotifyDeletion($action);
+                    $title = "News Alert ($action) Delete request approved.";
+                    LogActivity::addToLog(" News Alert ($action) News Alert delete request approved by " . Auth::user()->name);
+                    break;
+                case 'Edit':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "News Alert ($action) Update request approved.";
+                    LogActivity::addToLog(" News Alert ($action) News Alert update request approved by " . Auth::user()->name);
+                    break;
+                case 'Insert':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "News Alert ($action) Insert request approved.";
+                    LogActivity::addToLog(" News Alert ($action) News Alert creation request approved by " . Auth::user()->name);
+                    break;
+            }
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $type = ($pending->action_type == 'Insert') ? 'creation' : strtolower($pending->action_type);
+            $title = "News Alert ($action) News Alert $type request rejected.";
+            LogActivity::addToLog(" News Alert ($action) News Alert $type request rejected by " . Auth::user()->name);
+        }
+
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
+    }
+
 
 
 

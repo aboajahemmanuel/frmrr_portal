@@ -258,7 +258,7 @@ class UserController extends Controller
 
         $action = $request['name'];
         $title  = 'Please be advised that a new User (' . $action . ') has been created and is awaiting your review and approval.';
-        LogActivity::addToLog(' User (' . $request['name'] . ')  created  by ' . Auth::user()->name);
+        LogActivity::addToLog(' User (' . $name . ') Profile creation request by ' . Auth::user()->name);
 
         $authorise_email = User::where('id', $request->authorizer_id)->first();
 
@@ -305,7 +305,7 @@ class UserController extends Controller
         // Prepare the notification details
         $action = $request->input('name');
         $title  = 'Please be advised that the User (' . $action . ') has been updated and is awaiting your review and approval.';
-        LogActivity::addToLog(' User (' . $request['name'] . ')  updated  by ' . Auth::user()->name);
+        LogActivity::addToLog(' User (' . $name . ') Profile update request created by ' . Auth::user()->name);
 
         // Get the authorizer's email (assuming you have a way to identify the authorizer)
         $authorise_email = User::where('id', $request->authorizer_id)->value('email');
@@ -389,7 +389,7 @@ class UserController extends Controller
             $user_pending->action_type = 'Enable';
 
             $user_pending->save();
-            LogActivity::addToLog(' User (' . $request['name'] . ')  Enabled  by ' . Auth::user()->name);
+            LogActivity::addToLog(' User (' . $user->name . ') Profile enable request by ' . Auth::user()->name);
 
             $user->status = 5;
             $user->save();
@@ -408,7 +408,7 @@ class UserController extends Controller
             $user_pending->roles    = json_encode($request->input('roles'));
             //$user_pending->roles = json_encode($user->roles);
 
-            LogActivity::addToLog(' User (' . $request['name'] . ')  Disabled  by ' . Auth::user()->name);
+            LogActivity::addToLog(' User (' . $user->name . ') Profile disable Request by ' . Auth::user()->name);
 
             $user_pending->save();
 
@@ -434,262 +434,149 @@ class UserController extends Controller
 
     public function userstatus(Request $request, $id)
     {
-        $request;
+        $update_status = User::find($id);
+        $update_status_pending = Userspending::where('status', 0)
+            ->whereNull('authorizer_id')
+            ->where('user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-        $update_status         = User::find($id);
-         $update_status_pending = Userspending::where('status', 0)->where(
-            'authorizer_id',
-            null
-        )->where('user_id', $id)->orderBy('created_at', 'desc')->first();
-
-        if ($update_status_pending->action_type == 'Delete' && $request->status == 1) {
-            $update_status_pending->status        = 1;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-            $update_status_pending->save();
-
-            Role::find($id)->delete();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyDeletion($action);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Delete request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('admin_users')->with('success', 'Request approved.');
-
-            //  return redirect()->back()->with('success', 'Request approved.');
+        if (!$update_status_pending) {
+            return redirect()->back()->with('error', 'No pending request found for this user.');
         }
 
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 1) {
+        try {
+            return DB::transaction(function () use ($request, $update_status, $update_status_pending) {
+                if ($request->status == 1) {
+                    $this->processApproval($update_status, $update_status_pending);
+                    $msg = 'Request approved.';
+                } else {
+                    $this->processRejection($request, $update_status, $update_status_pending);
+                    $msg = 'Request rejected.';
+                }
 
-            // Check if the role already exists
-            $user = User::find($id);
+                $this->logAndNotifySuccess($update_status, $update_status_pending, $request->status);
 
-            $user->name     = $update_status_pending->name;
-            //$user->email    = $update_status_pending->email;
-            $user->group_id = $update_status_pending->group_id;
+                $redirect = ($update_status_pending->action_type == 'Enable' && $request->status == 2) 
+                    ? 'deactivated' 
+                    : 'admin_users';
 
-            $user->status = 1;
-            $user->save();
+                return Redirect::to($redirect)->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('User status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
 
-            DB::table('model_has_roles')->where(
-                'model_id',
-                $user->id
-            )->delete();
-            $user->assignRole(json_decode($update_status_pending->roles, true));
+    private function processApproval($user, $pending)
+    {
+        $pending->status = 1;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
 
-            $update_status_pending->authorizer_id = Auth::id();
-            $update_status_pending->status        = 1;
-            $update_status_pending->save();
+        switch ($pending->action_type) {
+            case 'Delete':
+                Role::find($user->id)->delete();
+                break;
 
-            $action = $update_status->name;
+            case 'Edit':
+                $user->name = $pending->name;
+                $user->group_id = $pending->group_id;
+                $user->status = 1;
+                $user->save();
 
-            $this->ApprovenotifyUsersnew($action);
+                DB::table('model_has_roles')->where('model_id', $user->id)->delete();
+                $user->assignRole(json_decode($pending->roles, true));
+                break;
 
-            LogActivity::addToLog(' User (' . $request['name'] . ')  update request approved  by ' . Auth::user()->name);
+            case 'Insert':
+                $user->status = 1;
+                $user->save();
+                break;
 
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Update request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
+            case 'Disabled':
+                $user->status = 4;
+                $pending->status = 4;
+                $user->save();
+                $pending->save();
+                break;
 
-            return Redirect::to('admin_users')->with('success', 'Request approved.');
+            case 'Enable':
+                $user->status = 1;
+                $user->save();
+                break;
+        }
+    }
 
-            // return redirect()->back()->with('success', 'Request approved successfully.');
+    private function processRejection($request, $user, $pending)
+    {
+        $pending->status = $request->status;
+        $pending->note = $request->note;
+        $pending->authorizer_id = Auth::id();
+        $pending->save();
+
+        $user->note = $request->note;
+
+        switch ($pending->action_type) {
+            case 'Insert':
+                $user->status = 2;
+                break;
+            case 'Disabled':
+            case 'Edit':
+                $user->status = 1;
+                break;
+            case 'Enable':
+                $user->status = 4;
+                break;
+        }
+        $user->save();
+    }
+
+    private function logAndNotifySuccess($user, $pending, $decision)
+    {
+        $action = $user->name;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            switch ($pending->action_type) {
+                case 'Delete':
+                    $this->ApprovenotifyDeletion($action);
+                    $title = "User ($action) Delete request approved.";
+                    break;
+                case 'Edit':
+                case 'Insert':
+                    $this->ApprovenotifyUsersnew($action);
+                    $title = "User ($action) Profile " . ($pending->action_type == 'Edit' ? 'update' : 'creation') . " request approved.";
+                    if ($pending->action_type == 'Insert') {
+                        $email_data = [
+                            'title'      => 'New User Notification',
+                            'name'       => $pending->name,
+                            'email'      => $pending->email,
+                            'password'   => $pending->password,
+                            'created_at' => $pending->created_at,
+                        ];
+                        Mail::to($email_data['email'])->queue(new \App\Mail\NotifyNewUser($email_data));
+                    }
+                    break;
+                case 'Disabled':
+                    $this->ApprovenotifyUsersDisable($action);
+                    $title = "User ($action) Profile disabled request approved.";
+                    break;
+                case 'Enable':
+                    $this->ApprovenotifyUsersEnable($action);
+                    $title = "User ($action) Profile enable request approved.";
+                    break;
+            }
+            LogActivity::addToLog(" User ($action) Profile {$pending->action_type} request approved by " . Auth::user()->name);
+        } else {
+            $this->ApprovenotifyReject($action, $pending->note);
+            $title = "User ($action) Profile {$pending->action_type} request rejected.";
+            LogActivity::addToLog(" User ($action) Profile {$pending->action_type} request rejected by " . Auth::user()->name);
         }
 
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 1) {
-
-            $update_status->status = $request->status;
-
-            $update_status_pending->status        = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersnew($action);
-
-            $email_data = [
-                'title'      => 'New User Notification', // Ensure title is added
-                'name'       => $update_status_pending->name,
-                'email'      => $update_status_pending->email,
-                'password'   => $update_status_pending->password,
-                'created_at' => $update_status_pending->created_at,
-            ];
-
-            // Queue the email
-            Mail::to($email_data['email'])->queue(new \App\Mail\NotifyNewUser($email_data));
-
-            LogActivity::addToLog(' User (' . $update_status->name . ')  insert request approved  by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Insert request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('admin_users')->with('success', 'Request approved.');
-
-            // return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-        if ($update_status_pending->action_type == 'Disabled' && $request->status == 1) {
-
-            $update_status->status = 4;
-
-            $update_status_pending->status        = 4;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $this->ApprovenotifyUsersDisable($action);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Disabled request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            LogActivity::addToLog(' User (' . $update_status->name . ')  Disabled request approved  by ' . Auth::user()->name);
-            return Redirect::to('admin_users')->with('success', 'Request approved.');
-
-            //return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-        if ($update_status_pending->action_type == 'Enable' && $request->status == 1) {
-
-            $update_status->status = $request->status;
-
-            $update_status_pending->status        = $request->status;
-            $update_status_pending->authorizer_id = Auth::id(); // Assuming the user is authenticated
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Enable request approved.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            $this->ApprovenotifyUsersEnable($action);
-            LogActivity::addToLog(' User (' . $update_status->name . ')  Enable request approved  by ' . Auth::user()->name);
-
-            return Redirect::to('admin_users')->with('success', 'Request approved.');
-
-            // return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-        if ($update_status_pending->action_type == 'Insert' && $request->status == 2) {
-
-            $update_status->status                = $request->status;
-            $update_status_pending->status        = $request->status;
-            $update_status_pending->note          = $request->note;
-            $update_status->note                  = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' User (' . $update_status->name . ')  Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('admin_users')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-        if ($update_status_pending->action_type == 'Disabled' && $request->status == 2) {
-
-            $update_status->status                = 1;
-            $update_status_pending->status        = $request->status;
-            $update_status_pending->note          = $request->note;
-            $update_status->note                  = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' User (' . $update_status->name . ')  Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('admin_users')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-        if ($update_status_pending->action_type == 'Enable' && $request->status == 2) {
-
-            $update_status->status                = 4;
-            $update_status_pending->status        = $request->status;
-            $update_status_pending->note          = $request->note;
-            $update_status->note                  = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' User (' . $update_status->name . ')  Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('deactivated')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
-
-        if ($update_status_pending->action_type == 'Edit' && $request->status == 2) {
-
-            $update_status->status                = 1;
-            $update_status_pending->status        = $request->status;
-            $update_status_pending->note          = $request->note;
-            $update_status->note                  = $request->note;
-            $update_status_pending->authorizer_id = Auth::user()->id;
-
-            $update_status->save();
-            $update_status_pending->save();
-
-            $action = $update_status->name;
-            $note   = $request->note;
-
-            $this->ApprovenotifyReject($action, $note);
-
-            LogActivity::addToLog(' User (' . $update_status->name . ')  Request rejected by ' . Auth::user()->name);
-
-            $inputter_email = Auth::user()->email;
-            $inputter_title = 'Please be advised that User (' . $action . ') Request rejected.';
-            $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
-
-            return Redirect::to('admin_users')->with('success', 'Request rejected.');
-
-            // return redirect()->back()->with('success', 'Request rejected.');
-        }
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
     }
 
     private function ApproveNotifyNewUser($userName, $userEmail, $userPassword, $dateCreated)

@@ -112,9 +112,7 @@
                                                 <th class="nk-tb-col nk-tb-col-tools ">
                                                     Status
                                                 </th>
-                                                <th class="nk-tb-col nk-tb-col-tools ">
-                                                    Note
-                                                </th>
+                                                
 
                                                 <th class="nk-tb-col nk-tb-col-tools ">
                                                     Action
@@ -166,11 +164,7 @@
                                                         @endif
                                                     </td>
 
-                                                    <td class="nk-tb-col tb-col-lg">
-                                                        @if ($tag->admin_status == 2)
-                                                            {{ $tag->note }}
-                                                        @endif
-                                                    </td>
+                                                   
 
                                                     <td class="nk-tb-col nk-tb-col-tools">
                                                         <ul class="nk-tb-actions gx-1">
