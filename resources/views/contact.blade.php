@@ -53,7 +53,7 @@
                                 <input type="email" class="form__field @error('name') is-invalid @enderror"
                                     placeholder="Email Address" name="email" id="email" required
                                     value="{{ old('email') }}" />
-                                <label for="fname" class="form__label">Email</label>
+                                <label for="fname" class="form__label">Email Address</label>
                             </div>
                             <div class="form__group field">
                                 <input type="text" class="form__field  @error('name') is-invalid @enderror"
