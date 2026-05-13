@@ -3,10 +3,13 @@
           @include('layouts.appnavbar')
 
           <div class="info">
-              <div class="title">The Financial Market Rules and Regulations Portal (FMRR)</div>
+              <div class="title">The Financial Market Rules and Regulations Portal</div>
               <div class="desc">
-                  FMRR serves as a comprehensive repository of financial market regulations, providing a strategic advantage in the dynamic financial markets landscape. This user-friendly platform facilitates the navigation of complex regulatory frameworks by offering real-time access to regulatory changes and updates. It streamlines the process of navigating rules and regulations, simplifies regulatory reporting and submissions, and acts as a centralised hub for all regulatory information and resources.
-              </div>
+                 The Financial Market Rules and Regulations Portal (FMRR) serves as a comprehensive repository for financial market regulations, providing stakeholders with a strategic advantage in navigating the dynamic financial markets landscape. This user-friendly platform enables seamless access to complex regulatory frameworks by offering real-time updates and insights on regulatory changes.
+               </div>
+              <div class="desc">
+                 FMRR streamlines the process of understanding and complying with market rules, simplifies regulatory reporting and submissions, and functions as a centralised hub for all regulatory information and resources.
+                 
               <?php
                 $title = ''; 
                 ?>

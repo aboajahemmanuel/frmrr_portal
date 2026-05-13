@@ -176,9 +176,9 @@
         <div class="" style="text-align: justify;">
             <p>The content provided on this Portal is for general informational purposes only and does not constitute legal, financial, or professional advice.</p>
             
-            <p>While FMDQ Securities Exchange Limited ("<strong>FMDQ Exchange</strong>") endeavours to ensure the accuracy, completeness, and timeliness of the information presented, FMDQ Exchange</p>
+            <p>While FMDQ Securities Exchange Limited ("<strong>FMDQ Exchange</strong>") endeavours to ensure the accuracy, completeness, and timeliness of the information presented, FMDQ Exchange:</p>
             <ul style="list-style-type: square;">
-                <li>does not warrant or guarantee accuracy, completeness, or reliability of the information</li>
+                <li>does not warrant or guarantee the accuracy, completeness, or reliability of any information contained herein</li>
                 <li>shall not be held liable for any errors, omissions, or reliance placed on the information/materials available on this Portal</li>
                 <li>reserves the right to modify, update, or remove any content on this Portal at its discretion and without prior notice</li>
                 <li>disclaims all liability for any losses or damages, whether direct, indirect, or consequential, arising from the use of, or inability to use, the Portal or its content</li>
@@ -186,7 +186,7 @@
             
             <p>By accessing and using this Portal, you agree to these terms and assume full responsibility for your use of the information provided herein.</p>
             
-            <p>By clicking "Accept" below, you acknowledge that you have read, understood, and agree to be bound by the above terms and conditions.</p>
+            <p>By clicking "<b>Accept</b>" below, you acknowledge that you have read, understood, and agree to be bound by the above terms and conditions.</p>
         </div>
         
         <div class="disclaimer-actions">
