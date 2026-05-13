@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use App\Helpers\LogActivity;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {

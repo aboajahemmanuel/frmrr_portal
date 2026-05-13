@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\PendingPermission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
