@@ -3,81 +3,8 @@
           @include('layouts.appnavbar')
 
           <div class="info">
-              <div class="title">Search Product and Market Documentation</div>
-              <div class="desc">
-                  Explore our content with ease—start your search now.
-              <?php
-                $title = ''; 
-                ?>
-              <div style="display: flex; align-items:center; gap: 5px;">
-                  <form method="GET" action="{{ route('search_result') }}" style="width: 100% !important;">
-                      <div class="search" style="width: 100% !important;">
-                          <div class="search-box">
-                              <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
-                              <input required name="title" type="search" placeholder="What are you looking for?" />
-                          </div>
-                          <a href="#" style="height: 100%;">
-                              <button style="height: 100%;" type="submit">
-                                  <div class="search-full">Search</div>
-                              </button>
-                          </a>
-                      </div>
-                  </form> 
-                  @if (Auth::check())
-                  @if (($userSubscription ?? $isSubscribed) || Auth::user()->usertype == 'internal')
-                  <a href="{{ url('search') }}">
-                      <div>
-                          <div class="gradient-buttons">
-                              <div class="gradient-button-content-gold" style="text-align: center !important; padding: 3px !important;">
-                                  <div>Advanced Search</div>
-                              </div>
-                          </div>
-                      </div>
-                  </a>
-                  @endif
-                  @endif
-
-
-
-                  @if (Auth::check())
-                  @if (!($userSubscription ?? $isSubscribed) && Auth::user()->usertype != 'internal')
-                  <a href="{{ url('subscribe') }}">
-                      <div>
-                          <div class="gradient-buttons">
-                              <div class="gradient-button-content-gold">
-                                  <div>Advanced Search</div>
-                              </div>
-                          </div>
-                      </div>
-                  </a>
-                  @endif
-                  @else
-                  <a href="{{ url('subscribe') }}">
-                      <div>
-                          <div class="gradient-buttons">
-                              <div class="gradient-button-content-gold">
-                                  <div>Advanced Search</div>
-                              </div>
-                          </div>
-                      </div>
-                  </a>
-                  @endif
-              </div>
-
-
-              <div class="shortcuts">
-                  <div>
-                      <b>Market Products</b>:
-                      <span>
-                          @foreach ($marketProductTags as $tag)
-                          <a href="{{ route('marketProductTag', $tag->slug) }}"
-                              style="color:#C79D51 !important">{{ trim($tag->name) }}</a>@if (!$loop->last),
-                          @endif
-                          @endforeach
-                      </span>
-                  </div>
-              </div>
-          </div>
+              <div class="title">News </div>
+              
       </div>
       <marquee class="marq" bgcolor="transparent" direction="left" loop="">
           <div class="scrolling-news">

@@ -182,12 +182,25 @@
                         }
                         
                         sort($statusesArray);
+                        
+                        // Move 'Empty Space' to the end if it exists
+                        if (($key = array_search('Empty Space', $statusesArray)) !== false) {
+                            unset($statusesArray[$key]);
+                            $statusesArray[] = 'Empty Space';
+                        }
+                        
                         $statuses = $statusesArray;
                     } catch(\Exception $e) {
-                         $statuses = ['Empty Space', 'Ceased', 'Repealed', 'Amended', 'Superseded'];
+                         $statuses = ['Ceased', 'Repealed', 'Amended', 'Superseded', 'Empty Space'];
                     }
                 } else {
                     $statuses = $options['statuses'];
+                    
+                    // Also ensure 'Empty Space' is last if it exists in provided statuses
+                    if (is_array($statuses) && ($key = array_search('Empty Space', $statuses)) !== false) {
+                        unset($statuses[$key]);
+                        $statuses[] = 'Empty Space';
+                    }
                 }
             @endphp
             
