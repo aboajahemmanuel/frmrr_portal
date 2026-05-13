@@ -14,7 +14,7 @@
                     <div class="profile-horizontal-line"></div>
                     <div class="profile-profile-details">
                         <div class="profile-title">Phone</div>
-                        <div class="profile-info">+234-919-291-9219</div>
+                        <div class="profile-info">+2349113977152</div>
                     </div>
                     <div class="profile-horizontal-line"></div>
                     <div class="profile-profile-details">
