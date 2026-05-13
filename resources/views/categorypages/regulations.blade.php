@@ -20,9 +20,9 @@
                 </div>
                 @if ($regulations_ceased->count() > 0)
                     <div class="saved" id="toggleButton">
-                        Show Ceased <img src="{{ asset('public/users/assets/Eyes.svg') }}" alt="Saved" />
+                         Ceased <img src="{{ asset('public/users/assets/Eyes.svg') }}" alt="Saved" />
                     </div>
-                    {{-- <button  class="btn btn-primary">Show Ceased</button> --}}
+                    {{-- <button  class="btn btn-primary"> Ceased</button> --}}
                 @endif
 
             </div>
@@ -273,7 +273,7 @@
                     toggleButton.textContent = 'Hide Ceased'; // Show this if the first content is hidden
                 } else {
                     toggleButton.textContent =
-                        'Show Ceased'; // Show this if the second content is hidden
+                        'Ceased'; // Show this if the second content is hidden
                 }
             });
         });

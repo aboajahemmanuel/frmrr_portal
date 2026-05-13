@@ -240,7 +240,7 @@
             <div class="button-container-sb">
                 <div class="gradient-buttons">
                     <div class="gradient-button-content">
-                        <div>Show Ceased/Repealed/Amended/Superseded</div>
+                        <div>Ceased/Repealed/Amended/Superseded</div>
                         <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="FMDQ Logo" />
                     </div>
                 </div>
