@@ -186,7 +186,7 @@
                                         <thead>
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th class="nk-tb-col">S/N</th>
-                                                <th class="nk-tb-col">Name of the Document</th>
+                                                <th class="nk-tb-col">Title</th>
                                                 <th class="nk-tb-col">Date</th>
 
 
