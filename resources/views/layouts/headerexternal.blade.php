@@ -9,7 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 
-    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>FMRR Home</title>
 </head>
 
@@ -41,35 +42,44 @@ Copyright © FMDQ Group PLC. All rights reserved.
  
                                 </div>
                             </div>
-                            <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
                             <script>
-                                $(window).load('load', function() {
+                                $(window).on('load', function() {
                                     // Preloader
                                     $('.loader').fadeOut();
                                     $('.loader-mask').delay(250).fadeOut('slow');
                                 });
 
 
-                                // $(window).load(function() {
-                                //     // Preloader
-                                //     $('.loader').fadeOut();
-                                //     $('.loader-mask').delay(150).fadeOut('slow');
-                                // });
-
-
                                 $(document).ready(function() {
                                     @if ($errors->any())
-                                        @foreach ($errors->all() as $error)
-                                            toastr.error('{{ $error }}', '');
-                                        @endforeach
+                                        @php
+                                            $errorMessages = implode('<br>', $errors->all());
+                                        @endphp
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error!',
+                                            html: '{!! $errorMessages !!}',
+                                            confirmButtonColor: '#3c4d62'
+                                        });
                                     @endif
 
                                     @if (session('success'))
-                                        toastr.success('{{ session('success') }}', '');
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Success!',
+                                            text: "{{ session('success') }}",
+                                            timer: 3000,
+                                            showConfirmButton: false
+                                        });
                                     @endif
 
                                     @if (session('error'))
-                                        toastr.error('{{ session('error') }}', '');
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error!',
+                                            text: "{{ session('error') }}",
+                                            confirmButtonColor: '#3c4d62'
+                                        });
                                     @endif
                                 });
                             </script>

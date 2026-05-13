@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 
-    <!-- Toastr CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>FMRR - {{ $marketTag->name }}</title>
 
     <style>
@@ -86,22 +86,23 @@
             
             // Set warning timer
             timeoutWarning = setTimeout(() => {
-                toastr.warning('Your session will expire in 2 minutes due to inactivity.', 'Session Warning', {
-                    timeOut: 10000,
-                    closeButton: true,
-                    progressBar: true
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Session Warning',
+                    text: 'Your session will expire in 2 minutes due to inactivity.',
+                    confirmButtonColor: '#3c4d62'
                 });
             }, sessionTimeoutMs - warningTimeMs);
             
             // Set expiry timer
             timeoutExpiry = setTimeout(() => {
-                toastr.error('Your session has expired. Please log in again.', 'Session Expired', {
-                    timeOut: 5000,
-                    closeButton: true,
-                    progressBar: true,
-                    onHidden: function() {
-                        window.location.href = '/login';
-                    }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Session Expired',
+                    text: 'Your session has expired. Please log in again.',
+                    confirmButtonColor: '#3c4d62'
+                }).then(() => {
+                    window.location.href = '/login';
                 });
             }, sessionTimeoutMs);
             
@@ -123,9 +124,39 @@
         // Initialize timer
         resetSessionTimer();
     });
-</script>
 
-<!-- Toastr JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    $(document).ready(function() {
+        @if ($errors->any())
+            @php
+                $errorMessages = implode('<br>', $errors->all());
+            @endphp
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                html: '{!! $errorMessages !!}',
+                confirmButtonColor: '#3c4d62'
+            });
+        @endif
+
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: "{{ session('success') }}",
+                timer: 3000,
+                showConfirmButton: false
+            });
+        @endif
+
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: "{{ session('error') }}",
+                confirmButtonColor: '#3c4d62'
+            });
+        @endif
+    });
+</script>
 
 </html>
