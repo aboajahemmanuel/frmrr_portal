@@ -1044,7 +1044,8 @@ input[type="password"] {
     left: 0;
     width: 100%;
     /* padding: 1em; */
-    height: 250px;
+    min-height: 260px;
+    height: auto;
     border-top-left-radius: 22px;
     border-bottom-left-radius: 22px;
     border-bottom-right-radius: 22px;
@@ -1052,6 +1053,8 @@ input[type="password"] {
     color: black;
     background-color: #fff;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 
@@ -1231,6 +1234,10 @@ input[type="password"] {
 
 .blog-card-info {
     padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
 }
 
 .blog-card-title {
