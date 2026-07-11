@@ -192,6 +192,9 @@ class WelcomeController extends Controller
 
     public function success_pay(Request $request)
     {
+        if (!Session::has('success')) {
+            return redirect()->route('home');
+        }
 
         return view('success');
     }
