@@ -127,7 +127,7 @@
 
     @if($options['showMarketProductFilter'] ?? true)
     <div class="filter-group">
-        <label for="market-product-filter-{{ $tableId }}">Market Products</label>
+        <label for="market-product-filter-{{ $tableId }}">Market Product</label>
         <select id="market-product-filter-{{ $tableId }}" class="filter-select">
             <option value="">All Market Products</option>
             @php

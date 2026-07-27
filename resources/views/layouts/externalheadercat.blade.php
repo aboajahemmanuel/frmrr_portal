@@ -2,11 +2,9 @@
       <div class="w-1100">
           @include('layouts.appnavbar')
           <div class="info">
-              <div class="title">Search {{ $category->name }}</div>
+              <div class="title">{{ $category->name }}</div>
               <div class="desc">
-                  {{-- Browse through our frequently asked questions, tutorials, and
-                  other self-help resources to find the answers you need. --}}
-                  Explore our content with ease—start your search now.
+                 {{$category->description}}
               </div>
               <?php
                 $title = '';

@@ -19,7 +19,7 @@
 
 .email-success { border-bottom: #1ee0ac; }
 
-.email-warning { border-bottom: #f4bd0e; }
+.email-warning { border-bottom: #ad8e4f; }
 
 .email-btn { background: #6576ff; border-radius: 4px; color: #ffffff !important; display: inline-block; font-size: 13px; font-weight: 600; line-height: 44px; text-align: center; text-decoration: none; text-transform: uppercase; padding: 0 30px; }
 
@@ -43,7 +43,7 @@
 
 .email-heading-success { color: #1ee0ac; }
 
-.email-heading-warning { color: #f4bd0e; }
+.email-heading-warning { color: #ad8e4f; }
 
 .email-note { margin: 0; font-size: 13px; line-height: 22px; color: #8094ae; }
 
@@ -57,3 +57,4 @@
 
 @media (max-width: 480px) { .email-preview-page .card { border-radius: 0; margin-left: -20px; margin-right: -20px; }
   .email-ul-col2 li { width: 100%; } }
+

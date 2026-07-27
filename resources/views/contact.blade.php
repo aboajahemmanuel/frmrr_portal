@@ -48,6 +48,14 @@
                                 <label for="lname" class="form__label">Last Name</label>
                             </div>
                         </div>
+
+                        <div class="form__group field">
+                            <input type="text" class="form__field @error('institution') is-invalid @enderror"
+                                placeholder="Institution" name="institution" id="institution" required
+                                value="{{ old('institution') }}" />
+                            <label for="institution" class="form__label">Institution</label>
+                        </div>
+                        
                         <div class="hd-input-flex">
                             <div class="form__group field">
                                 <input type="email" class="form__field @error('name') is-invalid @enderror"

@@ -1,6 +1,7 @@
 @extends('layouts.headerexternal')
 
 @section('content')
+<link href="{{ asset('public/admin/css/dashlite.css') }}" rel="stylesheet" type="text/css" />
 <style>
     /* Reset and Base Styles */
     .pricing-container * {
@@ -272,30 +273,62 @@
 
     </section>
     <section class="hd-main-container pricing-section">
-        <div class="pricing">
+            @if ($userSubscription)
+        @else
+    <div class="upgrade-card">
 
-            <div class="pricing-body" >
-            <!-- style="margin: -150px 0px 00px 0px " -->
-                <br>
-                <br>
-                <br>
-                <br>
-                <br>
-                <div class="pricing-container">
-    <div class="pricing-body-header">
+             <section class="hd-main-container pricing-section" >
+                           <div class="pricing-container">
+    <div class="pricing-body-header" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%;">
+          <h1>Upgrade to Pro Membership</h1>
         <h2>Choose a Plan</h2>
+        
+        <div class="pricing-benefits-grid" style="max-width: 1200px; margin: 30px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; font-family: 'Roboto', sans-serif;">
+            <!-- Benefit 1 -->
+            <div style="background: #ffffff; border: 1px solid #e5e9f2; border-radius: 8px; padding: 25px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: #fef8e4; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #ad8e4f;">
+                    <em class="icon ni ni-book-read" style="font-size: 24px;"></em>
+                </div>
+                <h4 style="font-size: 16.5px; color: #1c2b46; font-weight: 700; margin-bottom: 10px; font-family: 'Roboto', sans-serif;">Full Access</h4>
+                <p style="font-size: 13.5px; color: #526484; line-height: 1.6; margin: 0; font-family: 'Roboto', sans-serif;">View and download all financial market regulations, rules, and circulars.</p>
+            </div>
+            
+            <!-- Benefit 2 -->
+            <div style="background: #ffffff; border: 1px solid #e5e9f2; border-radius: 8px; padding: 25px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: #e6f8f3; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #1ee0ac;">
+                    <em class="icon ni ni-eye" style="font-size: 24px;"></em>
+                </div>
+                <h4 style="font-size: 16.5px; color: #1c2b46; font-weight: 700; margin-bottom: 10px; font-family: 'Roboto', sans-serif;">Interactive Previews</h4>
+                <p style="font-size: 13.5px; color: #526484; line-height: 1.6; margin: 0; font-family: 'Roboto', sans-serif;">Preview PDF documents directly within your browser window.</p>
+            </div>
+            
+            <!-- Benefit 3 -->
+            <div style="background: #ffffff; border: 1px solid #e5e9f2; border-radius: 8px; padding: 25px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: #e5f3ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #09c2de;">
+                    <em class="icon ni ni-network" style="font-size: 24px;"></em>
+                </div>
+                <h4 style="font-size: 16.5px; color: #1c2b46; font-weight: 700; margin-bottom: 10px; font-family: 'Roboto', sans-serif;">Document Lineage</h4>
+                <p style="font-size: 13.5px; color: #526484; line-height: 1.6; margin: 0; font-family: 'Roboto', sans-serif;">Trace amendments, active versions, and revisions effortlessly.</p>
+            </div>
+            
+            <!-- Benefit 4 -->
+            <div style="background: #ffffff; border: 1px solid #e5e9f2; border-radius: 8px; padding: 25px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: #f3f2ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #816bff;">
+                    <em class="icon ni ni-search" style="font-size: 24px;"></em>
+                </div>
+                <h4 style="font-size: 16.5px; color: #1c2b46; font-weight: 700; margin-bottom: 10px; font-family: 'Roboto', sans-serif;">Smart Tools</h4>
+                <p style="font-size: 13.5px; color: #526484; line-height: 1.6; margin: 0; font-family: 'Roboto', sans-serif;">Use advanced filters and search, and get real-time notifications.</p>
+            </div>
+        </div>
     </div>
     <div class="pricing-body-plans">
         <div class="active" id="pricing__monthly__plan">
             <div class="plans-container">
                 @foreach ($plans as $package)
-                    <div class="card {{ $package->name === 'Weekly Access' ? 'highlighted' : '' }}">
-                        @if($package->name === 'Weekly Access')
-                            <div class="popular-badge">POPULAR</div>
-                        @endif
+                    <div class="card">
                         <div class="card-header">
                             <span class="card-title">{{ $package->name }}</span>
-                            <h2 class="card-price">₦{{ number_format($package->price, 2) }}</h2>
+                            <h2 class="card-price" style="font-family: 'Roboto', sans-serif; color: #f6f7fcff; font-size: 24px; font-weight: 600;">₦{{ number_format($package->price, 2) }}</h2>
                         </div>
                         <div class="card-body">
                             <p>{{ $package->description }}</p>
@@ -303,21 +336,24 @@
                         <div class="card-footer">
                             <form method="post" action="{{ route('subscribe_payment') }}">
                                 @csrf
-                                <input name="plan_id" type="hidden" value="{{ $package->id }}" name="">
+                                <input name="plan_id" type="hidden" value="{{ $package->id }}">
+                                
                                 <button type="submit" class="choose-button">Choose Plan</button>
                             </form>
+                            
                         </div>
+                        
                     </div>
                 @endforeach
             </div>
         </div>
     </div>
-</div>
-            </div>
-        </div>
-    </section>
 
     </div>
+    </section>
+    </div>
+    @endif
+    </section>
 @endsection
 </div>
 </body>

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use App\Models\SubscriptionPlan;
+use App\Models\Feedback;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
@@ -151,8 +152,7 @@ class WelcomeController extends Controller
             'email' => ['required'],
             'subject' => ['required'],
             'feedback' => ['required'],
-            // 'feedback' => ['required',],
-
+            'institution' => ['required'],
         ]);
 
 
@@ -163,15 +163,23 @@ class WelcomeController extends Controller
             'email' => $request['email'],
             'subject' => $request['subject'],
             'feedback' => $request['feedback'],
+            'institution' => $request['institution'],
         );
         
         try {
+            // Save feedback to the database
+            Feedback::create([
+                'fname' => $request['fname'],
+                'lname' => $request['lname'],
+                'email' => $request['email'],
+                'subject' => $request['subject'],
+                'feedback' => $request['feedback'],
+                'institution' => $request['institution'],
+            ]);
+
             Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
                 // Add your additional email addresses to this array
-                $recipients = [
-                    'mbg@fmdqgroup.com',
-                    'olamide.ige@fmdqgroup.com' // Replace with the actual email
-                ];
+                $recipients = array_filter(array_map('trim', explode(',', env('FEEDBACK_RECIPIENTS'))));
                 $message->to($recipients)
                     ->replyTo($email_data['email'])
                     ->subject('New Feedback Received: ' . $email_data['subject'])
@@ -211,6 +219,20 @@ class WelcomeController extends Controller
 
         $plans = SubscriptionPlan::where('status', 1)->get();
 
-        return view('subscribe', compact('plans'));
+        // Initialize userSubscription to null
+        $userSubscription = null;
+
+        // Check if the user is logged in and get the latest active subscription plan
+        if (Auth::check()) {
+            $user = Auth::user();
+            $today = Carbon::now();
+
+            $userSubscription = Subscription::where('user_id', $user->id)
+                ->where('status', 1)
+                ->where('end_date', '>=', $today) // Check if the end_date is greater than or equal to today
+                ->exists();
+        }
+
+        return view('subscribe', compact('plans', 'userSubscription'));
     }
 }

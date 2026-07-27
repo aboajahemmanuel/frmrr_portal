@@ -164,6 +164,7 @@
   </style>
 
 @if($showFilters)
+<div style="background-color: #fff; padding: 20px; width: 100%">
 <div class="filter-wrapper">
     @include('components.filters.table-filters', [
         'records' => $records,
@@ -171,23 +172,25 @@
         'options' => $filterOptions
     ])
 </div>
+</div>
 @endif
 
 @if (Auth::check())
     @if ($isSubscribed || Auth::user()->usertype == 'internal')
-        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
-       <thead class="thead-dark">
+
+    <table  id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+
+           <thead class="thead-dark">
                 <tr>
                     <th style="text-align: center;">Title</th>
-                    <th style="text-align: center;">Category</th>
-                    <th style="text-align: center;">Subcategory</th> 
+                  
+                    <!-- <th style="text-align: center;">Subcategory</th>  -->
                      <th style="text-align: center;">Status</th>
                       <th style="text-align: center;">Year</th>
-                   
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Effective Date</th>
                     <th style="text-align: center;">Entity</th>
-                    <th style="text-align: center;">Market Products</th>
+                    <th style="text-align: center;">Market Product</th>
                     <th style="text-align: center;">Related Documents</th>
                     <th style="text-align: center;">Action</th>
                 </tr>
@@ -204,8 +207,8 @@
                                 {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }}
                             @endif
                         </td>
-                        <td style="text-align: center">{{ $result->category->name }}</td>
-                        <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>                        <td style="text-align: center">
+                        <!-- <td style="text-align: center">{{ optional($result->subcategory)->name }}</td> -->
+                        <td style="text-align: center">
                             @php
                                 $ceasedVal = trim($result->ceased ?? '');
                             @endphp
@@ -241,8 +244,8 @@
                                 @endforeach
                             @endif
                         </td>
-                        <td style="text-align: center">{{ optional($result->year)->name }}</td>
-                        
+                           <td style="text-align: center">{{ optional($result->year)->name }}</td>
+                        <!-- <td style="text-align: center">{{ $result->document_version }}</td> -->
                         <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}</td>
                         <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}</td>
                         <td style="text-align: center">{{ optional($result->entity)->name }}</td>
@@ -286,7 +289,9 @@
                                     
                                     $totalCount = $relatedCount + $nestedRelatedCount;
                                 @endphp
-                                <span title="View related documents and lineage" style="cursor: pointer; color: #000; font-weight: 500; text-decoration: underline;"  data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $totalCount }} related</span>
+                                <span title="View related documents and lineage" style="cursor: pointer; color: #000; font-weight: 500; text-decoration: underline;"  data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related
+                                   
+                                </span>
                             @else
                                 <span style="color: #999;">None</span>
                             @endif
@@ -435,11 +440,6 @@
             $nestedDocsFromColumn->push($nestedDoc);
         }
     }
-    
-    // Sort nested documents by effective_date in descending order
-    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
-        return \Carbon\Carbon::parse($doc->effective_date);
-    });
 @endphp
 
 {{-- @if($nestedDocsFromColumn->count() > 0)
@@ -457,7 +457,7 @@
                                 @else
                                     <span class="badge badge-success">Active</span>
                                 @endif
-                                
+                             
                                 @if($nestedDoc->document_version)
                                     <span class="ms-2"><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                 @endif
@@ -512,14 +512,14 @@
                                         // Use the new recursive flattened search to find any active documents in the lineage
                                         $allRelatedDocs = $result->getFlattenedRelatedDocuments();
                                         
-                                        // Sort related documents by issue_date in descending order
+                                        // Sort related documents by effective_date in descending order
                                         if ($allRelatedDocs instanceof \Illuminate\Support\Collection) {
                                             $allRelatedDocs = $allRelatedDocs->sortByDesc(function($doc) {
-                                                return $doc->issue_date ? \Carbon\Carbon::parse($doc->issue_date) : \Carbon\Carbon::now()->subYears(100);
+                                                return $doc->effective_date ? \Carbon\Carbon::parse($doc->effective_date) : \Carbon\Carbon::now()->subYears(100);
                                             });
                                         }
                                         
-                                        // Filter for active documents (where ceased is null, empty string, or 'Active')
+                                        // Filter for active documents (where ceased is null, empty string, or falsey)
                                         $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection)
                                             ? $allRelatedDocs->filter(function($doc){ 
                                                 return empty($doc->ceased) || $doc->ceased === 'Active'; 
@@ -531,14 +531,42 @@
                                             <div class="related-doc-item">
                                                 <div class="related-doc-title">
                                                     {{ $relatedDoc->title }}
-                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                        @php
-                                                            $activeNestedCount = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; })->count();
-                                                        @endphp
-                                                        @if($activeNestedCount > 0)
-                                                            <span class="nested-badge">+{{ $activeNestedCount }} active</span>
-                                                        @endif
-                                                    @endif
+                                                    @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+    
+    // Count active nested documents
+    $activeNestedCount = $nestedDocsFromColumn->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; })->count();
+@endphp
+
+@if($nestedDocsFromColumn->count() > 0)
+    @if($activeNestedCount > 0)
+        <span class="nested-badge">+{{ $activeNestedCount }} active</span>
+    @endif
+@endif
                                                 </div>
                                                 <div class="related-doc-meta">
                                                     <span class="badge badge-success">Active</span>
@@ -561,8 +589,14 @@
                                                     </a>
                                                 </div>
 
-                                                {{-- @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                    @php $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; }); @endphp
+                                                @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
+                                                    @php 
+                                                        $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; });
+                                                        // Sort active nested documents by effective_date in descending order
+                                                        $activeNestedDocs = $activeNestedDocs->sortByDesc(function($doc) {
+                                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                                        });
+                                                    @endphp
                                                     @if($activeNestedDocs->count() > 0)
                                                         <div class="nested-related-docs">
                                                             <small><strong>Active Related Documents:</strong></small>
@@ -595,7 +629,7 @@
                                                             @endforeach
                                                         </div>
                                                     @endif
-                                                @endif --}}
+                                                @endif
                                             </div>
                                         @endforeach
                                     @else
@@ -639,17 +673,20 @@
                 cursor: default !important;
             }
         </style>
-        <table id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
-       <thead class="thead-dark">
+         <table  id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+
+           <thead class="thead-dark">
                 <tr>
                     <th style="text-align: center;">Title</th>
-                    <th style="text-align: center;">Category</th> 
-                    <th style="text-align: center;">Subcategory</th>
+                    {{-- <th style="text-align: center;">Category</th> --}}
+                    <!-- <th style="text-align: center;">Subcategory</th> -->
+                    <th style="text-align: center;">Status</th>
                     <th style="text-align: center;">Year</th>
+                 
                     <th style="text-align: center;">Issue Date</th>
                     <th style="text-align: center;">Effective Date</th>
                     <th style="text-align: center;">Entity</th>
-                    <th style="text-align: center;">Market Products</th>
+                    <th style="text-align: center;">Market Product</th>
                     <th style="text-align: center;">Related Documents</th>
                     <th style="text-align: center;">Action</th>
                 </tr>
@@ -666,13 +703,53 @@
                                 {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }}
                             @endif
                         </td>
-                         <td style="text-align: center">
+                         {{-- <td style="text-align: center">
                             {{ optional($result->category)->name }}
-                        </td> 
-                        <td style="text-align: center">
+                        </td> --}}
+                        <!-- <td style="text-align: center">
                             {{ optional($result->subcategory)->name }}
+                        </td> -->
+
+                        <td style="text-align: center">
+                            @php
+                                $ceasedVal = trim($result->ceased ?? '');
+                            @endphp
+                            @if(empty($ceasedVal) || strtolower($ceasedVal) === 'active')
+                                <span class="badge badge-success">Active</span>
+                            @else
+                                @php
+                                    $statuses = array_filter(array_map('trim', explode(',', $ceasedVal)));
+                                @endphp
+                                @foreach($statuses as $status)
+                                    @php
+                                        $statusLower = strtolower($status);
+                                        $badgeClass = 'badge-primary'; // fallback
+                                        if ($statusLower === 'active') {
+                                            $badgeClass = 'badge-success';
+                                        } elseif (in_array($statusLower, ['ceased', 'repealed'])) {
+                                            $badgeClass = 'badge-danger';
+                                        } elseif ($statusLower === 'amended') {
+                                            $badgeClass = 'badge-warning';
+                                        } elseif ($statusLower === 'superseded') {
+                                            $badgeClass = 'badge-secondary';
+                                        } else {
+                                            if (strpos($statusLower, 'ceased') !== false || strpos($statusLower, 'repealed') !== false) {
+                                                $badgeClass = 'badge-danger';
+                                            } elseif (strpos($statusLower, 'amended') !== false) {
+                                                $badgeClass = 'badge-warning';
+                                            } elseif (strpos($statusLower, 'superseded') !== false) {
+                                                $badgeClass = 'badge-secondary';
+                                            }
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ str_replace([',','/'], [', ', ' '], $status) }}</span>
+                                @endforeach
+                            @endif
                         </td>
+
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
+
+                       
                         <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}</td>
                         <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}</td>
                         <td style="text-align: center">{{ optional($result->entity)->name }}</td>
@@ -696,16 +773,27 @@
                             @endif
                         </td>
                         <td style="text-align: center">
-                            @if($result->related_docs)
+                            @if($result->related_docs || $result->nested_related_docs_column)
                                 @php
                                     $relatedDocuments = $result->related_documents;
-                                    // Sort related documents by issue_date in descending order
+                                    // Sort related documents by effective_date in descending order
                                     if ($relatedDocuments instanceof \Illuminate\Support\Collection) {
-                                        $relatedDocuments = $relatedDocuments->sortByDesc('issue_date');
+                                        $relatedDocuments = $relatedDocuments->sortByDesc(function($doc) {
+                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                        });
                                     }
                                     $relatedCount = $relatedDocuments->count();
+                                    
+                                    // Get nested related documents from the new column
+                                    $nestedRelatedCount = $result->nested_related_docs_column ? count(json_decode($result->nested_related_docs_column, true)) : 0;
+                                    
+                                    $totalCount = $relatedCount;
                                 @endphp
-                                <span title="View related documents and lineage" style="cursor: pointer; color: #000; font-weight: 500; text-decoration: underline;"  data-bs-toggle="modal" data-bs-target="#subscribeModal">{{ $relatedCount }} related</span>
+                                <span title="View related documents and lineage" style="cursor: pointer; color: #000; font-weight: 500; text-decoration: underline;"  data-bs-toggle="modal" data-bs-target="#subscribeModal">{{ $totalCount }} related
+                                    @if($nestedRelatedCount > 0)
+                                        <span class="badge bg-info ms-1">{{ $nestedRelatedCount }} nested</span>
+                                    @endif
+                                </span>
                             @else
                                 <span style="color: #999;">None</span>
                             @endif
@@ -777,16 +865,16 @@
                         <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }} -  </h5>
+                                    <h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}  -  </h5>
                                     <span class="badge badge-primary" style="cursor: pointer;" data-toggle="modal" data-target="#activeRelatedDocsModal-{{ $result->id }}"> Jump to Active Version</span>
                                 </div>
                                 <div class="modal-body">
                                     @php 
                                     $relatedDocs = $result->relatedDocuments;
-                                    // Sort related documents by issue_date in descending order
+                                    // Sort related documents by effective_date in descending order
                                     if ($relatedDocs instanceof \Illuminate\Support\Collection) {
                                         $relatedDocs = $relatedDocs->sortByDesc(function($doc) {
-                                            return \Carbon\Carbon::parse($doc->issue_date);
+                                            return \Carbon\Carbon::parse($doc->effective_date);
                                         });
                                     }
                                 @endphp
@@ -795,9 +883,31 @@
                                             <div class="related-doc-item">
                                                 <div class="related-doc-title">
                                                     {{ $relatedDoc->title }}
-                                                    @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                        <span class="nested-badge">+{{ $relatedDoc->nested_related_documents->count() }} more</span>
-                                                    @endif
+                                                    @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+    
+    $totalNestedCount = $nestedDocsFromColumn->count();
+    $oldNestedCount = isset($relatedDoc->nested_related_documents) ? $relatedDoc->nested_related_documents->count() : 0;
+    $combinedNestedCount = $totalNestedCount + $oldNestedCount;
+@endphp
+
+@if($combinedNestedCount > 0)
+    <span class="nested-badge">+{{ $combinedNestedCount }} more</span>
+@endif
                                                 </div>
                                                 <div class="related-doc-meta">
                                                     @if($relatedDoc->ceased)
@@ -833,44 +943,65 @@
                                                     @endif
                                                 </div>
 
-                                                @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                    <div class="nested-related-docs">
-                                                        <small><strong>Related Documents:</strong></small>
-                                                        @foreach($relatedDoc->nested_related_documents as $nestedDoc)
-                                                            <div class="nested-doc-item">
-                                                                <div class="nested-doc-title">
-                                                                    <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
-                                                                </div>
-                                                                <div class="related-doc-meta">
-                                                                    @if($nestedDoc->ceased)
-                                                                        @php
-                                                                            $ceasedStatuses = array_map('trim', explode(',', $nestedDoc->ceased));
-                                                                        @endphp
-                                                                        @foreach($ceasedStatuses as $status)
-                                                                            <span class="badge badge-danger">{{ $status }}</span>
-                                                                        @endforeach
-                                                                    @else
-                                                                        <span class="badge badge-success">Active</span>
-                                                                    @endif
-                                                                    @if($nestedDoc->document_version)
-                                                                        <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
-                                                                    @endif
-                                                                    @if($nestedDoc->effective_date)
-                                                                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
-                                                                    @endif
-                                                                </div>
-                                                                <div style="margin-top: 5px;">
-                                                                    @if($isSubscribed)
-                                                                        <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-book-read"></em> View</a>
-                                                                        <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-download"></em> Download</a>
-                                                                    @else
-                                                                        <a href="{{ route('subscribe') }}" class="btn btn-sm btn-outline-primary"><em class="icon ni ni-lock"></em> Restricted, subscribe to access</a>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
+                                                @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+@endphp
+
+@if($nestedDocsFromColumn->count() > 0)
+    <div class="nested-related-docs">
+        <small><strong>Related Documents:</strong></small>
+        @foreach($nestedDocsFromColumn as $nestedDoc)
+            <div class="nested-doc-item">
+                <div class="nested-doc-title">
+                    <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
+                </div>
+                <div class="related-doc-meta">
+                    @if($nestedDoc->ceased)
+                        @php
+                            $ceasedStatuses = array_map('trim', explode(',', $nestedDoc->ceased));
+                        @endphp
+                        @foreach($ceasedStatuses as $status)
+                            <span class="badge badge-danger">{{ $status }}</span>
+                        @endforeach
+                    @else
+                        <span class="badge badge-success">Active</span>
+                    @endif
+                    @if(isset($nestedDoc->relationship_type))
+                        <span class="badge bg-info ms-1">{{ $nestedDoc->relationship_type }}</span>
+                    @endif
+                    @if($nestedDoc->document_version)
+                        <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                    @endif
+                    @if($nestedDoc->effective_date)
+                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
+                    @endif
+                </div>
+                <div style="margin-top: 5px;">
+                    @if($isSubscribed)
+                        <a href="{{ asset('public/pdf_documents/' . $nestedDoc->regulation_doc) }}" target="_blank" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-book-read"></em> View</a>
+                        <a href="{{ route('download', $nestedDoc->id) }}" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-download"></em> Download</a>
+                    @else
+                        <a href="{{ route('subscribe') }}" class="btn btn-sm btn-outline-primary"><em class="icon ni ni-lock"></em> Restricted, subscribe to access</a>
+                    @endif
+                </div>
+            </div>
+        @endforeach
+    </div>
+@endif
                                             </div>
                                         @endforeach
                                     @else
@@ -893,29 +1024,28 @@
                                 </div>
                                 <div class="modal-body">
                                     @php
-                                        // Use the new recursive flattened search to find any active documents in the lineage
-                                        $allRelatedDocs = $result->getFlattenedRelatedDocuments();
-                                        
-                                        // Sort related documents by issue_date in descending order
+                                        $allRelatedDocs = $result->relatedDocuments;
+                                        // Sort related documents by effective_date in descending order
                                         if ($allRelatedDocs instanceof \Illuminate\Support\Collection) {
                                             $allRelatedDocs = $allRelatedDocs->sortByDesc(function($doc) {
-                                                return $doc->issue_date ? \Carbon\Carbon::parse($doc->issue_date) : \Carbon\Carbon::now()->subYears(100);
+                                                return \Carbon\Carbon::parse($doc->effective_date);
                                             });
                                         }
-                                        
-                                        // Filter for active documents (where ceased is null, empty string, or 'Active')
-                                        $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection)
-                                            ? $allRelatedDocs->filter(function($doc){ 
-                                                return empty($doc->ceased) || $doc->ceased === 'Active'; 
-                                            })
-                                            : collect();
+                                        $activeRelatedDocs = ($allRelatedDocs instanceof \Illuminate\Support\Collection) ? $allRelatedDocs->filter(function($doc){ return is_null($doc->ceased); }) : collect();
                                     @endphp
                                     @if($activeRelatedDocs->count() > 0)
                                         @foreach($activeRelatedDocs as $relatedDoc)
                                             <div class="related-doc-item">
                                                 <div class="related-doc-title">{{ $relatedDoc->title }}
                                                     @if(isset($relatedDoc->nested_related_documents) && $relatedDoc->nested_related_documents->count() > 0)
-                                                        @php $activeNestedCount = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; })->count(); @endphp
+                                                        @php 
+                                                            $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return is_null($d->ceased); });
+                                                            // Sort active nested documents by effective_date in descending order
+                                                            $activeNestedDocs = $activeNestedDocs->sortByDesc(function($doc) {
+                                                                return \Carbon\Carbon::parse($doc->effective_date);
+                                                            });
+                                                            $activeNestedCount = $activeNestedDocs->count();
+                                                        @endphp
                                                         @if($activeNestedCount > 0)
                                                             <span class="nested-badge">+{{ $activeNestedCount }} active</span>
                                                         @endif
@@ -942,8 +1072,37 @@
                                                     @endif
                                                 </div>
 
-                                                {{-- @php $activeNestedDocs = $relatedDoc->nested_related_documents->filter(function($d){ return empty($d->ceased) || $d->ceased === 'Active'; }); @endphp
-                                                @if(isset($relatedDoc->nested_related_documents) && $activeNestedDocs->count() > 0)
+                                                @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+    
+    // Sort nested documents by effective_date in descending order
+    $nestedDocsFromColumn = $nestedDocsFromColumn->sortByDesc(function($doc) {
+        return \Carbon\Carbon::parse($doc->effective_date);
+    });
+    
+    $activeNestedDocs = $nestedDocsFromColumn->filter(function($d){ return is_null($d->ceased); });
+@endphp
+
+@if($activeNestedDocs->count() > 0)
                                                     <div class="nested-related-docs">
                                                         <small><strong>Active Related Documents:</strong></small>
                                                         @foreach($activeNestedDocs as $nestedDoc)
@@ -972,7 +1131,7 @@
                                                             </div>
                                                         @endforeach
                                                     </div>
-                                                @endif --}}
+                                                @endif
                                             </div>
                                         @endforeach
                                     @else
@@ -1049,16 +1208,17 @@
             cursor: default !important;
         }
     </style>
-    <table id="{{ $tableId }}" class="datatable-init responsive table table-striped" style="width:100%" data-auto-responsive="false" data-ordering="false">
-        <thead>
+    <table id="{{ $tableId }}" class="datatable-init responsive table table-striped table-bordered table-hover" style="width:100%">
+       <thead class="thead-dark">
             <tr>
                 <th style="text-align: center;">Title</th>
-            
+                <th style="text-align: center;">Version Number</th>
+                <th style="text-align: center;">Status</th>
                 <th style="text-align: center;">Issue Date</th>
                 <th style="text-align: center;">Year</th>
                 <th style="text-align: center;">Effective Date</th>
                 <th style="text-align: center;">Entity</th>
-                <th style="text-align: center;">Market Products</th>
+                <th style="text-align: center;">Market Product</th>
                 <th style="text-align: center;">Related Documents</th>
                 <th style="text-align: center;">Action</th>
             </tr>
@@ -1075,7 +1235,43 @@
                             {{ str_replace('May.', 'May', $result->formatted_title ?? $result->title) }}
                         @endif
                     </td>
-                   
+                    <td style="text-align: center">{{ $result->document_version }}</td>
+                    <td style="text-align: center">
+                            @php
+                                $ceasedVal = trim($result->ceased ?? '');
+                            @endphp
+                            @if(empty($ceasedVal) || strtolower($ceasedVal) === 'active')
+                                <span class="badge badge-success">Active</span>
+                            @else
+                                @php
+                                    $statuses = array_filter(array_map('trim', explode(',', $ceasedVal)));
+                                @endphp
+                                @foreach($statuses as $status)
+                                    @php
+                                        $statusLower = strtolower($status);
+                                        $badgeClass = 'badge-primary'; // fallback
+                                        if ($statusLower === 'active') {
+                                            $badgeClass = 'badge-success';
+                                        } elseif (in_array($statusLower, ['ceased', 'repealed'])) {
+                                            $badgeClass = 'badge-danger';
+                                        } elseif ($statusLower === 'amended') {
+                                            $badgeClass = 'badge-warning';
+                                        } elseif ($statusLower === 'superseded') {
+                                            $badgeClass = 'badge-secondary';
+                                        } else {
+                                            if (strpos($statusLower, 'ceased') !== false || strpos($statusLower, 'repealed') !== false) {
+                                                $badgeClass = 'badge-danger';
+                                            } elseif (strpos($statusLower, 'amended') !== false) {
+                                                $badgeClass = 'badge-warning';
+                                            } elseif (strpos($statusLower, 'superseded') !== false) {
+                                                $badgeClass = 'badge-secondary';
+                                            }
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ str_replace([',','/'], [', ', ' '], $status) }}</span>
+                                @endforeach
+                            @endif
+                        </td>
                     <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->issue_date)->format('M. j, Y')) }}</td>
                     <td style="text-align: center">{{ optional($result->year)->name }}</td>
                     <td style="text-align: center">{{ str_replace('May.', 'May', \Carbon\Carbon::parse($result->effective_date)->format('M. j, Y')) }}</td>
@@ -1101,26 +1297,25 @@
                     <td style="text-align: center">
 @php
     $relatedDocuments = $result->related_documents;
-    
+    // Sort related documents by effective_date in descending order
     if ($relatedDocuments instanceof \Illuminate\Support\Collection) {
         $relatedDocuments = $relatedDocuments->sortByDesc(function($doc) {
             return \Carbon\Carbon::parse($doc->effective_date);
         });
-        
-        // Remove current document ID from count
-        $relatedDocuments = $relatedDocuments->filter(function($doc) use ($result) {
-            return $doc->id != $result->id;
-        });
     }
     $relatedCount = $relatedDocuments->count();
     
+    // Get nested related documents from the new column
     $nestedRelatedCount = $result->nested_related_docs_column ? count(json_decode($result->nested_related_docs_column, true)) : 0;
     
     $totalCount = $relatedCount + $nestedRelatedCount;
 @endphp
-@if($relatedCount > 0)
+@if($totalCount > 0)
     <a href="#" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}" class="related-docs-badge">
-        <em class="icon ni ni-link-alt"></em> {{ $relatedCount }}
+        <em class="icon ni ni-link-alt"></em> {{ $totalCount }}
+        @if($nestedRelatedCount > 0)
+            <span class="badge bg-info ms-1">{{ $nestedRelatedCount }} nested</span>
+        @endif
     </a>
 @else
     <span class="related-docs-badge no-docs">0</span>
@@ -1150,21 +1345,21 @@
                 <div class="modal fade related-docs-modal" id="relatedDocsModal-{{ $result->id }}" tabindex="-1" role="dialog" aria-labelledby="relatedDocsModalLabel-{{ $result->id }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
-                                <div class="modal-header"><h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }} ({{ $result->year->name }})</h5></div>
-                                <div class="modal-body">
-                                    @php 
-                                        $relatedDocs = $result->relatedDocuments;
-                                        // Sort related documents by effective_date in descending order
-                                        if ($relatedDocs instanceof \Illuminate\Support\Collection) {
-                                            $relatedDocs = $relatedDocs->sortByDesc(function($doc) {
-                                                return \Carbon\Carbon::parse($doc->effective_date);
-                                            });
-                                        }
-                                    @endphp
-                                @if($relatedDocs->count() > 0 || $result->nested_related_docs_column)
+                            <div class="modal-header"><h5 class="modal-title" id="relatedDocsModalLabel-{{ $result->id }}">{{ $result->title }}</h5></div>
+                            <div class="modal-body">
+                                @php 
+                                    $relatedDocs = $result->relatedDocuments;
+                                    // Sort related documents by effective_date in descending order
+                                    if ($relatedDocs instanceof \Illuminate\Support\Collection) {
+                                        $relatedDocs = $relatedDocs->sortByDesc(function($doc) {
+                                            return \Carbon\Carbon::parse($doc->effective_date);
+                                        });
+                                    }
+                                @endphp
+                                @if($relatedDocs->count() > 0)
                                     @foreach($relatedDocs as $relatedDoc)
                                         <div class="related-doc-item">
-                                            <div class="related-doc-title">{{ $relatedDoc->title }} ({{ $relatedDoc->year->name }})</div>
+                                            <div class="related-doc-title">{{ $relatedDoc->title }}</div>
                                             <div class="related-doc-meta">
                                                 @if($relatedDoc->document_version)
                                                     <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
@@ -1177,6 +1372,48 @@
                                                 @endif
                                             </div>
                                             <div style="margin-top: 8px;"><a href="{{ route('subscribe') }}" class="btn btn-sm btn-outline-primary"><em class="icon ni ni-lock"></em> Restricted, subscribe to access</a></div>
+                                            
+                                            @php
+    // Get nested documents from the new column approach for this specific related document
+    $nestedIdsFromColumn = $relatedDoc->nested_related_docs_column
+        ? json_decode($relatedDoc->nested_related_docs_column, true)
+        : [];
+
+    $nestedDocsFromColumn = collect();
+
+    foreach ($nestedIdsFromColumn as $nestedId) {
+        $nestedDoc = \App\Models\Regulation::find($nestedId);
+
+        if ($nestedDoc) {
+            $nestedDoc->relationship_type = 'Nested Related';
+            $nestedDocsFromColumn->push($nestedDoc);
+        }
+    }
+@endphp
+
+@if($nestedDocsFromColumn->count() > 0)
+    <div class="nested-related-docs">
+        <small><strong>Related Documents:</strong></small>
+        @foreach($nestedDocsFromColumn as $nestedDoc)
+            <div class="nested-doc-item">
+                <div class="nested-doc-title">
+                    <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
+                </div>
+                <div class="related-doc-meta">
+                    @if($nestedDoc->document_version)
+                        <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
+                    @endif
+                    @if($nestedDoc->effective_date)
+                        <span><strong>Effective Date:</strong> {{ str_replace('May.', 'May', \Carbon\Carbon::parse($nestedDoc->effective_date)->format('M. j, Y')) }}</span>
+                    @endif
+                </div>
+                <div style="margin-top: 5px;">
+                    <a href="{{ route('subscribe') }}" class="btn btn-xs btn-outline-primary"><em class="icon ni ni-lock"></em> Restricted, subscribe to access</a>
+                </div>
+            </div>
+        @endforeach
+    </div>
+@endif
                                         </div>
                                     @endforeach
                                 @else
@@ -1322,4 +1559,3 @@
                     @endforeach
                 });
             </script>
-

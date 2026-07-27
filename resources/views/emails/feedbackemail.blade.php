@@ -116,6 +116,8 @@
 
                                     <p style="color: black;"><b>Name – {{ $lname }} </b></p>
 
+                                    <p style="color: black;"><b> Institution – {{ $institution }} </b></p>
+
                                     <p style="color: black;"><b> Email – {{ $email }} </b></p>
 
                                     <p style="color: black;"><b> Subject – {{ $subject }} </b></p>

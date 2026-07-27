@@ -206,8 +206,39 @@
                         </td>
                         <td style="text-align: center">{{ optional($result->subcategory)->name }}</td>
                         <td style="text-align: center">
-                            @if($result->ceased)
-                                <span class="badge badge-primary">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) }}</span>
+                            @php
+                                $ceasedVal = trim($result->ceased ?? '');
+                            @endphp
+                            @if(empty($ceasedVal) || strtolower($ceasedVal) === 'active')
+                                <span class="badge badge-success">Active</span>
+                            @else
+                                @php
+                                    $statuses = array_filter(array_map('trim', explode(',', $ceasedVal)));
+                                @endphp
+                                @foreach($statuses as $status)
+                                    @php
+                                        $statusLower = strtolower($status);
+                                        $badgeClass = 'badge-primary'; // fallback
+                                        if ($statusLower === 'active') {
+                                            $badgeClass = 'badge-success';
+                                        } elseif (in_array($statusLower, ['ceased', 'repealed'])) {
+                                            $badgeClass = 'badge-danger';
+                                        } elseif ($statusLower === 'amended') {
+                                            $badgeClass = 'badge-warning';
+                                        } elseif ($statusLower === 'superseded') {
+                                            $badgeClass = 'badge-secondary';
+                                        } else {
+                                            if (strpos($statusLower, 'ceased') !== false || strpos($statusLower, 'repealed') !== false) {
+                                                $badgeClass = 'badge-danger';
+                                            } elseif (strpos($statusLower, 'amended') !== false) {
+                                                $badgeClass = 'badge-warning';
+                                            } elseif (strpos($statusLower, 'superseded') !== false) {
+                                                $badgeClass = 'badge-secondary';
+                                            }
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ str_replace([',','/'], [', ', ' '], $status) }}</span>
+                                @endforeach
                             @endif
                         </td>
                         <td style="text-align: center">{{ optional($result->year)->name }}</td>
@@ -226,11 +257,11 @@
                                 }
                             @endphp
                             @if($tags && $tags->count())
-                                @foreach($tags as $tag)
-                                    <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                @foreach($tags as $index => $tag)
+                                    <span style="color: #000; font-weight: 500;">{{ $tag->name }}</span>{{ $index < count($tags) - 1 ? ', ' : '' }}
                                 @endforeach
                             @else
-                                <span class="badge badge-secondary">None</span>
+                                <span style="color: #999;">None</span>
                             @endif
                         </td>
                         <td style="text-align: center">
@@ -255,11 +286,11 @@
                                     
                                     $totalCount = $relatedCount + $nestedRelatedCount;
                                 @endphp
-                                <span class="badge badge-primary" title="View related documents and lineage" style="cursor: pointer;" data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related
+                                <span title="View related documents and lineage" style="cursor: pointer; color: #000; font-weight: 500; text-decoration: underline;"  data-toggle="modal" data-target="#relatedDocsModal-{{ $result->id }}">{{ $relatedCount }} related
                                    
                                 </span>
                             @else
-                                <span class="badge badge-secondary">None</span>
+                                <span style="color: #999;">None</span>
                             @endif
                         </td>
                         <td class="tb-odr-action" style="display: flex !important; align-items: center; justify-content: center">
@@ -330,7 +361,7 @@
                                                                     @if($relatedDoc->ceased)
                                                                         <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
                                                                     @else
-                                                                        <span class="badge badge-primary ms-2">Active</span>
+                                                                        <span class="badge badge-success ms-2">Active</span>
                                                                     @endif
                                                                     @php
     // Get nested documents from the new column approach for this specific related document
@@ -421,7 +452,7 @@
                                 @if($nestedDoc->ceased)
                                     <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $nestedDoc->ceased) }}</span>
                                 @else
-                                    <span class="badge badge-primary">Active</span>
+                                    <span class="badge badge-success">Active</span>
                                 @endif
                              
                                 @if($nestedDoc->document_version)
@@ -535,7 +566,7 @@
 @endif
                                                 </div>
                                                 <div class="related-doc-meta">
-                                                    <span class="badge badge-primary">Active</span>
+                                                    <span class="badge badge-success">Active</span>
                                                     @if($relatedDoc->document_version)
                                                         <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
                                                     @endif
@@ -572,7 +603,7 @@
                                                                         <em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}
                                                                     </div>
                                                                     <div class="related-doc-meta">
-                                                                        <span class="badge badge-primary">Active</span>
+                                                                        <span class="badge badge-success">Active</span>
                                                                         @if($nestedDoc->document_version)
                                                                             <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                                                         @endif
@@ -676,9 +707,40 @@
                             {{ optional($result->subcategory)->name }}
                         </td>
 
-                         <td style="text-align: center">
-                            @if($result->ceased)
-                                <span class="badge badge-primary">{{ str_replace([',','/'], [', ', ' '], implode(', ', array_filter(explode(',', $result->ceased)))) }}</span>
+                        <td style="text-align: center">
+                            @php
+                                $ceasedVal = trim($result->ceased ?? '');
+                            @endphp
+                            @if(empty($ceasedVal) || strtolower($ceasedVal) === 'active')
+                                <span class="badge badge-success">Active</span>
+                            @else
+                                @php
+                                    $statuses = array_filter(array_map('trim', explode(',', $ceasedVal)));
+                                @endphp
+                                @foreach($statuses as $status)
+                                    @php
+                                        $statusLower = strtolower($status);
+                                        $badgeClass = 'badge-primary'; // fallback
+                                        if ($statusLower === 'active') {
+                                            $badgeClass = 'badge-success';
+                                        } elseif (in_array($statusLower, ['ceased', 'repealed'])) {
+                                            $badgeClass = 'badge-danger';
+                                        } elseif ($statusLower === 'amended') {
+                                            $badgeClass = 'badge-warning';
+                                        } elseif ($statusLower === 'superseded') {
+                                            $badgeClass = 'badge-secondary';
+                                        } else {
+                                            if (strpos($statusLower, 'ceased') !== false || strpos($statusLower, 'repealed') !== false) {
+                                                $badgeClass = 'badge-danger';
+                                            } elseif (strpos($statusLower, 'amended') !== false) {
+                                                $badgeClass = 'badge-warning';
+                                            } elseif (strpos($statusLower, 'superseded') !== false) {
+                                                $badgeClass = 'badge-secondary';
+                                            }
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ str_replace([',','/'], [', ', ' '], $status) }}</span>
+                                @endforeach
                             @endif
                         </td>
 
@@ -700,11 +762,11 @@
                                 }
                             @endphp
                             @if($tags && $tags->count())
-                                @foreach($tags as $tag)
-                                    <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
+                                @foreach($tags as $index => $tag)
+                                    <span style="color: #000; font-weight: 500;">{{ $tag->name }}</span>{{ $index < count($tags) - 1 ? ', ' : '' }}
                                 @endforeach
                             @else
-                                <span class="badge badge-secondary">None</span>
+                                <span style="color: #999;">None</span>
                             @endif
                         </td>
                         <td style="text-align: center">
@@ -724,13 +786,13 @@
                                     
                                     $totalCount = $relatedCount;
                                 @endphp
-                                <span class="badge badge-primary" title="View related documents and lineage" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#subscribeModal">{{ $totalCount }} related
+                                <span title="View related documents and lineage" style="cursor: pointer; color: #000; font-weight: 500; text-decoration: underline;"  data-bs-toggle="modal" data-bs-target="#subscribeModal">{{ $totalCount }} related
                                     @if($nestedRelatedCount > 0)
                                         <span class="badge bg-info ms-1">{{ $nestedRelatedCount }} nested</span>
                                     @endif
                                 </span>
                             @else
-                                <span class="badge badge-secondary">None</span>
+                                <span style="color: #999;">None</span>
                             @endif
                         </td>
                         <td class="tb-odr-action" style="display: flex !important; align-items: center; justify-content: center">
@@ -853,7 +915,7 @@
                                                             <span class="badge badge-danger"> {{ str_replace([',','/'], [', ', ' '], $status) }}</span>
                                                         @endforeach
                                                     @else
-                                                        <span class="badge badge-primary">Active</span>
+                                                        <span class="badge badge-success">Active</span>
                                                     @endif
                                                     @if($relatedDoc->document_version)
                                                         <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
@@ -913,7 +975,7 @@
                             <span class="badge badge-danger">{{ $status }}</span>
                         @endforeach
                     @else
-                        <span class="badge badge-primary">Active</span>
+                        <span class="badge badge-success">Active</span>
                     @endif
                     @if(isset($nestedDoc->relationship_type))
                         <span class="badge bg-info ms-1">{{ $nestedDoc->relationship_type }}</span>
@@ -987,7 +1049,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="related-doc-meta">
-                                                    <span class="badge badge-primary">Active</span>
+                                                    <span class="badge badge-success">Active</span>
                                                     @if($relatedDoc->document_version)
                                                         <span><strong>Version:</strong> {{ $relatedDoc->document_version }}</span>
                                                     @endif
@@ -1044,7 +1106,7 @@
                                                             <div class="nested-doc-item">
                                                                 <div class="nested-doc-title"><em class="icon ni ni-chevron-right"></em> {{ $nestedDoc->title }}</div>
                                                                 <div class="related-doc-meta">
-                                                                    <span class="badge badge-primary">Active</span>
+                                                                    <span class="badge badge-success">Active</span>
                                                                     @if($nestedDoc->document_version)
                                                                         <span><strong>Version:</strong> {{ $nestedDoc->document_version }}</span>
                                                                     @endif
@@ -1185,12 +1247,12 @@
                             }
                         @endphp
                         @if($tags && $tags->count())
-                            @foreach($tags as $tag)
-                                <span class="badge badge-info" style="margin: 0 2px;">{{ $tag->name }}</span>
-                            @endforeach
-                        @else
-                            <span class="badge badge-secondary">None</span>
-                        @endif
+                                @foreach($tags as $index => $tag)
+                                    <span style="color: #000; font-weight: 500;">{{ $tag->name }}</span>{{ $index < count($tags) - 1 ? ', ' : '' }}
+                                @endforeach
+                            @else
+                                <span style="color: #999;">None</span>
+                            @endif
                     </td>
                     <td style="text-align: center">
 @php
