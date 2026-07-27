@@ -325,6 +325,8 @@
         <div class="active" id="pricing__monthly__plan">
             <div class="plans-container">
                 @foreach ($plans as $package)
+
+                <!-- ll -->
                     <div class="card">
                         <div class="card-header">
                             <span class="card-title">{{ $package->name }}</span>
