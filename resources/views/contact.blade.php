@@ -55,7 +55,17 @@
                                 value="{{ old('institution') }}" />
                             <label for="institution" class="form__label">Institution</label>
                         </div>
-                        
+
+                        <div class="form__group field">
+                            <select class="form__field @error('member_status') is-invalid @enderror"
+                                name="member_status" id="member_status">
+                                <option value="" disabled {{ old('member_status') ? '' : 'selected' }} hidden></option>
+                                <option value="Member" {{ old('member_status') == 'Member' ? 'selected' : '' }} style="background-color: #fff; color: #000;">Member of FMDQ Exchange</option>
+                                <option value="Non-Member" {{ old('member_status') == 'Non-Member' ? 'selected' : '' }} style="background-color: #fff; color: #000;">Non-Member of FMDQ Exchange</option>
+                            </select>
+                            <label for="member_status" class="form__label">Member or Non-Member of FMDQ Exchange (Optional)</label>
+                        </div>
+
                         <div class="hd-input-flex">
                             <div class="form__group field">
                                 <input type="email" class="form__field @error('name') is-invalid @enderror"

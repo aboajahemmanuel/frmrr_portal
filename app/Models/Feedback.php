@@ -18,5 +18,6 @@ class Feedback extends Model
         'subject',
         'feedback',
         'institution',
+        'member_status',
     ];
 }

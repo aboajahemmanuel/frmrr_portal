@@ -118,6 +118,10 @@
 
                                     <p style="color: black;"><b> Institution – {{ $institution }} </b></p>
 
+                                    @if(!empty($member_status))
+                                        <p style="color: black;"><b> FMDQ Exchange Member Status – {{ $member_status }} </b></p>
+                                    @endif
+
                                     <p style="color: black;"><b> Email – {{ $email }} </b></p>
 
                                     <p style="color: black;"><b> Subject – {{ $subject }} </b></p>

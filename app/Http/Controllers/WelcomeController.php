@@ -153,6 +153,7 @@ class WelcomeController extends Controller
             'subject' => ['required'],
             'feedback' => ['required'],
             'institution' => ['required'],
+            'member_status' => ['nullable', 'string'],
         ]);
 
 
@@ -164,6 +165,7 @@ class WelcomeController extends Controller
             'subject' => $request['subject'],
             'feedback' => $request['feedback'],
             'institution' => $request['institution'],
+            'member_status' => $request['member_status'],
         );
         
         try {
@@ -175,6 +177,7 @@ class WelcomeController extends Controller
                 'subject' => $request['subject'],
                 'feedback' => $request['feedback'],
                 'institution' => $request['institution'],
+                'member_status' => $request['member_status'],
             ]);
 
             Mail::send('emails.feedbackemail', $email_data, function ($message) use ($email_data) {
