@@ -5,7 +5,7 @@
           <div class="info">
               <div class="title">The Financial Markets Rules and Regulations Portal</div>
               <div class="desc">
-                 The Financial Markets Rules and Regulations (FMRR) Portal serves as a comprehensive repository for financial market regulations, providing stakeholders with a strategic advantage in navigating the dynamic financial markets landscape. This user-friendly platform enables seamless access to complex regulatory frameworks by offering real-time updates and insights on regulatory changes.
+                 The Financial Markets Rules and Regulations (FMRR) Portal serves as a comprehensive repository for financial markets regulations, providing stakeholders with a strategic advantage in navigating the dynamic financial markets landscape. This user-friendly platform enables seamless access to complex regulatory frameworks by offering real-time updates and insights on regulatory changes.
                </div>
               <div class="desc">
                  FMRR streamlines the process of understanding and complying with market rules, simplifies regulatory reporting and submissions, and functions as a centralised hub for all regulatory information and resources.
