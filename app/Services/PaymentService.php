@@ -29,10 +29,14 @@ class PaymentService
 
     public function createSubscriptionPayment($user, $plan)
     {
+        $nameParts = explode(' ', trim($user->name), 2);
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? $firstName;
+
         $paymentParam = json_encode([
             'em' => $user->email,
-            'fn' => $user->name,
-            'ln' => $user->name,
+            'fn' => $firstName,
+            'ln' => $lastName,
             'am' => $plan->price,
             'pn' => $user->phone,
             'scode' => '1101'
@@ -50,10 +54,14 @@ class PaymentService
 
     public function preparePaymentParams($email, $name, $amount, $phone)
     {
+        $nameParts = explode(' ', trim($name), 2);
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? $firstName;
+
         $paymentParam = json_encode([
             'em' => $email,
-            'fn' => $name,
-            'ln' => $name,
+            'fn' => $firstName,
+            'ln' => $lastName,
             'am' => $amount,
             'pn' => $phone,
             'scode' => '03'
