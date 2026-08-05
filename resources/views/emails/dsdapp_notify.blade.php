@@ -108,11 +108,7 @@
 
                            
                            
-                            {{-- <tr>
-                                <td style="padding: 20px 30px 40px">
-                                    <p style="margin: 0; font-size: 13px; line-height: 22px; color:#9ea8bb;">This is an automatically generated email please do not reply to this email. If you face any issues, please contact us at  help@fmdqgroup.com</p>
-                                </td>
-                            </tr> --}}
+                          
                         </tbody>
                     </table>
                     {{-- <table style="width:100%;max-width:620px;margin:0 auto;">

@@ -96,7 +96,7 @@
                 <div class="current">
                     
                         <p class="current-active" style="font-size: 24px;">A-Z {{ $subcategory->name }}
-                             (Ceased/Repealed/Amended/Superseded)
+                             <!-- (Ceased/Repealed/Amended/Superseded) -->
                         </p>
                    
 

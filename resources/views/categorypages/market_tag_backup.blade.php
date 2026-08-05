@@ -235,7 +235,7 @@
             </div>
         </div>
 
-        @if ($regulations_ceased->count() > 0)
+        <!-- @if ($regulations_ceased->count() > 0)
         <a href="{{ route('ceasedDoc', $category->slug) }}">
             <div class="button-container-sb">
                 <div class="gradient-buttons">
@@ -246,7 +246,7 @@
                 </div>
             </div>
         </a>
-        @endif
+        @endif -->
 
 
     </div>
