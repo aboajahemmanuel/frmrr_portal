@@ -127,9 +127,9 @@
 
     @if($options['showMarketProductFilter'] ?? true)
     <div class="filter-group">
-        <label for="market-product-filter-{{ $tableId }}">Market Product</label>
+        <label for="market-product-filter-{{ $tableId }}">Markets and Products</label>
         <select id="market-product-filter-{{ $tableId }}" class="filter-select">
-            <option value="">All Market Products</option>
+            <option value="">All Markets and Products</option>
             @php
                 if (!isset($options['marketProducts'])) {
                     $marketProducts = \App\Models\MarketProductTag::orderBy('name')->pluck('name');

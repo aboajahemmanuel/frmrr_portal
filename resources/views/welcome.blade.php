@@ -548,7 +548,7 @@
                            <div class="pricing-container">
     <div class="pricing-body-header" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%;">
           <h1>Upgrade Your Access</h1>
-        <h2>Choose a Plan</h2>
+        <h2>Choose A Plan</h2>
         
         <div class="pricing-benefits-grid" style="max-width: 1200px; margin: 30px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; font-family: 'Roboto', sans-serif;">
             <!-- Benefit 1 -->
