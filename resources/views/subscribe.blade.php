@@ -307,7 +307,7 @@
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: #e5f3ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #09c2de;">
                     <em class="icon ni ni-network" style="font-size: 24px;"></em>
                 </div>
-                <h4 style="font-size: 16.5px; color: #1c2b46; font-weight: 700; margin-bottom: 10px; font-family: 'Roboto', sans-serif;">Document Lineage</h4>
+                <h4 style="font-size: 16.5px; color: #1c2b46; font-weight: 700; margin-bottom: 10px; font-family: 'Roboto', sans-serif;">Document Linkage</h4>
                 <p style="font-size: 13.5px; color: #526484; line-height: 1.6; margin: 0; font-family: 'Roboto', sans-serif;">Trace amendments, active versions, and revisions effortlessly.</p>
             </div>
             

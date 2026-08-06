@@ -28,7 +28,7 @@ The FMRR Document Management System is designed to efficiently manage regulatory
 - **Compliance Tracking**: Monitor document status and compliance requirements
 - **Advanced Search**: Powerful search functionality across document content and metadata
 - **User Roles & Permissions**: Role-based access control for different user types using Spatie Laravel Permission
-- **Document Relationships**: Link related documents and track document lineage
+- **Document Relationships**: Link related documents and track Document Linkage
 - **Version Control**: Track document versions and changes over time
 - **Notifications**: Email notifications for document updates and approvals
 - **Reporting**: Generate compliance reports and document analytics
