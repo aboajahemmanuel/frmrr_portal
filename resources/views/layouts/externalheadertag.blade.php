@@ -4,7 +4,8 @@
           <div class="info">
               <div class="title">{{ $marketTag->name }} Documents</div>
               <div class="desc">
-                  Browse documents tagged with {{ $marketTag->name }}. Use the search below to find specific documents.
+                  <!-- Browse documents tagged with {{ $marketTag->name }}. Use the search below to find specific documents. -->
+                   Explore our content with ease—start your search
               </div>
               <?php
                 $title = '';
@@ -16,7 +17,7 @@
                       <div class="search-box">
                           <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
                           <input hidden name="market_tag_slug" value="{{ $marketTag->slug }}">
-                          <input required name="title" type="search" placeholder="Explore our content with ease—start your search now." />
+                          <input required name="title" type="search" placeholder="What are you looking for?" />
                       </div>
                       <a href="#" style="height: 100%;">
                           <button style="height: 100%;" type="submit">
