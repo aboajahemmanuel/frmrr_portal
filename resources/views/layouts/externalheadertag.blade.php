@@ -16,7 +16,7 @@
                       <div class="search-box">
                           <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
                           <input hidden name="market_tag_slug" value="{{ $marketTag->slug }}">
-                          <input required name="title" type="search" placeholder="What are you looking for?" />
+                          <input required name="title" type="search" placeholder="start your search now." />
                       </div>
                       <a href="#" style="height: 100%;">
                           <button style="height: 100%;" type="submit">

@@ -18,7 +18,7 @@
                       <div class="search" style="width: 100% !important;">
                           <div class="search-box">
                               <img src="{{ asset('public/users/assets/Search.svg') }}" alt="search icon" />
-                              <input required name="title" type="search" placeholder="What are you looking for?" />
+                              <input required name="title" type="search" placeholder="start your search now." />
                           </div>
                           <a href="#" style="height: 100%;">
                               <button style="height: 100%;" type="submit">
