@@ -100,7 +100,7 @@
                      <li class="nk-menu-item">
                          <a href="{{ url('market-product-tags') }}" class="nk-menu-link">
                              <span class="nk-menu-icon" style="color: white"><em class="icon ni ni-file-docs"></em></span>
-                             <span class="nk-menu-text" style="color: white">Markets and Productss
+                             <span class="nk-menu-text" style="color: white">Markets and Products
                          </a>
                      </li><!-- .nk-menu-item -->
                         @endcan

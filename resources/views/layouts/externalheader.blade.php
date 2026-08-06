@@ -71,7 +71,7 @@
 
               <div class="shortcuts">
                   <div>
-                      <b>Markets and Productss</b>:
+                      <b>Markets and Products</b>:
                       <span>
                           @foreach ($marketProductTags as $tag)
                           <a href="{{ route('marketProductTag', $tag->slug) }}"
