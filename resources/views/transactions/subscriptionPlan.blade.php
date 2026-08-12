@@ -115,7 +115,8 @@
                                             <tr class="nk-tb-item nk-tb-head">
                                                 <th>#</th>
                                                 <th class="nk-tb-col"><span class="sub-text">Name</span></th>
-                                                <th class="nk-tb-col"><span class="sub-text">Price</span></th>
+                                                <th class="nk-tb-col"><span class="sub-text">Price (₦)</span></th>
+                                                <th class="nk-tb-col"><span class="sub-text">Price ($)</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Duration</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Notification Days</span></th>
                                                 <th class="nk-tb-col"><span class="sub-text">Description</span></th>
@@ -150,7 +151,18 @@
                                                         <div class="user-card">
 
                                                             <div class="user-info">
-                                                                <span class="tb-lead">{{ $transaction->price }} <span
+                                                                <span class="tb-lead">₦{{ number_format($transaction->price ?? 0, 2) }} <span
+                                                                        class="dot dot-success d-md-none ml-1"></span></span>
+
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td class="nk-tb-col">
+                                                        <div class="user-card">
+
+                                                            <div class="user-info">
+                                                                <span class="tb-lead">${{ number_format($transaction->price_usd ?? 0, 2) }} <span
                                                                         class="dot dot-success d-md-none ml-1"></span></span>
 
                                                             </div>
@@ -475,6 +487,17 @@
                                             </div>
                                         </div> 
 
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="form-label" for="lead-price-usd">Price ($) <span
+                                                        style="color: red">*</span></label>
+                                                <div class="form-control-wrap">
+                                                    <input name="price_usd" required type="number" step="0.01"
+                                                        class="form-control" id="lead-price-usd">
+                                                </div>
+                                            </div>
+                                        </div>
+
 
                                         <div class="col-md-12">
                                             <div class="form-group">
@@ -592,6 +615,17 @@
                                                     <div class="form-control-wrap">
                                                         <input name="price" required value="{{ $transaction->price }}"
                                                             type="number" step="0.01" class="form-control" id="lead-name">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="lead-price-usd">Price ($) <span
+                                                            style="color: red">*</span></label>
+                                                    <div class="form-control-wrap">
+                                                        <input name="price_usd" required value="{{ $transaction->price_usd }}"
+                                                            type="number" step="0.01" class="form-control" id="lead-price-usd">
                                                     </div>
                                                 </div>
                                             </div>

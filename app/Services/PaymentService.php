@@ -13,33 +13,38 @@ class PaymentService
         $this->encryptionService = $encryptionService;
     }
 
-    public function createTransaction($user, $plan)
+    public function createTransaction($user, $plan, $currency = 'NGN')
     {
         $reference = $this->generateReference();
         
         $transaction = new Transaction();
         $transaction->user_id = $user->id;
         $transaction->subscription_plan_id = $plan->id;
-        $transaction->amount = $plan->price;
+        $transaction->amount = $currency === 'USD' ? $plan->price_usd : $plan->price;
+        $transaction->currency = $currency;
         $transaction->reference = $reference;
+        $transaction->description = "Subscription to " . $plan->name . " (" . $currency . ")";
         $transaction->save();
 
         return $transaction;
     }
 
-    public function createSubscriptionPayment($user, $plan)
+    public function createSubscriptionPayment($user, $plan, $currency = 'NGN')
     {
         $nameParts = explode(' ', trim($user->name), 2);
         $firstName = $nameParts[0] ?? '';
         $lastName = $nameParts[1] ?? $firstName;
 
+        $amount = $currency === 'USD' ? $plan->price_usd : $plan->price;
+        $scode = $currency === 'USD' ? '1302' : '1101';
+
         $paymentParam = json_encode([
             'em' => $user->email,
             'fn' => $firstName,
             'ln' => $lastName,
-            'am' => $plan->price,
+            'am' => $amount,
             'pn' => $user->phone,
-            'scode' => '1101'
+            'scode' => $scode
         ]);
 
         $encryptedParams = $this->encryptionService->encrypt($paymentParam);

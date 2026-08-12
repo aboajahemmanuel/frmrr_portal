@@ -18,6 +18,7 @@ class SubscriptionController extends Controller
     {
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
         $user = Auth::user();
+        $currency = $request->input('currency', 'NGN');
 
         // Create subscription record
         $startDate = Carbon::now();
@@ -31,10 +32,10 @@ class SubscriptionController extends Controller
         $subscription->save();
 
         // Create transaction record
-        $transaction = $paymentService->createTransaction($user, $plan);
+        $transaction = $paymentService->createTransaction($user, $plan, $currency);
 
         // Generate payment URL using PaymentService
-        $paymentUrl = $paymentService->createSubscriptionPayment($user, $plan);
+        $paymentUrl = $paymentService->createSubscriptionPayment($user, $plan, $currency);
         
         return redirect($paymentUrl);
     }

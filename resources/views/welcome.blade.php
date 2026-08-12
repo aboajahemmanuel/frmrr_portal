@@ -595,17 +595,37 @@
                     <div class="plan-card">
                         <div class="plan-card-header">
                             <span class="plan-card-title">{{ $package->name }}</span>
-                            <h2 class="plan-card-price">₦{{ number_format($package->price, 2) }}</h2>
+                            <h2 class="plan-card-price" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <span>
+                                    ₦{{ number_format($package->price, 2) }}
+                                    @if(isset($package->price_usd) && $package->price_usd > 0)
+                                        <span style="font-size: 18px; font-weight: 300; opacity: 0.8; margin-left: 5px;">/</span>
+                                    @endif
+                                </span>
+                                @if(isset($package->price_usd) && $package->price_usd > 0)
+                                    <span style="font-size: 26px; font-weight: normal; opacity: 0.8; margin-top: 5px; display: block;">${{ number_format($package->price_usd, 2) }}</span>
+                                @endif
+                            </h2>
                         </div>
                         <div class="plan-card-body">
                             <p>{{ $package->description }}</p>
                         </div>
+                        <!-- <br>
+
+                        <div class="plan-card-body">
+                            <p style="text-align: center;">Choose Plan</p>
+                        </div>
+                        <br> -->
                         <div class="plan-card-footer">
                             <form method="post" action="{{ route('subscribe_payment') }}">
                                 @csrf
                                 <input name="plan_id" type="hidden" value="{{ $package->id }}">
-                                
-                                <button type="submit" class="choose-button">Choose Plan</button>
+                                @if(isset($package->price_usd) && $package->price_usd > 0)
+                                    <button type="submit" name="currency" value="NGN" class="choose-button mb-2" style="width: 100%;">Pay in Naira (₦{{ number_format($package->price ?? 0, 2) }})</button>
+                                    <button type="submit" name="currency" value="USD" class="choose-button" style="width: 100%;">Pay in USD (${{ number_format($package->price_usd, 2) }})</button>
+                                @else
+                                   <button type="submit" name="currency" value="NGN" class="choose-button mb-2" style="width: 100%;">Pay in Naira (₦{{ number_format($package->price ?? 0, 2) }})</button>
+                                @endif
                             </form>
                             
                         </div>

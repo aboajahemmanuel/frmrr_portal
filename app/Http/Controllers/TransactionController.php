@@ -111,6 +111,7 @@ class TransactionController extends Controller
         $subscription = new SubscriptionPlan();
         $subscription->name = $request->name;
         $subscription->price = $request->price;
+        $subscription->price_usd = $request->price_usd;
         $subscription->duration = $request->duration;
         $subscription->description = $request->description;
         $subscription->group_id = $user->group_id;
@@ -126,6 +127,7 @@ class TransactionController extends Controller
         $subscription_pending->name =  $subscription->name;
         $subscription_pending->duration =  $subscription->duration;
         $subscription_pending->price =  $subscription->price;
+        $subscription_pending->price_usd =  $subscription->price_usd;
         $subscription_pending->description =  $subscription->description;
         $subscription_pending->notification_days =  $subscription->notification_days;
 
@@ -172,6 +174,7 @@ class TransactionController extends Controller
                 $pending->name = $request->name;
                 $pending->duration = $request->duration;
                 $pending->price = $request->price;
+                $pending->price_usd = $request->price_usd;
                 $pending->description = $request->description;
                 $pending->notification_days = $request->notification_days ?? 0;
                 $pending->inputer_id = Auth::id();
@@ -273,6 +276,7 @@ class TransactionController extends Controller
                 $subscription->name = $pending->name;
                 $subscription->duration = $pending->duration;
                 $subscription->price = $pending->price;
+                $subscription->price_usd = $pending->price_usd;
                 $subscription->description = $pending->description;
                 $subscription->notification_days = $pending->notification_days;
                 $subscription->status = 1;
