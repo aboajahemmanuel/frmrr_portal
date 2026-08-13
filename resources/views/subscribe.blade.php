@@ -333,12 +333,9 @@
                             <h2 class="card-price" style="font-family: 'Roboto', sans-serif; color: #f6f7fcff; font-size: 24px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                                 <span>
                                     ₦{{ number_format($package->price, 2) }}
-                                    @if(isset($package->price_usd) && $package->price_usd > 0)
-                                        <span style="font-size: 18px; font-weight: 300; color: #b5c2d3; margin-left: 5px;">/</span>
-                                    @endif
                                 </span>
                                 @if(isset($package->price_usd) && $package->price_usd > 0)
-                                    <span style="font-size: 26px; font-weight: normal; color: #b5c2d3; margin-top: 5px; display: block;">${{ number_format($package->price_usd, 2) }}</span>
+                                    <span style="margin-top: 5px;">${{ number_format($package->price_usd, 2) }}</span>
                                 @endif
                             </h2>
                         </div>

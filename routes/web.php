@@ -43,6 +43,7 @@ Route::get('/keep-alive', function () {
     return response()->json(['status' => 'session extended']);
 });
 
+
 Route::get('/clear-cache', function () {
     Artisan::call('cache:clear');
     Artisan::call('view:clear');
