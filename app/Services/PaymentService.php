@@ -50,7 +50,9 @@ class PaymentService
         ]);
 
         $encryptedParams = $this->encryptionService->encrypt($paymentParam);
+        //return "http://10.10.16.47/qpay/odrum/" . $encryptedParams;
         return "https://fsb.fmdqgroup.com/qpay/odrum/" . $encryptedParams;
+
     }
 
     public function generateReference()
