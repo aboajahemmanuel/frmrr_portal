@@ -36,7 +36,9 @@ class PaymentService
         $lastName = $nameParts[1] ?? $firstName;
 
         $amount = $currency === 'USD' ? $plan->price_usd : $plan->price;
-        $scode = $currency === 'USD' ? '1302' : '1101';
+       // $scode = $currency === 'USD' ? '1302' : '1101';
+        $scode = $currency === 'USD' ? '0302' : '0301';
+
 
         $paymentParam = json_encode([
             'em' => $user->email,
@@ -48,7 +50,7 @@ class PaymentService
         ]);
 
         $encryptedParams = $this->encryptionService->encrypt($paymentParam);
-        return "http://10.10.16.47/qpay/odrum/" . $encryptedParams;
+        return "https://fsb.fmdqgroup.com/qpay/odrum/" . $encryptedParams;
     }
 
     public function generateReference()
