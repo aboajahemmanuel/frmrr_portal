@@ -23,28 +23,29 @@
             <div class="profile-left-side">
                 <div class="profile-left-side-container">
                     <p class="profile-left-side-header">{{ Auth::user()->name }}</p>
-                    @if ($isSubscribed)
-                        <div class="profile-sub-status" style="display: flex; flex-direction: row; align-items: center;">
-                            <p style="margin: 0; margin-right: 5px;">Subscription</p>
+                    <div class="profile-sub-status" style="display: flex; flex-direction: row; align-items: center;">
+                        <p style="margin: 0; margin-right: 5px;">Subscription</p>
 
-                            <div class="">
-
-                                @if ($isSubscribed)
-                                    <div class="profile-gold-border-details">Active</div>
-                                @else
-                                    <div class="" style="display: flex; gap: 30px;">
-
-                                        <div class="profile-gold-border" style="color: white; text-align: center">Expired
-                                        </div>
-                                        <div class="profile-gold-border" style="color: white; text-align: center"><a
-                                                href="{{ url('subscribe') }}">Renew</a>
-                                        </div>
+                        <div class="">
+                            @if ($isSubscribed)
+                                <div class="profile-gold-border-details">Active</div>
+                            @elseif ($userPlan)
+                                <div class="" style="display: flex; gap: 30px;">
+                                    <div class="profile-gold-border" style="color: white; text-align: center">Expired
                                     </div>
-                                @endif
-
-                            </div>
+                                    <div class="profile-gold-border" style="color: white; text-align: center"><a
+                                            href="{{ url('subscribe') }}">Renew</a>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="" style="display: flex; gap: 30px;">
+                                    <div class="profile-gold-border" style="color: white; text-align: center"><a
+                                            href="{{ url('subscribe') }}">Subscribe</a>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                    @endif
+                    </div>
                     <div class="profile-horizontal-line"></div>
                     <div class="profile-profile-details">
                         <div class="profile-title">Email Address</div>
@@ -74,10 +75,15 @@
                         @if ($isSubscribed)
                             <div class="profile-profile-details">
                                 <div class="profile-title">Subscription Type</div>
-                                <div class="profile-info">{{ $userPlan->subscriptionPlan->name }}</div>
+                                <div class="profile-info">{{ optional($userPlan?->subscriptionPlan)->name ?? 'Active Plan' }}</div>
+                            </div>
+                        @elseif ($userPlan && $userPlan->subscriptionPlan)
+                            <div class="profile-profile-details">
+                                <div class="profile-title">Subscription Type</div>
+                                <div class="profile-info">{{ $userPlan->subscriptionPlan->name }} (Expired)</div>
                             </div>
                         @endif
-                        <div data-toggle="modal" data-target="#modalForm">
+                        <div data-toggle="modal" data-target="#modalForm" style="cursor: pointer;">
 
                             <img src="{{ asset('public/users/assets/edit-btn.svg') }}" alt="edit">
                         </div>
@@ -146,30 +152,23 @@
 
                                                     <td class="tb-odr-action">
                                                         <div class="tb-odr-btns d-none d-sm-inline">
-                                                            @if ($isSubscribed)
-                                                                <a href="{{ route('download', $save->regulation->id) }}"
-                                                                    class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                        class="icon ni ni-download"></em></a>
-                                                            @else
-                                                                @if (Auth::check())
-                                                                    <a href="{{ route('subscribe') }}"
+                                                            @if ($save->regulation)
+                                                                @if ($isSubscribed || (Auth::check() && Auth::user()->usertype == 'internal'))
+                                                                    <a href="{{ route('download', $save->regulation->id) }}"
                                                                         class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
                                                                             class="icon ni ni-download"></em></a>
                                                                 @else
-                                                                    <a href="{{ route('login') }}"
-                                                                        class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
-                                                                            class="icon ni ni-download"></em></a>
+                                                                    @if (Auth::check())
+                                                                        <a href="{{ route('subscribe') }}"
+                                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                                                class="icon ni ni-download"></em></a>
+                                                                    @else
+                                                                        <a href="{{ route('login') }}"
+                                                                            class="btn btn-icon btn-white btn-dim btn-sm btn-primary"><em
+                                                                                class="icon ni ni-download"></em></a>
+                                                                    @endif
                                                                 @endif
                                                             @endif
-
-
-
-
-
-
-
-
-
                                                         </div>
 
                                                     </td>

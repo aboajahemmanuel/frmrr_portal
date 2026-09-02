@@ -112,7 +112,7 @@ class WelcomeController extends Controller
         $data = Category::where('status', 1)->get();
         $single_news = News::where('id', $id)->first();
         $news_alert = News::where('status', 1)->get();
-        $other_news = News::where('status', 1)->limit(4)->get();
+        $other_news = News::where('status', 1)->orderBy('created_at', 'desc')->limit(5)->get();
         $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
             ->where('admin_status', 1)
             ->orderBy('name')

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Download;
 use App\Models\Subscription;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -39,12 +40,37 @@ class ProfileController extends Controller
         //     }
         // }
 
-        $isSubscribed = Subscription::where('user_id', $user->id)->where('status', 1)->exists();
+        $today = Carbon::now();
+
+        $isSubscribed = Subscription::where('user_id', $user->id)
+            ->where('status', 1)
+            ->where(function ($query) use ($today) {
+                $query->where('end_date', '>=', $today)
+                    ->orWhereNull('end_date');
+            })
+            ->exists();
 
         $savedDocuments = SaveDoc::with('regulation')->where('user_id', $user->id)->get();
         $downloadedDocuments = Download::with('regulation')->where('user_id', $user->id)->get();
 
-        $userPlan = Subscription::where('user_id', $user->id)->first();
+        // Retrieve the user's active subscription with its plan, or fallback to the most recent subscription
+        $userPlan = Subscription::with('subscriptionPlan')
+            ->where('user_id', $user->id)
+            ->where('status', 1)
+            ->where(function ($query) use ($today) {
+                $query->where('end_date', '>=', $today)
+                    ->orWhereNull('end_date');
+            })
+            ->latest('id')
+            ->first();
+
+        if (!$userPlan) {
+            $userPlan = Subscription::with('subscriptionPlan')
+                ->where('user_id', $user->id)
+                ->latest('id')
+                ->first();
+        }
+
         $docDownloaded = Download::where('user_id', $user->id)->count();
         $docSaved = SaveDoc::where('user_id', $user->id)->count();
 

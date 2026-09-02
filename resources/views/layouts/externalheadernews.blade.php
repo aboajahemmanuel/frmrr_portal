@@ -8,7 +8,7 @@
       </div>
 <style>
 /* Premium Cache-immune Marquee News Card overrides */
-.news-card {
+.scrolling-news .news-card {
     background-color: #1d326d !important;
     border-top-left-radius: 16px !important;
     border-bottom-right-radius: 16px !important;
@@ -23,7 +23,7 @@
     overflow: hidden !important;
 }
 
-.news-card .news-title {
+.scrolling-news .news-card .news-title {
     color: #fff !important;
     font-family: straightBold, sans-serif !important;
     font-size: 13.5px !important; /* Ultra-clean, premium header size */
@@ -34,7 +34,7 @@
     display: block !important;
 }
 
-.news-card .date {
+.scrolling-news .news-card .date {
     color: rgba(227, 227, 238, 0.75) !important;
     font-family: customRegular, sans-serif !important;
     font-size: 11px !important;
