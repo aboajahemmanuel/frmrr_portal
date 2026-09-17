@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Download;
 use App\Models\Subscription;
+use App\Models\InstitutionalSubscriptionMember;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -74,7 +75,16 @@ class ProfileController extends Controller
         $docDownloaded = Download::where('user_id', $user->id)->count();
         $docSaved = SaveDoc::where('user_id', $user->id)->count();
 
-        return view('profile', compact('savedDocuments', 'userPlan', 'docSaved', 'docDownloaded', 'downloadedDocuments', 'isSubscribed'));
+        $canManageTeam = $userPlan
+            && $userPlan->status == 1
+            && $userPlan->end_date && $userPlan->end_date->isFuture()
+            && $userPlan->subscriptionPlan
+            && $userPlan->subscriptionPlan->seat_limit > 1
+            && !InstitutionalSubscriptionMember::where('member_user_id', $user->id)
+                ->where('status', InstitutionalSubscriptionMember::STATUS_ACTIVE)
+                ->exists();
+
+        return view('profile', compact('savedDocuments', 'userPlan', 'docSaved', 'docDownloaded', 'downloadedDocuments', 'isSubscribed', 'canManageTeam'));
     }
 
 

@@ -32,6 +32,10 @@ use App\Http\Controllers\DocumentRelationshipController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\SubcategoryController;
+use App\Http\Controllers\SubscriptionTierController;
+use App\Http\Controllers\SubscriptionSubTierController;
+use App\Http\Controllers\StudentVerificationController;
+use App\Http\Controllers\InstitutionalSubscriptionMemberController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DisclaimerController as AdminDisclaimerController;
 
@@ -112,6 +116,11 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile/update', [ProfileController::class, 'updateprofile'])->name('profile.update');
 
+    // Institutional Academic Subscription team/seat management
+    Route::get('team', [InstitutionalSubscriptionMemberController::class, 'index'])->name('institutionalMember.index');
+    Route::post('team/invite', [InstitutionalSubscriptionMemberController::class, 'invite'])->name('institutionalMember.invite');
+    Route::post('team/{id}/remove', [InstitutionalSubscriptionMemberController::class, 'remove'])->name('institutionalMember.remove');
+
     Route::post('subscribe_payment', [SubscriptionController::class, 'subscribe_payment'])->name('subscribe_payment');;
 
     // subscribers
@@ -180,6 +189,27 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::post('update_plan/{id}', [TransactionController::class, 'updateSubcription'])->name('update_plan');
     Route::post('delete_plan/{id}', [TransactionController::class, 'deleteSubcription'])->name('delete_plan');
     Route::post('/subscriptionstatus/{id}', [TransactionController::class, 'Subcriptionstatus'])->name('Subcriptionstatus');
+
+    // Subscription tier / sub-tier routes
+    Route::resource('subscription-tiers', SubscriptionTierController::class);
+    Route::post('subscription-tiers/update/{id}', [SubscriptionTierController::class, 'update'])->name('subscriptionTierUpdate');
+    Route::post('subscription-tiers/delete/{id}', [SubscriptionTierController::class, 'destroy'])->name('deleteSubscriptionTier');
+    Route::post('subscription-tiers/status/{id}', [SubscriptionTierController::class, 'tierStatus'])->name('subscriptionTierStatus');
+    Route::post('subscription-tiers/duplicate/{id}', [SubscriptionTierController::class, 'duplicate'])->name('duplicateSubscriptionTier');
+
+    Route::resource('subscription-sub-tiers', SubscriptionSubTierController::class);
+    Route::post('subscription-sub-tiers/update/{id}', [SubscriptionSubTierController::class, 'update'])->name('subscriptionSubTierUpdate');
+    Route::post('subscription-sub-tiers/delete/{id}', [SubscriptionSubTierController::class, 'destroy'])->name('deleteSubscriptionSubTier');
+    Route::post('subscription-sub-tiers/status/{id}', [SubscriptionSubTierController::class, 'subTierStatus'])->name('subscriptionSubTierStatus');
+    Route::post('subscription-sub-tiers/duplicate/{id}', [SubscriptionSubTierController::class, 'duplicate'])->name('duplicateSubscriptionSubTier');
+
+    // Student Research verification routes
+    Route::get('student-research/apply', [StudentVerificationController::class, 'apply'])->name('studentVerification.apply');
+    Route::post('student-research/apply', [StudentVerificationController::class, 'store'])->name('studentVerification.store');
+    Route::get('student-verification', [StudentVerificationController::class, 'index'])->name('studentVerification.index');
+    Route::post('student-verification/{id}/approve', [StudentVerificationController::class, 'approve'])->name('studentVerification.approve');
+    Route::post('student-verification/{id}/reject', [StudentVerificationController::class, 'reject'])->name('studentVerification.reject');
+    Route::get('student-verification/{id}/proof', [StudentVerificationController::class, 'downloadProof'])->name('studentVerification.proof');
 
     // Regulations routes
     Route::get('/regulations/search/{title}', [RegulationController::class, 'search']);
@@ -288,6 +318,19 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('update_plan/{id}', [TransactionController::class, 'updateSubcription'])->name('update_plan');
     Route::post('delete_plan/{id}', [TransactionController::class, 'deleteSubcription'])->name('delete_plan');
     Route::post('/subscriptionstatus/{id}', [TransactionController::class, 'Subcriptionstatus'])->name('Subcriptionstatus');
+
+    // Subscription tier / sub-tier management
+    Route::resource('subscription-tiers', SubscriptionTierController::class);
+    Route::post('subscription-tiers/update/{id}', [SubscriptionTierController::class, 'update'])->name('subscriptionTierUpdate');
+    Route::post('subscription-tiers/delete/{id}', [SubscriptionTierController::class, 'destroy'])->name('deleteSubscriptionTier');
+    Route::post('subscription-tiers/status/{id}', [SubscriptionTierController::class, 'tierStatus'])->name('subscriptionTierStatus');
+    Route::post('subscription-tiers/duplicate/{id}', [SubscriptionTierController::class, 'duplicate'])->name('duplicateSubscriptionTier');
+
+    Route::resource('subscription-sub-tiers', SubscriptionSubTierController::class);
+    Route::post('subscription-sub-tiers/update/{id}', [SubscriptionSubTierController::class, 'update'])->name('subscriptionSubTierUpdate');
+    Route::post('subscription-sub-tiers/delete/{id}', [SubscriptionSubTierController::class, 'destroy'])->name('deleteSubscriptionSubTier');
+    Route::post('subscription-sub-tiers/status/{id}', [SubscriptionSubTierController::class, 'subTierStatus'])->name('subscriptionSubTierStatus');
+    Route::post('subscription-sub-tiers/duplicate/{id}', [SubscriptionSubTierController::class, 'duplicate'])->name('duplicateSubscriptionSubTier');
 
     // News management
     Route::get('news', [NewsController::class, 'index'])->name('news');

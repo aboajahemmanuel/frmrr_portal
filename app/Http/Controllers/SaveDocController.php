@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SaveDoc;
 use App\Models\Download;
 use App\Models\Regulation;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -68,6 +69,17 @@ class SaveDocController extends Controller
 
         if (!file_exists($filePath)) {
             return redirect()->back()->with('error', 'File not found.');
+        }
+
+        $activeSubscription = Subscription::where('user_id', $user->id)
+            ->where('status', 1)
+            ->where('end_date', '>=', Carbon::now())
+            ->with('subscriptionPlan')
+            ->latest('end_date')
+            ->first();
+
+        if ($activeSubscription && !$activeSubscription->canDownload()) {
+            return redirect()->back()->with('error', 'Downloads are not available on your current plan.');
         }
 
         // Only log the download if the file exists, with a 30-second

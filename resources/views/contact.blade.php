@@ -300,12 +300,12 @@
                         {{-- Row 3: Member Status --}}
                         <div class="fb-col-100">
                             <label for="member_status" class="fb-label">
-                                Member or Non-Member of FMDQ Securities Exchange Limited
+                                Member or Non-Member of FMDQ Securities Exchange Limited <span class="fb-opt">(Optional)</span>
                             </label>
                             <select class="fb-select @error('member_status') is-invalid @enderror"
                                 name="member_status"
                                 id="member_status">
-                                <option value="" {{ old('member_status') ? '' : 'selected' }}>-- Select Status --</option>
+                                <option value="" {{ old('member_status') ? '' : 'selected' }}>-- Select Status (Optional) --</option>
                                 <option value="Member" {{ old('member_status') == 'Member' ? 'selected' : '' }}>Member</option>
                                 <option value="Non-Member" {{ old('member_status') == 'Non-Member' ? 'selected' : '' }}>Non-Member</option>
                             </select>

@@ -115,6 +115,9 @@
                         <ul class="sub-menu" aria-expanded="false">
                             <li><a href="{{ url('subcription_plan') }}">Subscription Plan</a></li>
                             <li><a href="{{ url('subscripers') }}">Subscriper</a></li>
+                            <li><a href="{{ route('subscription-tiers.index') }}">Subscription Tiers</a></li>
+                            <li><a href="{{ route('subscription-sub-tiers.index') }}">Subscription Sub-Tiers</a></li>
+                            <li><a href="{{ route('studentVerification.index') }}">Student Verification</a></li>
 
                         </ul>
                     </li>
@@ -205,6 +208,9 @@
                         <ul class="sub-menu" aria-expanded="false">
                             <li><a href="{{ url('subcription_plan') }}">Subscription Plan</a></li>
                             <li><a href="{{ url('subscripers') }}">Subscriper</a></li>
+                            <li><a href="{{ route('subscription-tiers.index') }}">Subscription Tiers</a></li>
+                            <li><a href="{{ route('subscription-sub-tiers.index') }}">Subscription Sub-Tiers</a></li>
+                            <li><a href="{{ route('studentVerification.index') }}">Student Verification</a></li>
 
                         </ul>
                     </li>

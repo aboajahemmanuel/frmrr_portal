@@ -96,6 +96,11 @@ class User extends Authenticatable
         return $this->hasMany(Subscription::class);
     }
 
+    public function studentVerificationRequests()
+    {
+        return $this->hasMany(StudentVerificationRequest::class, 'user_id');
+    }
+
     /**
      * Get the disclaimer acceptance record for the user.
      */

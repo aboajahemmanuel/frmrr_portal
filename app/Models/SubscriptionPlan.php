@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class SubscriptionPlan extends Model
 {
     use HasFactory;
+
+    public function subTier()
+    {
+        return $this->belongsTo(SubscriptionSubTier::class, 'subscription_sub_tier_id');
+    }
 }

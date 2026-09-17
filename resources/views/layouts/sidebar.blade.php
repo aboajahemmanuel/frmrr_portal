@@ -165,6 +165,20 @@
                                      <a href="{{ url('subscribers') }}" class="nk-menu-link" style="color: white"><span
                                              class="nk-menu-text">Subscribers</span></a>
                                  </li>
+                                 @can('subscription-tier-list')
+                                     <li class="nk-menu-item">
+                                         <a href="{{ route('subscription-tiers.index') }}" class="nk-menu-link"
+                                             style="color: white"><span class="nk-menu-text">Subscription Tiers</span></a>
+                                         <a href="{{ route('subscription-sub-tiers.index') }}" class="nk-menu-link"
+                                             style="color: white"><span class="nk-menu-text">Subscription Sub-Tiers</span></a>
+                                     </li>
+                                 @endcan
+                                 @can('student-verification-list')
+                                     <li class="nk-menu-item">
+                                         <a href="{{ route('studentVerification.index') }}" class="nk-menu-link"
+                                             style="color: white"><span class="nk-menu-text">Student Verification</span></a>
+                                     </li>
+                                 @endcan
 
                              </ul><!-- .nk-menu-sub -->
                          </li><!-- .nk-menu-item -->

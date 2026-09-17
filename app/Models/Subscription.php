@@ -31,6 +31,15 @@ class Subscription extends Model
 
     public function canDownload()
     {
-        return $this->download_count < $this->subscriptionPlan->download_limit;
+        $limit = $this->subscriptionPlan->download_limit;
+
+        // No limit configured on the plan (the admin Subscription Plan form has no
+        // download_limit field, so this is null for every plan created that way)
+        // means unlimited downloads, not zero.
+        if ($limit === null) {
+            return true;
+        }
+
+        return $this->download_count < $limit;
     }
 }

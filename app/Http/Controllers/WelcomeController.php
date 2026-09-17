@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use App\Models\SubscriptionPlan;
+use App\Models\SubscriptionTier;
 use App\Models\Feedback;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +18,20 @@ class WelcomeController extends Controller
 {
     public function index(Request $request)
     {
-           $plans = SubscriptionPlan::where('status', 1)->get();
+           $institutionalPlans = SubscriptionPlan::where('status', 1)
+            ->whereNull('subscription_sub_tier_id')
+            ->orderBy('duration')
+            ->get();
+
+        $academicTier = SubscriptionTier::where('status', 1)
+            ->where('name', 'Academic Subscription')
+            ->with(['subTiers' => function ($query) {
+                $query->where('status', 1)->orderBy('id');
+            }, 'subTiers.plans' => function ($query) {
+                $query->where('status', 1)->orderBy('duration');
+            }])
+            ->first();
+
         $data = Category::where('status', 1)->get();
         $subscriptionPlans = SubscriptionPlan::all();
         $news_alert = News::orderBy('created_at', 'desc')->where('status', 1)->get();
@@ -41,7 +55,7 @@ class WelcomeController extends Controller
             // $userSubscription = Subscription::where('user_id', $user->id)->latest('created_at')->first();
         }
 
-        return view('welcome', compact('data', 'news_alert', 'subscriptionPlans', 'plans', 'userSubscription', 'marketProductTags'));
+        return view('welcome', compact('data', 'news_alert', 'subscriptionPlans', 'institutionalPlans', 'academicTier', 'userSubscription', 'marketProductTags'));
     }
 
 
@@ -220,7 +234,19 @@ class WelcomeController extends Controller
 
         $getorevioysUrl = Session::get('previous_url');
 
-        $plans = SubscriptionPlan::where('status', 1)->get();
+        $institutionalPlans = SubscriptionPlan::where('status', 1)
+            ->whereNull('subscription_sub_tier_id')
+            ->orderBy('duration')
+            ->get();
+
+        $academicTier = SubscriptionTier::where('status', 1)
+            ->where('name', 'Academic Subscription')
+            ->with(['subTiers' => function ($query) {
+                $query->where('status', 1)->orderBy('id');
+            }, 'subTiers.plans' => function ($query) {
+                $query->where('status', 1)->orderBy('duration');
+            }])
+            ->first();
 
         // Initialize userSubscription to null
         $userSubscription = null;
@@ -236,6 +262,6 @@ class WelcomeController extends Controller
                 ->exists();
         }
 
-        return view('subscribe', compact('plans', 'userSubscription'));
+        return view('subscribe', compact('institutionalPlans', 'academicTier', 'userSubscription'));
     }
 }

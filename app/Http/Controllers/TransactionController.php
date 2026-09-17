@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\SubscriptionPlansPending;
+use App\Models\SubscriptionSubTier;
 use App\Helpers\LogActivity;
 
 class TransactionController extends Controller
@@ -97,7 +98,9 @@ class TransactionController extends Controller
         $data = $query->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('transactions.subscriptionPlan', compact('data', 'authoriser'));
+        $subTiers = SubscriptionSubTier::where('status', 1)->with('tier')->get();
+
+        return view('transactions.subscriptionPlan', compact('data', 'authoriser', 'subTiers'));
     }
 
 
@@ -116,6 +119,7 @@ class TransactionController extends Controller
         $subscription->description = $request->description;
         $subscription->group_id = $user->group_id;
         $subscription->notification_days = $request->notification_days ?? 0;
+        $subscription->subscription_sub_tier_id = $request->subscription_sub_tier_id;
 
 
         $subscription->save();
@@ -130,6 +134,7 @@ class TransactionController extends Controller
         $subscription_pending->price_usd =  $subscription->price_usd;
         $subscription_pending->description =  $subscription->description;
         $subscription_pending->notification_days =  $subscription->notification_days;
+        $subscription_pending->subscription_sub_tier_id =  $subscription->subscription_sub_tier_id;
 
         $subscription_pending->inputer_id = Auth::user()->id;
         $subscription_pending->status = 0;
@@ -177,6 +182,7 @@ class TransactionController extends Controller
                 $pending->price_usd = $request->price_usd;
                 $pending->description = $request->description;
                 $pending->notification_days = $request->notification_days ?? 0;
+                $pending->subscription_sub_tier_id = $request->subscription_sub_tier_id;
                 $pending->inputer_id = Auth::id();
                 $pending->status = 0;
                 $pending->action_type = 'Edit';
@@ -279,6 +285,7 @@ class TransactionController extends Controller
                 $subscription->price_usd = $pending->price_usd;
                 $subscription->description = $pending->description;
                 $subscription->notification_days = $pending->notification_days;
+                $subscription->subscription_sub_tier_id = $pending->subscription_sub_tier_id;
                 $subscription->status = 1;
                 $subscription->admin_status = 1;
                 $subscription->save();

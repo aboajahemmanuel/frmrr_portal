@@ -78,7 +78,7 @@
             <section class="top-half-helpdesk">
                 <div class="w-1100">
                     @include('layouts.appnavbar')
-                    <div class="hd">Profile</div>
+                    <div class="hd">@yield('page_title', 'Profile')</div>
                 </div>
             </section>
 
